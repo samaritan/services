@@ -1,0 +1,143 @@
+version: "3"
+services:
+  rabbit:
+    container_name: samaritan-rabbit
+    image: rabbitmq:3
+    ports:
+      - "5672:5672"
+    restart: always
+  redis:
+    container_name: samaritan-redis
+    image: redis
+    command: [
+      "bash", "-c",
+      '
+        docker-entrypoint.sh
+        --requirepass password
+        --appendonly yes
+      '
+    ]
+    volumes:
+      - redis:/data
+    restart: always
+  project:
+    container_name: samaritan-project
+    build: ./project
+    image: samaritan-project
+    depends_on:
+      - "rabbit"
+    links:
+      - "rabbit:samaritan-rabbit"
+    environment:
+      RABBIT_HOST: "rabbit"
+      RABBIT_PORT: "5672"
+      RABBIT_USER: "guest"
+      RABBIT_PASSWORD: "guest"
+      RABBIT_HEARTBEAT: 600
+  repository:
+    container_name: samaritan-repository
+    build: ./repository
+    image: samaritan-repository
+    volumes:
+      - repositories:/samaritan/repositories
+    depends_on:
+      - "rabbit"
+      - "redis"
+      - "project"
+    links:
+      - "rabbit:samaritan-rabbit"
+      - "redis:samaritan-redis"
+      - "project:samaritan-project"
+    environment:
+      REPOSITORIES_ROOT: "/samaritan/repositories"
+      RABBIT_HOST: "rabbit"
+      RABBIT_PORT: "5672"
+      RABBIT_USER: "guest"
+      RABBIT_PASSWORD: "guest"
+      RABBIT_HEARTBEAT: 600
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
+      REDIS_INDEX: "11"
+      REDIS_PASSWORD: "password"
+  loc:
+    container_name: samaritan-metrics-loc
+    build: ./metrics/loc
+    image: samaritan-metrics-loc
+    volumes:
+      - repositories:/samaritan/repositories
+    depends_on:
+      - "rabbit"
+      - "repository"
+    links:
+      - "rabbit:samaritan-rabbit"
+    environment:
+      RABBIT_PASSWORD: "guest"
+      RABBIT_HEARTBEAT: 600
+      RABBIT_USER: "guest"
+      RABBIT_HOST: "rabbit"
+      RABBIT_PORT: "5672"
+  churn:
+    container_name: samaritan-metrics-churn
+    build: ./metrics/churn
+    image: samaritan-metrics-churn
+    depends_on:
+      - "rabbit"
+      - "repository"
+    links:
+      - "rabbit:samaritan-rabbit"
+    environment:
+      RABBIT_PASSWORD: "guest"
+      RABBIT_HEARTBEAT: 600
+      RABBIT_USER: "guest"
+      RABBIT_HOST: "rabbit"
+      RABBIT_PORT: "5672"
+  collaboration:
+    container_name: samaritan-metrics-collaboration
+    build: ./metrics/collaboration
+    image: samaritan-metrics-collaboration
+    depends_on:
+      - "rabbit"
+      - "repository"
+    links:
+      - "rabbit:samaritan-rabbit"
+    environment:
+      RABBIT_PASSWORD: "guest"
+      RABBIT_HEARTBEAT: 600
+      RABBIT_USER: "guest"
+      RABBIT_HOST: "rabbit"
+      RABBIT_PORT: "5672"
+  contribution:
+    container_name: samaritan-metrics-contribution
+    build: ./metrics/contribution
+    image: samaritan-metrics-contribution
+    depends_on:
+      - "rabbit"
+      - "repository"
+    links:
+      - "rabbit:samaritan-rabbit"
+    environment:
+      RABBIT_PASSWORD: "guest"
+      RABBIT_HEARTBEAT: 600
+      RABBIT_USER: "guest"
+      RABBIT_HOST: "rabbit"
+      RABBIT_PORT: "5672"
+  offender:
+    container_name: samaritan-metrics-offender
+    build: ./metrics/offender
+    image: samaritan-metrics-offender
+    depends_on:
+      - "rabbit"
+      - "repository"
+    links:
+      - "rabbit:samaritan-rabbit"
+    environment:
+      RABBIT_PASSWORD: "guest"
+      RABBIT_HEARTBEAT: 600
+      RABBIT_USER: "guest"
+      RABBIT_HOST: "rabbit"
+      RABBIT_PORT: "5672"
+volumes:
+  repositories:
+    external: true
+  redis:
+    external: true

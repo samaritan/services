@@ -1,0 +1,22 @@
+AMQP_URI: amqp://${RABBIT_USER:guest}:${RABBIT_PASSWORD:guest}@${RABBIT_HOST:localhost}:${RABBIT_PORT:5672}/?heartbeat=${RABBIT_HEARTBEAT:60}
+DB_URIS:
+  "project:Base": sqlite:///projects.sqlite3
+LOGGING:
+  version: 1
+  disable_existing_loggers: False
+  formatters:
+    simple:
+      format: '%(asctime)s - %(name)s - %(process)d:%(thread)d - %(levelname)s - %(message)s'
+  handlers:
+    console:
+      class: logging.StreamHandler
+      level: DEBUG
+      formatter: simple
+  loggers:
+    project:
+      level: DEBUG
+      handlers: [console]
+      propagate: false
+  root:
+    level: ERROR
+    handlers: [console]

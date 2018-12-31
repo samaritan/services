@@ -1,0 +1,4 @@
+marshmallow>=2.16
+nameko>=2.11
+redis>=3.0
+zope.interface>=4.6
