@@ -155,6 +155,22 @@ services:
       RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
       RABBIT_PORT: "5672"
+  complexity:
+    container_name: samaritan-metrics-complexity
+    build: ./metrics/complexity
+    image: samaritan-metrics-complexity
+    depends_on:
+      - "project"
+      - "rabbit"
+      - "understand"
+    links:
+      - "rabbit:samaritan-rabbit"
+    environment:
+      RABBIT_PASSWORD: "guest"
+      RABBIT_HEARTBEAT: 600
+      RABBIT_USER: "guest"
+      RABBIT_HOST: "rabbit"
+      RABBIT_PORT: "5672"
 volumes:
   repositories:
     external: true
