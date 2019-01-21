@@ -59,6 +59,25 @@ services:
       REDIS_PORT: "6379"
       REDIS_INDEX: "11"
       REDIS_PASSWORD: "password"
+  understand:
+    container_name: samaritan-understand
+    build: ./understand
+    image: samaritan-understand
+    volumes:
+      - understand:/samaritan/understand
+    depends_on:
+      - "rabbit"
+      - "project"
+    links:
+      - "rabbit:samaritan-rabbit"
+      - "project:samaritan-project"
+    environment:
+      UNDERSTAND_ROOT: "/samaritan/understand"
+      RABBIT_HOST: "rabbit"
+      RABBIT_PORT: "5672"
+      RABBIT_USER: "guest"
+      RABBIT_PASSWORD: "guest"
+      RABBIT_HEARTBEAT: 600
   loc:
     container_name: samaritan-metrics-loc
     build: ./metrics/loc
@@ -140,4 +159,6 @@ volumes:
   repositories:
     external: true
   redis:
+    external: true
+  understand:
     external: true
