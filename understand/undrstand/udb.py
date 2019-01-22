@@ -56,7 +56,8 @@ def _open_udb(path):
 class UDB:
     def __init__(self, path, source_language, source_path):
         self._path = path
-        self._source_language = source_language
+        self._source_language = 'c++' if source_language == 'c' \
+                                 else source_language
         self._source_path = source_path
 
         self._metrics = None  # Cache for list of available metrics
