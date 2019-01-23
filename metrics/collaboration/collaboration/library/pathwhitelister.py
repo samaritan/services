@@ -38,4 +38,4 @@ class PathWhitelister:
         pattern = _get_pattern(self.names, self.extensions)
         logger.debug('Compiled pattern is "%s"', pattern)
         if pattern is not None:
-            self._re = re.compile(pattern)
+            self._re = re.compile(pattern, flags=re.IGNORECASE)
