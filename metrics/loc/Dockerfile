@@ -3,12 +3,7 @@ FROM python:3
 WORKDIR /samaritan/services/metrics/loc
 
 # Install Dependencies
-RUN apt-get update && \
-  apt-get -y install libparallel-forkmanager-perl netcat wget && \
-  apt-get clean && \
-  wget --quiet --output-document /usr/bin/cloc \
-    https://github.com/AlDanial/cloc/releases/download/1.80/cloc-1.80.pl && \
-  chmod +x /usr/bin/cloc
+RUN apt-get update && apt-get -y install netcat && apt-get clean
 
 # Setup Application Environment
 COPY requirements.txt .

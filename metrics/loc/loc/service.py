@@ -1,25 +1,36 @@
 import logging
 import os
+import operator
 
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
-from .sourcecode import SourceCode
-from .schemas import LocSchema
+from .models import Loc
+from .schemas import LocSchema, MetricsSchema
 
 logger = logging.getLogger(__name__)
+METRICS = ['CountLineBlank', 'CountLineComment', 'CountLineCode']
+
+def _transform(metrics):
+    locs = list()
+    itemgetter = operator.itemgetter(*METRICS)
+    for item in metrics:
+        entity = item.entity
+        (bloc, cloc, sloc) = itemgetter(item.metrics)
+        if bloc is not None or cloc is not None or sloc is not None:
+            locs.append(Loc(entity=entity, bloc=bloc, cloc=cloc, sloc=sloc))
+    return locs
 
 
 class LocService:
     name = 'loc'
 
     config = Config()
-    repository_rpc = RpcProxy('repository')
+    understand_rpc = RpcProxy('understand')
 
     @rpc
     def collect(self, project, processes=os.cpu_count(), **options):
         logger.debug(project)
-        path = self.repository_rpc.get_path(project)
-        sourcecode = SourceCode(path, processes)
-        locs = sourcecode.get_loc()
-        return LocSchema(many=True).dump(locs).data
+        metrics = self.understand_rpc.get_metrics(project, METRICS)
+        metrics = MetricsSchema(many=True).load(metrics).data
+        return LocSchema(many=True).dump(_transform(metrics)).data
