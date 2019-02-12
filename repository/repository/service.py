@@ -6,8 +6,9 @@ from nameko.rpc import rpc, RpcProxy
 
 from .dependencies import Redis
 from .exceptions import NotCloned
-from .models import Repository, RepositoryProxy
-from .schemas import ProjectSchema
+from .models import Repository
+from .schemas import ChangesSchema, CommitSchema, DeveloperSchema, \
+                     FileSchema, ModuleSchema, ProjectSchema
 
 logger = logging.getLogger(__name__)
 
@@ -23,31 +24,36 @@ class RepositoryService:
     def get_changes(self, project, processes=os.cpu_count()):
         project = ProjectSchema().load(self.project_rpc.get(project)).data
         repository = self._get_repository(project, processes)
-        return repository.get_changes()
+        changes = repository.get_changes()
+        return ChangesSchema(many=True).dump(changes).data
 
     @rpc
     def get_commits(self, project, processes=os.cpu_count()):
         project = ProjectSchema().load(self.project_rpc.get(project)).data
         repository = self._get_repository(project, processes)
-        return repository.get_commits()
+        commits = repository.get_commits()
+        return CommitSchema(many=True).dump(commits).data
 
     @rpc
     def get_developers(self, project, processes=os.cpu_count()):
         project = ProjectSchema().load(self.project_rpc.get(project)).data
         repository = self._get_repository(project, processes)
-        return repository.get_developers()
+        developers = repository.get_developers()
+        return DeveloperSchema(many=True).dump(developers).data
 
     @rpc
     def get_files(self, project, processes=os.cpu_count()):
         project = ProjectSchema().load(self.project_rpc.get(project)).data
         repository = self._get_repository(project, processes)
-        return repository.get_files()
+        files = repository.get_files()
+        return FileSchema(many=True).dump(files).data
 
     @rpc
     def get_modules(self, project, processes=os.cpu_count()):
         project = ProjectSchema().load(self.project_rpc.get(project)).data
         repository = self._get_repository(project, processes)
-        return repository.get_modules()
+        modules = repository.get_modules()
+        return ModuleSchema(many=True).dump(modules).data
 
     @rpc
     def get_path(self, project, processes=os.cpu_count()):
@@ -62,5 +68,4 @@ class RepositoryService:
         path = self._get_path(project)
         if not os.path.exists(path):
             raise NotCloned('{} has not been cloned yet'.format(project.name))
-        repository = Repository(path, processes)
-        return RepositoryProxy(project, self.redis, repository)
+        return Repository(path, processes)
