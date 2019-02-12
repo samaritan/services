@@ -64,6 +64,7 @@ services:
     build: ./understand
     image: samaritan-understand
     volumes:
+      - repositories:/samaritan/repositories
       - understand:/samaritan/understand
     depends_on:
       - "rabbit"
@@ -159,6 +160,38 @@ services:
     container_name: samaritan-metrics-complexity
     build: ./metrics/complexity
     image: samaritan-metrics-complexity
+    depends_on:
+      - "project"
+      - "rabbit"
+      - "understand"
+    links:
+      - "rabbit:samaritan-rabbit"
+    environment:
+      RABBIT_PASSWORD: "guest"
+      RABBIT_HEARTBEAT: 600
+      RABBIT_USER: "guest"
+      RABBIT_HOST: "rabbit"
+      RABBIT_PORT: "5672"
+  flow:
+    container_name: samaritan-metrics-flow
+    build: ./metrics/flow
+    image: samaritan-metrics-flow
+    depends_on:
+      - "project"
+      - "rabbit"
+      - "understand"
+    links:
+      - "rabbit:samaritan-rabbit"
+    environment:
+      RABBIT_PASSWORD: "guest"
+      RABBIT_HEARTBEAT: 600
+      RABBIT_USER: "guest"
+      RABBIT_HOST: "rabbit"
+      RABBIT_PORT: "5672"
+  nesting:
+    container_name: samaritan-metrics-nesting
+    build: ./metrics/nesting
+    image: samaritan-metrics-nesting
     depends_on:
       - "project"
       - "rabbit"
