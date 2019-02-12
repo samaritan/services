@@ -27,11 +27,11 @@ class Repository:
     def get_commits(self):
         commits = None
 
-        command = ['git log --no-merges --pretty=\'"%H","%ct","%aN","%aE"\'']
+        command = 'git log --no-merges --pretty=\'"%H","%ct","%aN","%aE"\''
         output = self._get_output(command)
         with io.StringIO(output) as stream:
             commits = [
-                Commit(*row[:2], Developer(*row[2:]))
+                Commit(*row[:2], Developer(*row[2:4]))
                 for row in csv.reader(stream)
             ]
 
