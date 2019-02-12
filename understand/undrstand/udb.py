@@ -60,8 +60,6 @@ class UDB:
                                  else source_language
         self._source_path = source_path
 
-        self._metrics = None  # Cache for list of available metrics
-
     def analyze(self):
         if not self.exists:
             self.create()
@@ -86,10 +84,6 @@ class UDB:
         if not self.exists:
             self.analyze()
 
-        metrics = self._filter_metrics(metrics)
-        if not metrics:
-            return None
-
         values = list()
         with _open_udb(self._path) as udb:
             for entity in udb.ents('file,function,procedure,method'):
@@ -106,26 +100,8 @@ class UDB:
     def exists(self):
         return os.path.exists(self._path)
 
-    @property
-    def metrics(self):
-        if self._metrics is None:
-            with _open_udb(self._path) as udb:
-                self._metrics = set(udb.metrics())
-        return self._metrics
-
     def _get_output(self, command):
         (out, err) = utilities.run(command)
         if err != '':
             logger.error(err)
         return out
-
-    def _filter_metrics(self, metrics):
-        _metrics = list(filter(lambda m: m in self.metrics, metrics))
-        if _metrics:
-            if len(_metrics) != len(metrics):
-                invalid = ','.join(set(metrics) - set(_metrics))
-                logger.warning('%s unavailable for %s', invalid, self._path)
-            return _metrics
-
-        logger.error('%s unavailable for %s', ','.join(metrics), self._path)
-        return None
