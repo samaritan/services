@@ -1,13 +1,15 @@
-version: "3"
+version: "3.7"
 services:
   rabbit:
-    container_name: samaritan-rabbit
     image: rabbitmq:3
     ports:
       - "5672:5672"
-    restart: always
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
   redis:
-    container_name: samaritan-redis
     image: redis
     command: [
       "bash", "-c",
@@ -19,11 +21,13 @@ services:
     ]
     volumes:
       - redis:/data
-    restart: always
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
   project:
-    container_name: samaritan-project
-    build: ./project
-    image: samaritan-project
+    image: nuthan-db.se.rit.edu/samaritan-project
     depends_on:
       - "rabbit"
     links:
@@ -34,10 +38,13 @@ services:
       RABBIT_USER: "guest"
       RABBIT_PASSWORD: "guest"
       RABBIT_HEARTBEAT: 600
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
   repository:
-    container_name: samaritan-repository
-    build: ./repository
-    image: samaritan-repository
+    image: nuthan-db.se.rit.edu/samaritan-repository
     volumes:
       - repositories:/samaritan/repositories
     depends_on:
@@ -59,10 +66,14 @@ services:
       REDIS_PORT: "6379"
       REDIS_INDEX: "11"
       REDIS_PASSWORD: "password"
+    deploy:
+      mode: replicated
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == manager
   understand:
-    container_name: samaritan-understand
-    build: ./understand
-    image: samaritan-understand
+    image: nuthan-db.se.rit.edu/samaritan-understand
     volumes:
       - repositories:/samaritan/repositories
       - understand:/samaritan/understand
@@ -79,10 +90,13 @@ services:
       RABBIT_USER: "guest"
       RABBIT_PASSWORD: "guest"
       RABBIT_HEARTBEAT: 600
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
   loc:
-    container_name: samaritan-metrics-loc
-    build: ./metrics/loc
-    image: samaritan-metrics-loc
+    image: nuthan-db.se.rit.edu/samaritan-metrics-loc
     volumes:
       - repositories:/samaritan/repositories
     depends_on:
@@ -96,10 +110,13 @@ services:
       RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
       RABBIT_PORT: "5672"
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
   churn:
-    container_name: samaritan-metrics-churn
-    build: ./metrics/churn
-    image: samaritan-metrics-churn
+    image: nuthan-db.se.rit.edu/samaritan-metrics-churn
     depends_on:
       - "rabbit"
       - "repository"
@@ -111,10 +128,13 @@ services:
       RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
       RABBIT_PORT: "5672"
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
   collaboration:
-    container_name: samaritan-metrics-collaboration
-    build: ./metrics/collaboration
-    image: samaritan-metrics-collaboration
+    image: nuthan-db.se.rit.edu/samaritan-metrics-collaboration
     depends_on:
       - "rabbit"
       - "repository"
@@ -126,10 +146,13 @@ services:
       RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
       RABBIT_PORT: "5672"
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
   contribution:
-    container_name: samaritan-metrics-contribution
-    build: ./metrics/contribution
-    image: samaritan-metrics-contribution
+    image: nuthan-db.se.rit.edu/samaritan-metrics-contribution
     depends_on:
       - "rabbit"
       - "repository"
@@ -141,10 +164,13 @@ services:
       RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
       RABBIT_PORT: "5672"
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
   offender:
-    container_name: samaritan-metrics-offender
-    build: ./metrics/offender
-    image: samaritan-metrics-offender
+    image: nuthan-db.se.rit.edu/samaritan-metrics-offender
     depends_on:
       - "rabbit"
       - "repository"
@@ -156,10 +182,13 @@ services:
       RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
       RABBIT_PORT: "5672"
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
   complexity:
-    container_name: samaritan-metrics-complexity
-    build: ./metrics/complexity
-    image: samaritan-metrics-complexity
+    image: nuthan-db.se.rit.edu/samaritan-metrics-complexity
     depends_on:
       - "project"
       - "rabbit"
@@ -172,10 +201,13 @@ services:
       RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
       RABBIT_PORT: "5672"
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
   flow:
-    container_name: samaritan-metrics-flow
-    build: ./metrics/flow
-    image: samaritan-metrics-flow
+    image: nuthan-db.se.rit.edu/samaritan-metrics-flow
     depends_on:
       - "project"
       - "rabbit"
@@ -188,10 +220,13 @@ services:
       RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
       RABBIT_PORT: "5672"
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
   nesting:
-    container_name: samaritan-metrics-nesting
-    build: ./metrics/nesting
-    image: samaritan-metrics-nesting
+    image: nuthan-db.se.rit.edu/samaritan-metrics-nesting
     depends_on:
       - "project"
       - "rabbit"
@@ -204,6 +239,11 @@ services:
       RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
       RABBIT_PORT: "5672"
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
 volumes:
   repositories:
     external: true
