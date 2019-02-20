@@ -4,18 +4,27 @@ import logging
 import os
 import re
 
+import eventlet
+
 from zope.interface.declarations import implementer
 
 from . import irepository
-from .. import utilities
+from .. import parsers, utilities
 from ..models import Change, Changes, Commit, Developer, File, Module
 
 _CHANGE_RE = re.compile(
     r'^(?P<insertions>(?:\d+|\-))\s+(?P<deletions>(?:\d+|\-))\s+(?P<path>.+)'
 )
-_SHA_RE = re.compile(r'^(?P<sha>.{40})$')
 
 logger = logging.getLogger(__name__)
+
+
+def _get_changes(lines, commit):
+    changes = list()
+    for line in lines:
+        match = _CHANGE_RE.match(line.strip('\n'))
+        changes.append(Change(**match.groupdict()))
+    return Changes(commit=commit, changes=changes)
 
 
 @implementer(irepository.IRepository)
@@ -45,24 +54,17 @@ class Repository:
         command = 'git log --no-merges --no-renames --numstat --pretty=%H'
         output = self._get_output(command)
         with io.StringIO(output) as stream:
-            lines = stream.readlines()
+            lines, indices, shas = parsers.GitLogParser.parse(stream)
 
-            index = 0
-            while (index + 1) < len(lines):
-                sha = _SHA_RE.match(lines[index]).groupdict().get('sha')
-                index += 1
-                if lines[index].strip('\n') == '':
-                    changes = list()
-                    index += 1  # Ignore the empty line after SHA
-                    # Process the list of changes associated with the SHA
-                    while (index < len(lines) and
-                           _CHANGE_RE.match(lines[index].strip('\n'))):
-                        match = _CHANGE_RE.match(lines[index].strip('\n'))
-                        changes.append(Change(**match.groupdict()))
-                        index += 1
-                changeslist.append(Changes(
-                    commit=commits[sha], changes=changes
-                ))
+            indices.append(len(lines))
+            arguments = [
+                (lines[b + 2:e], commits[sha])
+                for b, e, sha in zip(indices[:-1], indices[1:], shas)
+            ]
+
+            pool = eventlet.GreenPool()
+            for changes in pool.starmap(_get_changes, arguments):
+                changeslist.append(changes)
 
         return changeslist
 
