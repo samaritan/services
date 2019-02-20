@@ -30,8 +30,6 @@ services:
     image: nuthan-db.se.rit.edu/samaritan-project
     depends_on:
       - "rabbit"
-    links:
-      - "rabbit:samaritan-rabbit"
     environment:
       RABBIT_HOST: "rabbit"
       RABBIT_PORT: "5672"
@@ -51,10 +49,6 @@ services:
       - "rabbit"
       - "redis"
       - "project"
-    links:
-      - "rabbit:samaritan-rabbit"
-      - "redis:samaritan-redis"
-      - "project:samaritan-project"
     environment:
       REPOSITORIES_ROOT: "/samaritan/repositories"
       RABBIT_HOST: "rabbit"
@@ -80,9 +74,6 @@ services:
     depends_on:
       - "rabbit"
       - "project"
-    links:
-      - "rabbit:samaritan-rabbit"
-      - "project:samaritan-project"
     environment:
       UNDERSTAND_ROOT: "/samaritan/understand"
       RABBIT_HOST: "rabbit"
@@ -102,8 +93,6 @@ services:
     depends_on:
       - "rabbit"
       - "repository"
-    links:
-      - "rabbit:samaritan-rabbit"
     environment:
       RABBIT_PASSWORD: "guest"
       RABBIT_HEARTBEAT: 600
@@ -120,8 +109,6 @@ services:
     depends_on:
       - "rabbit"
       - "repository"
-    links:
-      - "rabbit:samaritan-rabbit"
     environment:
       RABBIT_PASSWORD: "guest"
       RABBIT_HEARTBEAT: 600
@@ -138,8 +125,6 @@ services:
     depends_on:
       - "rabbit"
       - "repository"
-    links:
-      - "rabbit:samaritan-rabbit"
     environment:
       RABBIT_PASSWORD: "guest"
       RABBIT_HEARTBEAT: 600
@@ -156,8 +141,6 @@ services:
     depends_on:
       - "rabbit"
       - "repository"
-    links:
-      - "rabbit:samaritan-rabbit"
     environment:
       RABBIT_PASSWORD: "guest"
       RABBIT_HEARTBEAT: 600
@@ -174,8 +157,6 @@ services:
     depends_on:
       - "rabbit"
       - "repository"
-    links:
-      - "rabbit:samaritan-rabbit"
     environment:
       RABBIT_PASSWORD: "guest"
       RABBIT_HEARTBEAT: 600
@@ -193,8 +174,6 @@ services:
       - "project"
       - "rabbit"
       - "understand"
-    links:
-      - "rabbit:samaritan-rabbit"
     environment:
       RABBIT_PASSWORD: "guest"
       RABBIT_HEARTBEAT: 600
@@ -212,8 +191,6 @@ services:
       - "project"
       - "rabbit"
       - "understand"
-    links:
-      - "rabbit:samaritan-rabbit"
     environment:
       RABBIT_PASSWORD: "guest"
       RABBIT_HEARTBEAT: 600
@@ -231,8 +208,6 @@ services:
       - "project"
       - "rabbit"
       - "understand"
-    links:
-      - "rabbit:samaritan-rabbit"
     environment:
       RABBIT_PASSWORD: "guest"
       RABBIT_HEARTBEAT: 600
