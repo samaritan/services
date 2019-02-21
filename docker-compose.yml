@@ -4,6 +4,8 @@ services:
     image: rabbitmq:3
     ports:
       - "5672:5672"
+    volumes:
+      - ./configuration/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
     deploy:
       mode: global
       placement:
