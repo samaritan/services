@@ -1,0 +1,3 @@
+marshmallow>=2.16
+nameko>=2.11
+scikit-learn>=0.20

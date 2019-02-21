@@ -1,0 +1,2 @@
+class LanguageNotSupported(Exception):
+    pass
