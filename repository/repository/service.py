@@ -7,8 +7,8 @@ from nameko.rpc import rpc, RpcProxy
 from .dependencies import Redis
 from .exceptions import NotCloned
 from .models import Repository
-from .schemas import ChangesSchema, CommitSchema, DeveloperSchema, \
-                     FileSchema, ModuleSchema, ProjectSchema
+from .schemas import ChangesSchema, CommitSchema, DeveloperSchema,        \
+                     FileSchema, ModuleSchema, PatchSchema, ProjectSchema
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +54,13 @@ class RepositoryService:
         repository = self._get_repository(project, processes)
         modules = repository.get_modules()
         return ModuleSchema(many=True).dump(modules).data
+
+    @rpc
+    def get_patches(self, project, processes=os.cpu_count()):
+        project = ProjectSchema().load(self.project_rpc.get(project)).data
+        repository = self._get_repository(project, processes)
+        patches = repository.get_patches()
+        return PatchSchema(many=True).dump(patches).data
 
     @rpc
     def get_path(self, project, processes=os.cpu_count()):
