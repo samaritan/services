@@ -10,7 +10,7 @@ from zope.interface.declarations import implementer
 
 from . import irepository
 from .. import parsers, utilities
-from ..models import Change, Changes, Commit, Developer, File, Module
+from ..models import Change, Changes, Commit, Developer, File, Module, Patch
 
 _CHANGE_RE = re.compile(
     r'^(?P<insertions>(?:\d+|\-))\s+(?P<deletions>(?:\d+|\-))\s+(?P<path>.+)'
@@ -97,6 +97,24 @@ class Repository:
 
     def get_modules(self):
         return list({f.module for f in self.get_files()})
+
+    def get_patches(self):
+        patches = None
+
+        commits = {c.sha: c for c in self.get_commits()}
+
+        command = 'git log --no-merges --no-renames --patch --pretty=%H'
+        output = self._get_output(command)
+        with io.StringIO(output) as stream:
+            lines, indices, shas = parsers.GitLogParser.parse(stream)
+
+            indices.append(len(lines))
+            patches = [
+                Patch(commit=commits[sha], patch=''.join(lines[b + 2:e]))
+                for b, e, sha in zip(indices[:-1], indices[1:], shas)
+            ]
+
+        return patches
 
     def get_path(self):
         return self._path
