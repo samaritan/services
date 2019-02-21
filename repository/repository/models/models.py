@@ -56,6 +56,14 @@ class File:
     module: Module
 
 
+@dataclasses.dataclass
+class Patch:
+    __slots__ = ['commit', 'patch']
+
+    commit: Commit
+    patch: str
+
+
 @dataclasses.dataclass(frozen=True)
 class Project:
     __slots__ = [

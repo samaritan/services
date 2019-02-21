@@ -35,6 +35,11 @@ class FileSchema(Schema):
     module = fields.Nested(ModuleSchema)
 
 
+class PatchSchema(Schema):
+    commit = fields.Nested(CommitSchema)
+    patch = fields.String()
+
+
 class ProjectSchema(Schema):
     name = fields.String()
     description = fields.String()
