@@ -1,3 +1,4 @@
+import io
 import logging
 import os
 import shlex
@@ -19,6 +20,7 @@ def run(command, work_dir=None):
         command, cwd=work_dir, shell=True,
         stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
-    (out, err) = [x.decode(errors='replace') for x in process.communicate()]
+    ostream = io.TextIOWrapper(process.stdout, errors='replace')
+    estream = io.TextIOWrapper(process.stderr, errors='replace')
 
-    return (out, err)
+    return ostream, estream

@@ -1,8 +1,8 @@
 import csv
-import io
 import logging
 import os
 import re
+import threading
 
 import eventlet
 
@@ -27,6 +27,12 @@ def _get_changes(lines, commit):
     return Changes(commit=commit, changes=changes)
 
 
+def _log_error(stream):
+    error = stream.read()
+    if error != '':
+        logger.error(error)
+
+
 @implementer(irepository.IRepository)
 class Repository:
     def __init__(self, path, processes):
@@ -37,12 +43,12 @@ class Repository:
         commits = None
 
         command = 'git log --no-merges --pretty=\'"%H","%ct","%aN","%aE"\''
-        output = self._get_output(command)
-        with io.StringIO(output) as stream:
-            commits = [
-                Commit(*row[:2], Developer(*row[2:4]))
-                for row in csv.reader(stream)
-            ]
+        ostream, ethread = self._run(command)
+        commits = [
+            Commit(*row[:2], Developer(*row[2:4]))
+            for row in csv.reader(ostream)
+        ]
+        ethread.join()
 
         return commits
 
@@ -52,19 +58,20 @@ class Repository:
         commits = {c.sha: c for c in self.get_commits()}
 
         command = 'git log --no-merges --no-renames --numstat --pretty=%H'
-        output = self._get_output(command)
-        with io.StringIO(output) as stream:
-            lines, indices, shas = parsers.GitLogParser.parse(stream)
+        ostream, ethread = self._run(command)
 
-            indices.append(len(lines))
-            arguments = [
-                (lines[b + 2:e], commits[sha])
-                for b, e, sha in zip(indices[:-1], indices[1:], shas)
-            ]
+        lines, indices, shas = parsers.GitLogParser.parse(ostream)
 
-            pool = eventlet.GreenPool()
-            for changes in pool.starmap(_get_changes, arguments):
-                changeslist.append(changes)
+        indices.append(len(lines))
+        arguments = [
+            (lines[b + 2:e], commits[sha])
+            for b, e, sha in zip(indices[:-1], indices[1:], shas)
+        ]
+
+        pool = eventlet.GreenPool()
+        for changes in pool.starmap(_get_changes, arguments):
+            changeslist.append(changes)
+        ethread.join()
 
         return changeslist
 
@@ -72,9 +79,9 @@ class Repository:
         developers = None
 
         command = 'git log --no-merges --pretty=\'"%aN","%aE"\'| sort -u'
-        output = self._get_output(command)
-        with io.StringIO(output) as stream:
-            developers = [Developer(*row) for row in csv.reader(stream)]
+        ostream, ethread = self._run(command)
+        developers = [Developer(*row) for row in csv.reader(ostream)]
+        ethread.join()
 
         return developers
 
@@ -84,14 +91,14 @@ class Repository:
         active_files = self._get_active_files()
 
         command = 'git log --no-merges --pretty= --name-only | sort -u'
-        output = self._get_output(command)
-        with io.StringIO(output) as stream:
-            files = list()
-            for path in stream:
-                path = path.strip('\n')
-                mpath = os.path.dirname(path)                        \
-                        if os.path.dirname(path) != '' else '(root)'
-                files.append(File(path, path in active_files, Module(mpath)))
+        ostream, ethread = self._run(command)
+        files = list()
+        for path in ostream:
+            path = path.strip('\n')
+            mpath = os.path.dirname(path)                        \
+                    if os.path.dirname(path) != '' else '(root)'
+            files.append(File(path, path in active_files, Module(mpath)))
+        ethread.join()
 
         return files
 
@@ -104,15 +111,15 @@ class Repository:
         commits = {c.sha: c for c in self.get_commits()}
 
         command = 'git log --no-merges --no-renames --patch --pretty=%H'
-        output = self._get_output(command)
-        with io.StringIO(output) as stream:
-            lines, indices, shas = parsers.GitLogParser.parse(stream)
+        ostream, ethread = self._run(command)
+        lines, indices, shas = parsers.GitLogParser.parse(ostream)
 
-            indices.append(len(lines))
-            patches = [
-                Patch(commit=commits[sha], patch=''.join(lines[b + 2:e]))
-                for b, e, sha in zip(indices[:-1], indices[1:], shas)
-            ]
+        indices.append(len(lines))
+        patches = [
+            Patch(commit=commits[sha], patch=''.join(lines[b + 2:e]))
+            for b, e, sha in zip(indices[:-1], indices[1:], shas)
+        ]
+        ethread.join()
 
         return patches
 
@@ -123,14 +130,16 @@ class Repository:
         files = None
 
         command = 'git ls-files'
-        output = self._get_output(command)
-        with io.StringIO(output) as stream:
-            files = {path.strip('\n') for path in stream}
+        ostream, ethread = self._run(command)
+        files = {path.strip('\n') for path in ostream}
+        ethread.join()
 
         return files
 
-    def _get_output(self, command):
-        (out, err) = utilities.run(command, work_dir=self._path)
-        if err != '':
-            logger.error(err)
-        return out
+    def _run(self, command):
+        ostream, estream = utilities.run(command, work_dir=self._path)
+
+        thread = threading.Thread(target=_log_error, args=(estream,))
+        thread.start()
+
+        return ostream, thread
