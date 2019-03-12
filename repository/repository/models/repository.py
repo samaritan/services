@@ -2,6 +2,7 @@ import csv
 import logging
 import os
 import re
+import tempfile
 import threading
 
 import eventlet
@@ -105,21 +106,32 @@ class Repository:
     def get_modules(self):
         return list({f.module for f in self.get_files()})
 
-    def get_patches(self):
+    def get_patches(self, commits):
         patches = None
 
-        commits = {c.sha: c for c in self.get_commits()}
+        tfile = None
+        try:
+            # Workaround for limit on command line arguments
+            tfile = tempfile.NamedTemporaryFile(mode='w', delete=False)
+            for commit in commits:
+                tfile.write(f'{commit.sha}\n')
+            tfile.close()
 
-        command = 'git log --no-merges --no-renames --patch --pretty=%H'
-        ostream, ethread = self._run(command)
-        lines, indices, shas = parsers.GitLogParser.parse(ostream)
+            command = f'cat {tfile.name} | '                            \
+                       'xargs git show --no-merges --patch --pretty=%H'
+            ostream, ethread = self._run(command)
+            lines, indices, shas = parsers.GitLogParser.parse(ostream)
 
-        indices.append(len(lines))
-        patches = [
-            Patch(commit=commits[sha], patch=''.join(lines[b + 2:e]))
-            for b, e, sha in zip(indices[:-1], indices[1:], shas)
-        ]
-        ethread.join()
+            indices.append(len(lines))
+            commits = {c.sha: c for c in commits}
+            patches = [
+                Patch(commit=commits[sha], patch=''.join(lines[b + 2:e]))
+                for b, e, sha in zip(indices[:-1], indices[1:], shas)
+            ]
+            ethread.join()
+        finally:
+            if tfile is not None and os.path.exists(tfile.name):
+                os.remove(tfile.name)
 
         return patches
 

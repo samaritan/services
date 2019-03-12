@@ -56,10 +56,11 @@ class RepositoryService:
         return ModuleSchema(many=True).dump(modules).data
 
     @rpc
-    def get_patches(self, project, processes=os.cpu_count()):
+    def get_patches(self, project, commits, processes=os.cpu_count()):
         project = ProjectSchema().load(self.project_rpc.get(project)).data
+        commits = CommitSchema(many=True).load(commits).data
         repository = self._get_repository(project, processes)
-        patches = repository.get_patches()
+        patches = repository.get_patches(commits)
         return PatchSchema(many=True).dump(patches).data
 
     @rpc
