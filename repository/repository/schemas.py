@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields, post_load
 
-from .models import Project
+from .models import Commit, Project
 
 
 class ChangeSchema(Schema):
@@ -18,6 +18,10 @@ class CommitSchema(Schema):
     sha = fields.String()
     timestamp = fields.Integer()
     author = fields.Nested(DeveloperSchema)
+
+    @post_load
+    def make_commit(self, data):
+        return Commit(**data)
 
 
 class ChangesSchema(Schema):
