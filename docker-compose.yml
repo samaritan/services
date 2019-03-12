@@ -6,6 +6,7 @@ services:
       - "5672:5672"
     volumes:
       - ./configuration/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./configuration/enabled_plugins:/etc/rabbitmq/enabled_plugins
     deploy:
       mode: global
       placement:
