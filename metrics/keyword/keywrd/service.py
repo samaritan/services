@@ -4,6 +4,7 @@ import os
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
+from . import utilities
 from .exceptions import LanguageNotSupported
 from .keywrd import get_keywords
 from .schemas import KeywordSchema, PatchSchema, ProjectSchema
@@ -27,8 +28,12 @@ class KeywordService:
             raise LanguageNotSupported(f'{project.language} not supported')
         keywords = self.config['KEYWORDS'].get(project.language.lower())
 
-        patches = self.repository_rpc.get_patches(project.name, processes)
-        patches = PatchSchema(many=True).load(patches).data
+        keyword = list()
+        commits = self.repository_rpc.get_commits(project.name, processes)
+        for chunk in utilities.chunk(commits, size=round(len(commits) * 0.05)):
+            patches = self.repository_rpc.get_patches(project.name, chunk)
+            patches = PatchSchema(many=True).load(patches).data
+            keyword.extend(get_keywords(patches, keywords))
+            patches.clear()
 
-        keywords = get_keywords(patches, keywords)
-        return KeywordSchema(many=True).dump(keywords).data
+        return KeywordSchema(many=True).dump(keyword).data
