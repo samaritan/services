@@ -11,7 +11,7 @@ from .schemas import HunkSchema, PatchSchema, ProjectSchema
 logger = logging.getLogger(__name__)
 
 
-class KeywordService:
+class HunkService:
     name = 'hunk'
 
     config = Config()
