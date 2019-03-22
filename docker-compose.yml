@@ -190,22 +190,6 @@ services:
       placement:
         constraints:
           - node.role == manager
-  offender:
-    image: nuthan-db.se.rit.edu/samaritan-metrics-offender
-    depends_on:
-      - "rabbit"
-      - "repository"
-    environment:
-      RABBIT_PASSWORD: "guest"
-      RABBIT_HEARTBEAT: 600
-      RABBIT_USER: "guest"
-      RABBIT_HOST: "rabbit"
-      RABBIT_PORT: "5672"
-    deploy:
-      mode: global
-      placement:
-        constraints:
-          - node.role == manager
   keyword:
     image: nuthan-db.se.rit.edu/samaritan-metrics-keyword
     depends_on:
@@ -246,6 +230,38 @@ services:
       - "project"
       - "rabbit"
       - "understand"
+    environment:
+      RABBIT_PASSWORD: "guest"
+      RABBIT_HEARTBEAT: 600
+      RABBIT_USER: "guest"
+      RABBIT_HOST: "rabbit"
+      RABBIT_PORT: "5672"
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
+  offender:
+    image: nuthan-db.se.rit.edu/samaritan-metrics-offender
+    depends_on:
+      - "rabbit"
+      - "repository"
+    environment:
+      RABBIT_PASSWORD: "guest"
+      RABBIT_HEARTBEAT: 600
+      RABBIT_USER: "guest"
+      RABBIT_HOST: "rabbit"
+      RABBIT_PORT: "5672"
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
+  ownership:
+    image: nuthan-db.se.rit.edu/samaritan-metrics-ownership
+    depends_on:
+      - "rabbit"
+      - "repository"
     environment:
       RABBIT_PASSWORD: "guest"
       RABBIT_HEARTBEAT: 600
