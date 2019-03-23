@@ -80,8 +80,11 @@ class Repository:
         developers = None
 
         command = 'git log --no-merges --pretty=\'"%aN","%aE"\'| sort -u'
+
         ostream, ethread = self._run(command)
-        developers = [Developer(*row) for row in csv.reader(ostream)]
+        # TODO: See https://github.com/samaritan/services/issues/1 for context
+        #       on the hardcoded number of fields below.
+        developers = [Developer(*row[:2]) for row in csv.reader(ostream)]
         ethread.join()
 
         return developers
