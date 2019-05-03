@@ -37,9 +37,10 @@ class UnderstandService:
         logger.debug(project)
         project = ProjectSchema().load(self.project_rpc.get(project)).data
         path = self.repository_rpc.get_path(project.name)
-        udb = UDB(self._get_udbpath(project), project.language, path)
+        version = self.repository_rpc.get_version(project.name)
+        udb = UDB(self._get_udbpath(project, version), project.language, path)
         return MetricsSchema(many=True).dump(_get_metrics(udb, metrics)).data
 
-    def _get_udbpath(self, project):
-        name = f'{project.name}.udb'
+    def _get_udbpath(self, project, version):
+        name = f'{project.name}@{version}.udb'
         return os.path.join(self.config['UNDERSTAND_ROOT'], name)
