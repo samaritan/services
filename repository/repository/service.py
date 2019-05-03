@@ -69,6 +69,12 @@ class RepositoryService:
         repository = self._get_repository(project, processes)
         return repository.get_path()
 
+    @rpc
+    def get_version(self, project, processes=os.cpu_count()):
+        project = ProjectSchema().load(self.project_rpc.get(project)).data
+        repository = self._get_repository(project, processes)
+        return repository.get_version()
+
     def _get_path(self, project):
         return os.path.join(self.config['REPOSITORIES_ROOT'], project.name)
 
