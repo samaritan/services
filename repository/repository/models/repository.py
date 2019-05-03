@@ -40,19 +40,6 @@ class Repository:
         self._path = path
         self._processes = processes
 
-    def get_commits(self):
-        commits = None
-
-        command = 'git log --no-merges --pretty=\'"%H","%ct","%aN","%aE"\''
-        ostream, ethread = self._run(command)
-        commits = [
-            Commit(*row[:2], Developer(*row[2:4]))
-            for row in csv.reader(ostream)
-        ]
-        ethread.join()
-
-        return commits
-
     def get_changes(self):
         changeslist = list()
 
@@ -75,6 +62,19 @@ class Repository:
         ethread.join()
 
         return changeslist
+
+    def get_commits(self):
+        commits = None
+
+        command = 'git log --no-merges --pretty=\'"%H","%ct","%aN","%aE"\''
+        ostream, ethread = self._run(command)
+        commits = [
+            Commit(*row[:2], Developer(*row[2:4]))
+            for row in csv.reader(ostream)
+        ]
+        ethread.join()
+
+        return commits
 
     def get_developers(self):
         developers = None
@@ -140,6 +140,16 @@ class Repository:
 
     def get_path(self):
         return self._path
+
+    def get_version(self):
+        version = None
+
+        command = 'git log --no-merges -1 --pretty=%h'
+        ostream, ethread = self._run(command)
+        version = [line.strip('\n') for line in ostream][0]
+        ethread.join()
+
+        return version
 
     def _get_active_files(self):
         files = None
