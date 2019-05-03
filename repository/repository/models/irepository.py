@@ -17,5 +17,11 @@ class IRepository(interface.Interface):
     def get_modules():
         pass
 
+    def get_patches():
+        pass
+
     def get_path():
+        pass
+
+    def get_version():
         pass
