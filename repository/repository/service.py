@@ -1,12 +1,12 @@
 import logging
 import os
 
+from diskcache import Cache
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
-from .dependencies import Redis
 from .exceptions import NotCloned
-from .models import Repository
+from .models import Repository, RepositoryProxy
 from .schemas import ChangesSchema, CommitSchema, DeveloperSchema,        \
                      FileSchema, ModuleSchema, PatchSchema, ProjectSchema
 
@@ -17,7 +17,6 @@ class RepositoryService:
     name = 'repository'
 
     config = Config()
-    redis = Redis()
     project_rpc = RpcProxy('project')
 
     @rpc
@@ -82,4 +81,6 @@ class RepositoryService:
         path = self._get_path(project)
         if not os.path.exists(path):
             raise NotCloned('{} has not been cloned yet'.format(project.name))
-        return Repository(path, processes)
+        repository = Repository(path, processes)
+        cache = Cache(self.config['CACHE_ROOT'])
+        return RepositoryProxy(project, cache, repository)
