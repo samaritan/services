@@ -2,29 +2,12 @@ version: "3.7"
 services:
   # Backend Services
   rabbit:
-    image: rabbitmq:3
+    image: rabbitmq
     ports:
       - "5672:5672"
     volumes:
       - ./configuration/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
       - ./configuration/enabled_plugins:/etc/rabbitmq/enabled_plugins
-    deploy:
-      mode: global
-      placement:
-        constraints:
-          - node.role == manager
-  redis:
-    image: redis
-    command: [
-      "bash", "-c",
-      '
-        docker-entrypoint.sh
-        --requirepass password
-        --appendonly yes
-      '
-    ]
-    volumes:
-      - redis:/data
     deploy:
       mode: global
       placement:
@@ -49,22 +32,19 @@ services:
   repository:
     image: nuthan-db.se.rit.edu/samaritan-repository
     volumes:
-      - repositories:/samaritan/repositories
+      - /data/repositories:/samaritan/repositories
+      - /data/cache:/samaritan/cache
     depends_on:
       - "rabbit"
-      - "redis"
       - "project"
     environment:
       REPOSITORIES_ROOT: "/samaritan/repositories"
+      CACHE_ROOT: "/samaritan/cache"
       RABBIT_HOST: "rabbit"
       RABBIT_PORT: "5672"
       RABBIT_USER: "guest"
       RABBIT_PASSWORD: "guest"
       RABBIT_HEARTBEAT: 600
-      REDIS_HOST: "redis"
-      REDIS_PORT: "6379"
-      REDIS_INDEX: "11"
-      REDIS_PASSWORD: "password"
     deploy:
       mode: replicated
       replicas: 2
@@ -74,8 +54,8 @@ services:
   understand:
     image: nuthan-db.se.rit.edu/samaritan-understand
     volumes:
-      - repositories:/samaritan/repositories
-      - understand:/samaritan/understand
+      - /data/repositories:/samaritan/repositories
+      - /data/understand:/samaritan/understand
     depends_on:
       - "rabbit"
       - "project"
@@ -224,11 +204,10 @@ services:
           - node.role == manager
   loc:
     image: nuthan-db.se.rit.edu/samaritan-metrics-loc
-    volumes:
-      - repositories:/samaritan/repositories
     depends_on:
       - "rabbit"
       - "repository"
+      - "understand"
     environment:
       RABBIT_PASSWORD: "guest"
       RABBIT_HEARTBEAT: 600
@@ -289,10 +268,3 @@ services:
       placement:
         constraints:
           - node.role == manager
-volumes:
-  repositories:
-    external: true
-  redis:
-    external: true
-  understand:
-    external: true
