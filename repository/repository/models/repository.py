@@ -11,11 +11,13 @@ from zope.interface.declarations import implementer
 
 from . import irepository
 from .. import parsers, utilities
-from ..models import Change, Changes, Commit, Developer, File, Module, Patch
+from ..models import Change, Changes, Commit, Developer, File, Module, Move, \
+                     Moves, Patch
 
 _CHANGE_RE = re.compile(
     r'^(?P<insertions>(?:\d+|\-))\s+(?P<deletions>(?:\d+|\-))\s+(?P<path>.+)'
 )
+_MOVESPECIFICATION_RE = re.compile(r'^ rename (?P<specification>.*) \(\d+%\)$')
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +28,58 @@ def _get_changes(lines, commit):
         match = _CHANGE_RE.match(line.strip('\n'))
         changes.append(Change(**match.groupdict()))
     return Changes(commit=commit, changes=changes)
+
+
+def _get_indices(specification):
+    lbrace, arrow, rbrace = None, None, None
+    for (index, character) in enumerate(specification):
+        if character == '{':
+            lbrace = index
+        elif character == '}':
+            rbrace = index
+            break
+        elif character == '|':
+            arrow = index
+    return lbrace, arrow, rbrace
+
+
+def _get_components(specification):
+    specification = specification.replace(' => ', '|')
+    lbrace, arrow, rbrace = _get_indices(specification)
+
+    # Expected format of specification is afixed{avariable => bvariable}bfixed
+    afixed, avariable, bvariable, bfixed = [''] * 4
+    if lbrace is None and rbrace is None:
+        avariable = specification[0:arrow]
+        bvariable = specification[arrow + 1: len(specification)]
+    else:
+        afixed = specification[0:lbrace]
+        avariable = specification[lbrace + 1:arrow]
+        bvariable = specification[arrow + 1:rbrace]
+        bfixed = specification[rbrace + 1:len(specification)]
+    return afixed, avariable, bvariable, bfixed
+
+
+def _get_move(line):
+    move = None
+    match = _MOVESPECIFICATION_RE.match(line)
+    if match:
+        specification = match.groupdict().get('specification')
+        afixed, avariable, bvariable, bfixed = _get_components(specification)
+        source = '{}{}{}'.format(afixed, avariable, bfixed).replace('//', '/')
+        destination = '{}{}{}'.format(afixed, bvariable, bfixed) \
+                              .replace('//', '/')
+        move = Move(source=source, destination=destination)
+    return move
+
+
+def _get_moves(lines, commit):
+    moves = list()
+    for line in lines:
+        move = _get_move(line)
+        if move is not None:
+            moves.append(move)
+    return Moves(commit=commit, moves=moves)
 
 
 def _log_error(stream):
@@ -108,6 +162,29 @@ class Repository:
 
     def get_modules(self):
         return list({f.module for f in self.get_files()})
+
+    def get_moves(self):
+        moveslist = list()
+
+        commits = {c.sha: c for c in self.get_commits()}
+
+        command = 'git log -M100% --diff-filter=R --summary --pretty=%H'
+        ostream, ethread = self._run(command)
+
+        lines, indices, shas = parsers.GitLogParser.parse(ostream)
+
+        indices.append(len(lines))
+        arguments = [
+            (lines[b + 2:e], commits[sha])
+            for b, e, sha in zip(indices[:-1], indices[1:], shas)
+        ]
+
+        pool = eventlet.GreenPool()
+        for moves in pool.starmap(_get_moves, arguments):
+            moveslist.append(moves)
+        ethread.join()
+
+        return moveslist
 
     def get_patches(self, commits):
         patches = None

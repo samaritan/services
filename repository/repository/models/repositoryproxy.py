@@ -4,7 +4,7 @@ from zope.interface.declarations import implementer
 
 from . import irepository
 from ..schemas import ChangesSchema, CommitSchema, DeveloperSchema, \
-                      FileSchema, ModuleSchema
+                      FileSchema, ModuleSchema, MovesSchema
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +65,16 @@ class RepositoryProxy:
             modules = self._repository.get_modules()
             self._cache_set(item, modules, schema)
         return modules
+
+    def get_moves(self):
+        item = 'moves'
+        schema = MovesSchema(many=True)
+
+        moves = self._cache_get(item, schema)
+        if moves is None:
+            moves = self._repository.get_moves()
+            self._cache_set(item, moves, schema)
+        return moves
 
     def get_patches(self, commits):
         return self._repository.get_patches(commits)
