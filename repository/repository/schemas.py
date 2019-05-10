@@ -33,6 +33,16 @@ class ModuleSchema(Schema):
     path = fields.String()
 
 
+class MoveSchema(Schema):
+    source = fields.String()
+    destination = fields.String()
+
+
+class MovesSchema(Schema):
+    commit = fields.Nested(CommitSchema)
+    moves = fields.Nested(MoveSchema, many=True)
+
+
 class FileSchema(Schema):
     path = fields.String()
     is_active = fields.Boolean()

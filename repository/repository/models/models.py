@@ -48,6 +48,22 @@ class Module:
 
 
 @dataclasses.dataclass(frozen=True)
+class Move:
+    __slots__ = ['source', 'destination']
+
+    source: str
+    destination: str
+
+
+@dataclasses.dataclass(frozen=True)
+class Moves:
+    __slots__ = ['commit', 'moves']
+
+    commit: Commit
+    moves: List[Move]
+
+
+@dataclasses.dataclass(frozen=True)
 class File:
     __slots__ = ['path', 'module', 'is_active']
 
