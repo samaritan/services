@@ -18,63 +18,45 @@ class RepositoryProxy:
 
     def get_changes(self):
         item = 'changes'
-        schema = ChangesSchema(many=True)
+        schema = ChangesSchema()
 
-        changes = self._cache_get(item, schema)
-        if changes is None:
-            changes = self._repository.get_changes()
-            self._cache_set(item, changes, schema)
-        return changes
+        for value in self._get(item, schema, self._repository.get_changes):
+            yield value
 
     def get_commits(self):
         item = 'commits'
-        schema = CommitSchema(many=True)
+        schema = CommitSchema()
 
-        commits = self._cache_get(item, schema)
-        if commits is None:
-            commits = self._repository.get_commits()
-            self._cache_set(item, commits, schema)
-        return commits
+        for value in self._get(item, schema, self._repository.get_commits):
+            yield value
 
     def get_developers(self):
         item = 'developers'
-        schema = DeveloperSchema(many=True)
+        schema = DeveloperSchema()
 
-        developers = self._cache_get(item, schema)
-        if developers is None:
-            developers = self._repository.get_developers()
-            self._cache_set(item, developers, schema)
-        return developers
+        for value in self._get(item, schema, self._repository.get_developers):
+            yield value
 
     def get_files(self):
         item = 'files'
-        schema = FileSchema(many=True)
+        schema = FileSchema()
 
-        files = self._cache_get(item, schema)
-        if files is None:
-            files = self._repository.get_files()
-            self._cache_set(item, files, schema)
-        return files
+        for value in self._get(item, schema, self._repository.get_files):
+            yield value
 
     def get_modules(self):
         item = 'modules'
-        schema = ModuleSchema(many=True)
+        schema = ModuleSchema()
 
-        modules = self._cache_get(item, schema)
-        if modules is None:
-            modules = self._repository.get_modules()
-            self._cache_set(item, modules, schema)
-        return modules
+        for value in self._get(item, schema, self._repository.get_modules):
+            yield value
 
     def get_moves(self):
         item = 'moves'
-        schema = MovesSchema(many=True)
+        schema = MovesSchema()
 
-        moves = self._cache_get(item, schema)
-        if moves is None:
-            moves = self._repository.get_moves()
-            self._cache_set(item, moves, schema)
-        return moves
+        for value in self._get(item, schema, self._repository.get_moves):
+            yield value
 
     def get_patches(self, commits):
         return self._repository.get_patches(commits)
@@ -85,17 +67,19 @@ class RepositoryProxy:
     def get_version(self):
         return self._repository.get_version()
 
-    def _cache_get(self, item, schema):
-        value = self._cache.get(self._get_key(item))
-        if value is not None:
+    def _get(self, item, schema, getter):
+        key = self._get_key(item)
+        if key in self._cache:
             logger.debug('%s for %s in cache', item, self._project.name)
-            value = schema.load(value).data
+            for value in self._cache.get(key):
+                yield schema.load(value).data
         else:
             logger.debug('%s for %s not in cache', item, self._project.name)
-        return value
+            valuelist = list()
+            for value in getter():
+                yield value
+                valuelist.append(value)
+            self._cache.set(key, schema.dump(valuelist, many=True).data)
 
     def _get_key(self, item):
         return f'{self._project.name}_{self._repository.get_version()}_{item}'
-
-    def _cache_set(self, item, value, schema):
-        self._cache.set(self._get_key(item), schema.dump(value).data)

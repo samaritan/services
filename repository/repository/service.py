@@ -24,42 +24,42 @@ class RepositoryService:
     def get_changes(self, project, processes=os.cpu_count()):
         project = ProjectSchema().load(self.project_rpc.get(project)).data
         repository = self._get_repository(project, processes)
-        changes = repository.get_changes()
+        changes = list(repository.get_changes())
         return ChangesSchema(many=True).dump(changes).data
 
     @rpc
     def get_commits(self, project, processes=os.cpu_count()):
         project = ProjectSchema().load(self.project_rpc.get(project)).data
         repository = self._get_repository(project, processes)
-        commits = repository.get_commits()
+        commits = list(repository.get_commits())
         return CommitSchema(many=True).dump(commits).data
 
     @rpc
     def get_developers(self, project, processes=os.cpu_count()):
         project = ProjectSchema().load(self.project_rpc.get(project)).data
         repository = self._get_repository(project, processes)
-        developers = repository.get_developers()
+        developers = list(repository.get_developers())
         return DeveloperSchema(many=True).dump(developers).data
 
     @rpc
     def get_files(self, project, processes=os.cpu_count()):
         project = ProjectSchema().load(self.project_rpc.get(project)).data
         repository = self._get_repository(project, processes)
-        files = repository.get_files()
+        files = list(repository.get_files())
         return FileSchema(many=True).dump(files).data
 
     @rpc
     def get_modules(self, project, processes=os.cpu_count()):
         project = ProjectSchema().load(self.project_rpc.get(project)).data
         repository = self._get_repository(project, processes)
-        modules = repository.get_modules()
+        modules = list(repository.get_modules())
         return ModuleSchema(many=True).dump(modules).data
 
     @rpc
     def get_moves(self, project, processes=os.cpu_count()):
         project = ProjectSchema().load(self.project_rpc.get(project)).data
         repository = self._get_repository(project, processes)
-        moves = repository.get_moves()
+        moves = list(repository.get_moves())
         return MovesSchema(many=True).dump(moves).data
 
     @rpc
@@ -67,7 +67,7 @@ class RepositoryService:
         project = ProjectSchema().load(self.project_rpc.get(project)).data
         commits = CommitSchema(many=True).load(commits).data
         repository = self._get_repository(project, processes)
-        patches = repository.get_patches(commits)
+        patches = list(repository.get_patches(commits))
         return PatchSchema(many=True).dump(patches).data
 
     @rpc

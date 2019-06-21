@@ -5,8 +5,6 @@ import re
 import tempfile
 import threading
 
-import eventlet
-
 from zope.interface.declarations import implementer
 
 from . import irepository
@@ -95,100 +93,64 @@ class Repository:
         self._processes = processes
 
     def get_changes(self):
-        changeslist = list()
-
         commits = {c.sha: c for c in self.get_commits()}
 
-        command = 'git log --no-merges --no-renames --numstat --pretty=%H'
+        command = 'git log --no-merges --no-renames --numstat --pretty=*%n%H'
         ostream, ethread = self._run(command)
 
-        lines, indices, shas = parsers.GitLogParser.parse(ostream)
+        for sha, lines in parsers.GitLogParser.parse(ostream):
+            yield _get_changes(lines, commits[sha])
 
-        indices.append(len(lines))
-        arguments = [
-            (lines[b + 2:e], commits[sha])
-            for b, e, sha in zip(indices[:-1], indices[1:], shas)
-        ]
-
-        pool = eventlet.GreenPool()
-        for changes in pool.starmap(_get_changes, arguments):
-            changeslist.append(changes)
         ethread.join()
-
-        return changeslist
 
     def get_commits(self):
-        commits = None
-
         command = 'git log --no-merges --pretty=\'"%H","%ct","%aN","%aE"\''
         ostream, ethread = self._run(command)
-        commits = [
-            Commit(*row[:2], Developer(*row[2:4]))
-            for row in csv.reader(ostream)
-        ]
+        for row in csv.reader(ostream):
+            yield Commit(*row[:2], Developer(*row[2:4]))
         ethread.join()
 
-        return commits
-
     def get_developers(self):
-        developers = None
-
         command = 'git log --no-merges --pretty=\'"%aN","%aE"\'| sort -u'
 
         ostream, ethread = self._run(command)
         # TODO: See https://github.com/samaritan/services/issues/1 for context
         #       on the hardcoded number of fields below.
-        developers = [Developer(*row[:2]) for row in csv.reader(ostream)]
+        for row in csv.reader(ostream):
+            yield Developer(*row[:2])
         ethread.join()
 
-        return developers
-
     def get_files(self):
-        files = None
-
         active_files = self._get_active_files()
 
         command = 'git log --no-merges --pretty= --name-only | sort -u'
         ostream, ethread = self._run(command)
-        files = list()
         for path in ostream:
             path = path.strip('\n')
             mpath = os.path.dirname(path)                        \
                     if os.path.dirname(path) != '' else '(root)'
-            files.append(File(path, path in active_files, Module(mpath)))
+            yield File(path, path in active_files, Module(mpath))
         ethread.join()
-
-        return files
 
     def get_modules(self):
-        return list({f.module for f in self.get_files()})
+        modules = set()
+        for file_ in self.get_files():
+            if file_.module not in modules:
+                yield file_.module
+                modules.add(file_.module)
 
     def get_moves(self):
-        moveslist = list()
-
         commits = {c.sha: c for c in self.get_commits()}
 
-        command = 'git log -M100% --diff-filter=R --summary --pretty=%H'
+        command = 'git log -M100% --diff-filter=R --summary --pretty=*%n%H'
         ostream, ethread = self._run(command)
 
-        lines, indices, shas = parsers.GitLogParser.parse(ostream)
+        for sha, lines in parsers.GitLogParser.parse(ostream):
+            yield _get_moves(lines, commits[sha])
 
-        indices.append(len(lines))
-        arguments = [
-            (lines[b + 2:e], commits[sha])
-            for b, e, sha in zip(indices[:-1], indices[1:], shas)
-        ]
-
-        pool = eventlet.GreenPool()
-        for moves in pool.starmap(_get_moves, arguments):
-            moveslist.append(moves)
         ethread.join()
 
-        return moveslist
-
     def get_patches(self, commits):
-        patches = None
-
         tfile = None
         try:
             # Workaround for limit on command line arguments
@@ -198,22 +160,15 @@ class Repository:
             tfile.close()
 
             command = f'cat {tfile.name} | '                            \
-                       'xargs git show --no-merges --patch --pretty=%H'
+                       'xargs git show --no-merges --patch --pretty=*%n%H'
             ostream, ethread = self._run(command)
-            lines, indices, shas = parsers.GitLogParser.parse(ostream)
-
-            indices.append(len(lines))
             commits = {c.sha: c for c in commits}
-            patches = [
-                Patch(commit=commits[sha], patch=''.join(lines[b + 2:e]))
-                for b, e, sha in zip(indices[:-1], indices[1:], shas)
-            ]
+            for sha, lines in parsers.GitLogParser.parse(ostream):
+                yield Patch(commit=commits[sha], patch='\n'.join(lines))
             ethread.join()
         finally:
             if tfile is not None and os.path.exists(tfile.name):
                 os.remove(tfile.name)
-
-        return patches
 
     def get_path(self):
         return self._path
