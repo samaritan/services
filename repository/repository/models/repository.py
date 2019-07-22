@@ -20,6 +20,15 @@ _MOVESPECIFICATION_RE = re.compile(r'^ rename (?P<specification>.*) \(\d+%\)$')
 logger = logging.getLogger(__name__)
 
 
+def _handle_exit(process, stream):
+    process.wait()
+    logger.debug('%s returned %d', process.args, process.returncode)
+
+    error = stream.read()
+    if error != '':
+        logger.error(error)
+
+
 def _get_changes(lines, commit):
     changes = list()
     for line in lines:
@@ -78,12 +87,6 @@ def _get_moves(lines, commit):
         if move is not None:
             moves.append(move)
     return Moves(commit=commit, moves=moves)
-
-
-def _log_error(stream):
-    error = stream.read()
-    if error != '':
-        logger.error(error)
 
 
 @implementer(irepository.IRepository)
@@ -194,9 +197,11 @@ class Repository:
         return files
 
     def _run(self, command):
-        ostream, estream = utilities.run(command, work_dir=self._path)
+        process, ostream, estream = utilities.run(command, work_dir=self._path)
 
-        thread = threading.Thread(target=_log_error, args=(estream,))
+        thread = threading.Thread(
+            target=_handle_exit, args=(process, estream,)
+        )
         thread.start()
 
         return ostream, thread

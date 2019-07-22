@@ -23,4 +23,4 @@ def run(command, work_dir=None):
     ostream = io.TextIOWrapper(process.stdout, errors='replace')
     estream = io.TextIOWrapper(process.stderr, errors='replace')
 
-    return ostream, estream
+    return process, ostream, estream
