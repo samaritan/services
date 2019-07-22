@@ -1,0 +1,10 @@
+---
+changes: git log --no-merges --no-renames --numstat --pretty=*%n%H
+commits: git log --no-merges --pretty='"%H","%ct","%aN","%aE"'
+developers: git log --no-merges --pretty='"%aN","%aE"'| sort -u
+files:
+  all: git log --no-merges --pretty= --name-only | sort -u
+  active: git ls-files
+moves: git log -M100% --diff-filter=R --summary --pretty=*%n%H
+patches: cat {filename} | xargs git show --no-merges --patch --pretty=*%n%H
+version: git log --no-merges -1 --pretty=%h
