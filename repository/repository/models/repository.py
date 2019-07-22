@@ -3,12 +3,11 @@ import logging
 import os
 import re
 import tempfile
-import threading
 
 from zope.interface.declarations import implementer
 
 from . import irepository
-from .. import parsers, utilities
+from .. import parsers, runner
 from ..models import Change, Changes, Commit, Developer, File, Module, Move, \
                      Moves, Patch
 
@@ -18,15 +17,6 @@ _CHANGE_RE = re.compile(
 _MOVESPECIFICATION_RE = re.compile(r'^ rename (?P<specification>.*) \(\d+%\)$')
 
 logger = logging.getLogger(__name__)
-
-
-def _handle_exit(process, stream):
-    process.wait()
-    logger.debug('%s returned %d', process.args, process.returncode)
-
-    error = stream.read()
-    if error != '':
-        logger.error(error)
 
 
 def _get_changes(lines, commit):
@@ -94,12 +84,13 @@ class Repository:
     def __init__(self, path, processes):
         self._path = path
         self._processes = processes
+        self._runner = runner.Runner(path)
 
     def get_changes(self):
         commits = {c.sha: c for c in self.get_commits()}
 
         command = 'git log --no-merges --no-renames --numstat --pretty=*%n%H'
-        ostream, ethread = self._run(command)
+        ostream, ethread = self._runner.run(command)
 
         for sha, lines in parsers.GitLogParser.parse(ostream):
             yield _get_changes(lines, commits[sha])
@@ -108,7 +99,7 @@ class Repository:
 
     def get_commits(self):
         command = 'git log --no-merges --pretty=\'"%H","%ct","%aN","%aE"\''
-        ostream, ethread = self._run(command)
+        ostream, ethread = self._runner.run(command)
         for row in csv.reader(ostream):
             yield Commit(*row[:2], Developer(*row[2:4]))
         ethread.join()
@@ -116,7 +107,7 @@ class Repository:
     def get_developers(self):
         command = 'git log --no-merges --pretty=\'"%aN","%aE"\'| sort -u'
 
-        ostream, ethread = self._run(command)
+        ostream, ethread = self._runner.run(command)
         # TODO: See https://github.com/samaritan/services/issues/1 for context
         #       on the hardcoded number of fields below.
         for row in csv.reader(ostream):
@@ -127,7 +118,7 @@ class Repository:
         active_files = self._get_active_files()
 
         command = 'git log --no-merges --pretty= --name-only | sort -u'
-        ostream, ethread = self._run(command)
+        ostream, ethread = self._runner.run(command)
         for path in ostream:
             path = path.strip('\n')
             mpath = os.path.dirname(path)                        \
@@ -146,7 +137,7 @@ class Repository:
         commits = {c.sha: c for c in self.get_commits()}
 
         command = 'git log -M100% --diff-filter=R --summary --pretty=*%n%H'
-        ostream, ethread = self._run(command)
+        ostream, ethread = self._runner.run(command)
 
         for sha, lines in parsers.GitLogParser.parse(ostream):
             yield _get_moves(lines, commits[sha])
@@ -164,7 +155,7 @@ class Repository:
 
             command = f'cat {tfile.name} | '                            \
                        'xargs git show --no-merges --patch --pretty=*%n%H'
-            ostream, ethread = self._run(command)
+            ostream, ethread = self._runner.run(command)
             commits = {c.sha: c for c in commits}
             for sha, lines in parsers.GitLogParser.parse(ostream):
                 yield Patch(commit=commits[sha], patch='\n'.join(lines))
@@ -180,7 +171,7 @@ class Repository:
         version = None
 
         command = 'git log --no-merges -1 --pretty=%h'
-        ostream, ethread = self._run(command)
+        ostream, ethread = self._runner.run(command)
         version = [line.strip('\n') for line in ostream][0]
         ethread.join()
 
@@ -190,18 +181,8 @@ class Repository:
         files = None
 
         command = 'git ls-files'
-        ostream, ethread = self._run(command)
+        ostream, ethread = self._runner.run(command)
         files = {path.strip('\n') for path in ostream}
         ethread.join()
 
         return files
-
-    def _run(self, command):
-        process, ostream, estream = utilities.run(command, work_dir=self._path)
-
-        thread = threading.Thread(
-            target=_handle_exit, args=(process, estream,)
-        )
-        thread.start()
-
-        return ostream, thread
