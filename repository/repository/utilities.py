@@ -4,6 +4,12 @@ import os
 import shlex
 import subprocess
 
+from yaml import load
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
+
 
 logger = logging.getLogger(__name__)
 
@@ -24,3 +30,10 @@ def run(command, work_dir=None):
     estream = io.TextIOWrapper(process.stderr, errors='replace')
 
     return process, ostream, estream
+
+
+class Yaml:
+    @staticmethod
+    def read(path):
+        with open(path) as file_:
+            return load(file_, Loader=Loader)
