@@ -8,6 +8,7 @@ from zope.interface.declarations import implementer
 
 from . import irepository
 from .. import parsers, runner
+from ..commands import COMMANDS
 from ..models import Change, Changes, Commit, Developer, File, Module, Move, \
                      Moves, Patch
 
@@ -89,7 +90,7 @@ class Repository:
     def get_changes(self):
         commits = {c.sha: c for c in self.get_commits()}
 
-        command = 'git log --no-merges --no-renames --numstat --pretty=*%n%H'
+        command = COMMANDS['changes']
         ostream, ethread = self._runner.run(command)
 
         for sha, lines in parsers.GitLogParser.parse(ostream):
@@ -98,14 +99,14 @@ class Repository:
         ethread.join()
 
     def get_commits(self):
-        command = 'git log --no-merges --pretty=\'"%H","%ct","%aN","%aE"\''
+        command = COMMANDS['commits']
         ostream, ethread = self._runner.run(command)
         for row in csv.reader(ostream):
             yield Commit(*row[:2], Developer(*row[2:4]))
         ethread.join()
 
     def get_developers(self):
-        command = 'git log --no-merges --pretty=\'"%aN","%aE"\'| sort -u'
+        command = COMMANDS['developers']
 
         ostream, ethread = self._runner.run(command)
         # TODO: See https://github.com/samaritan/services/issues/1 for context
@@ -117,7 +118,7 @@ class Repository:
     def get_files(self):
         active_files = self._get_active_files()
 
-        command = 'git log --no-merges --pretty= --name-only | sort -u'
+        command = COMMANDS['files']['all']
         ostream, ethread = self._runner.run(command)
         for path in ostream:
             path = path.strip('\n')
@@ -136,7 +137,7 @@ class Repository:
     def get_moves(self):
         commits = {c.sha: c for c in self.get_commits()}
 
-        command = 'git log -M100% --diff-filter=R --summary --pretty=*%n%H'
+        command = COMMANDS['moves']
         ostream, ethread = self._runner.run(command)
 
         for sha, lines in parsers.GitLogParser.parse(ostream):
@@ -153,8 +154,7 @@ class Repository:
                 tfile.write(f'{commit.sha}\n')
             tfile.close()
 
-            command = f'cat {tfile.name} | '                            \
-                       'xargs git show --no-merges --patch --pretty=*%n%H'
+            command = COMMANDS['commits'].format(filename=tfile.name)
             ostream, ethread = self._runner.run(command)
             commits = {c.sha: c for c in commits}
             for sha, lines in parsers.GitLogParser.parse(ostream):
@@ -170,7 +170,7 @@ class Repository:
     def get_version(self):
         version = None
 
-        command = 'git log --no-merges -1 --pretty=%h'
+        command = COMMANDS['version']
         ostream, ethread = self._runner.run(command)
         version = [line.strip('\n') for line in ostream][0]
         ethread.join()
@@ -180,7 +180,7 @@ class Repository:
     def _get_active_files(self):
         files = None
 
-        command = 'git ls-files'
+        command = COMMANDS['files']['active']
         ostream, ethread = self._runner.run(command)
         files = {path.strip('\n') for path in ostream}
         ethread.join()
