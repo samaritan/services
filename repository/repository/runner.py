@@ -1,3 +1,4 @@
+import io
 import logging
 import threading
 
@@ -20,7 +21,10 @@ class Runner:
         self._work_dir = work_dir
 
     def run(self, command, key=None):
-        process, ostream, estream = utilities.run(command, self._work_dir)
+        process = utilities.run(command, self._work_dir)
+
+        ostream = io.TextIOWrapper(process.stdout, errors='replace')
+        estream = io.TextIOWrapper(process.stderr, errors='replace')
 
         thread = threading.Thread(target=_exit, args=(process, estream,))
         thread.start()
