@@ -6,7 +6,7 @@ from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
 from .exceptions import NotCloned
-from .models import Repository, RepositoryProxy
+from .models import Repository
 from .runner import Runner
 from .schemas import ChangesSchema, CommitSchema, DeveloperSchema,       \
                      FileSchema, ModuleSchema, MovesSchema, PatchSchema, \
@@ -90,6 +90,6 @@ class RepositoryService:
         path = self._get_path(project)
         if not os.path.exists(path):
             raise NotCloned('{} has not been cloned yet'.format(project.name))
-        repository = Repository(path, project, Runner(path))
-        cache = Cache(self.config['CACHE_ROOT'])
-        return RepositoryProxy(project, cache, repository)
+        runner = Runner(path, Cache(self.config['CACHE_ROOT']))
+        repository = Repository(path, project, runner)
+        return repository

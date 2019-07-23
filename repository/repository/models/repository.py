@@ -80,6 +80,11 @@ def _get_moves(lines, commit):
     return Moves(commit=commit, moves=moves)
 
 
+def _handle_exit(thread):
+    if thread:
+        thread.join()
+
+
 @implementer(irepository.IRepository)
 class Repository:
     def __init__(self, path, project, runner):
@@ -95,25 +100,23 @@ class Repository:
 
         for sha, lines in parsers.GitLogParser.parse(ostream):
             yield _get_changes(lines, commits[sha])
-
-        ethread.join()
+        _handle_exit(ethread)
 
     def get_commits(self):
         key, command = self._get_key('commits'), COMMANDS['commits']
         ostream, ethread = self._runner.run(command, key=key)
         for row in csv.reader(ostream):
             yield Commit(*row[:2], Developer(*row[2:4]))
-        ethread.join()
+        _handle_exit(ethread)
 
     def get_developers(self):
         key, command = self._get_key('developers'), COMMANDS['developers']
-
         ostream, ethread = self._runner.run(command, key=key)
         # TODO: See https://github.com/samaritan/services/issues/1 for context
         #       on the hardcoded number of fields below.
         for row in csv.reader(ostream):
             yield Developer(*row[:2])
-        ethread.join()
+        _handle_exit(ethread)
 
     def get_files(self):
         active_files = self._get_active_files()
@@ -125,7 +128,7 @@ class Repository:
             mpath = os.path.dirname(path)                        \
                     if os.path.dirname(path) != '' else '(root)'
             yield File(path, path in active_files, Module(mpath))
-        ethread.join()
+        _handle_exit(ethread)
 
     def get_modules(self):
         modules = set()
@@ -143,7 +146,7 @@ class Repository:
         for sha, lines in parsers.GitLogParser.parse(ostream):
             yield _get_moves(lines, commits[sha])
 
-        ethread.join()
+        _handle_exit(ethread)
 
     def get_patches(self, commits):
         tfile = None
@@ -159,7 +162,7 @@ class Repository:
             commits = {c.sha: c for c in commits}
             for sha, lines in parsers.GitLogParser.parse(ostream):
                 yield Patch(commit=commits[sha], patch='\n'.join(lines))
-            ethread.join()
+            _handle_exit(ethread)
         finally:
             if tfile is not None and os.path.exists(tfile.name):
                 os.remove(tfile.name)
@@ -173,7 +176,7 @@ class Repository:
         command = COMMANDS['version']
         ostream, ethread = self._runner.run(command)
         version = [line.strip('\n') for line in ostream][0]
-        ethread.join()
+        _handle_exit(ethread)
 
         return version
 
@@ -184,7 +187,7 @@ class Repository:
         command = COMMANDS['files']['active']
         ostream, ethread = self._runner.run(command, key=key)
         files = {path.strip('\n') for path in ostream}
-        ethread.join()
+        _handle_exit(ethread)
 
         return files
 
