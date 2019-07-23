@@ -19,8 +19,9 @@ class Runner:
     def __init__(self, work_dir):
         self._work_dir = work_dir
 
-    def run(self, command):
+    def run(self, command, key=None):
         process, ostream, estream = utilities.run(command, self._work_dir)
+
         thread = threading.Thread(target=_exit, args=(process, estream,))
         thread.start()
         return ostream, thread

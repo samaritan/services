@@ -82,16 +82,17 @@ def _get_moves(lines, commit):
 
 @implementer(irepository.IRepository)
 class Repository:
-    def __init__(self, path, processes):
+    def __init__(self, path, project, processes):
         self._path = path
+        self._project = project
         self._processes = processes
         self._runner = runner.Runner(path)
 
     def get_changes(self):
         commits = {c.sha: c for c in self.get_commits()}
 
-        command = COMMANDS['changes']
-        ostream, ethread = self._runner.run(command)
+        key, command = self._get_key('changes'), COMMANDS['changes']
+        ostream, ethread = self._runner.run(command, key=key)
 
         for sha, lines in parsers.GitLogParser.parse(ostream):
             yield _get_changes(lines, commits[sha])
@@ -99,16 +100,16 @@ class Repository:
         ethread.join()
 
     def get_commits(self):
-        command = COMMANDS['commits']
-        ostream, ethread = self._runner.run(command)
+        key, command = self._get_key('commits'), COMMANDS['commits']
+        ostream, ethread = self._runner.run(command, key=key)
         for row in csv.reader(ostream):
             yield Commit(*row[:2], Developer(*row[2:4]))
         ethread.join()
 
     def get_developers(self):
-        command = COMMANDS['developers']
+        key, command = self._get_key('developers'), COMMANDS['developers']
 
-        ostream, ethread = self._runner.run(command)
+        ostream, ethread = self._runner.run(command, key=key)
         # TODO: See https://github.com/samaritan/services/issues/1 for context
         #       on the hardcoded number of fields below.
         for row in csv.reader(ostream):
@@ -118,8 +119,8 @@ class Repository:
     def get_files(self):
         active_files = self._get_active_files()
 
-        command = COMMANDS['files']['all']
-        ostream, ethread = self._runner.run(command)
+        key, command = self._get_key('files_all'), COMMANDS['files']['all']
+        ostream, ethread = self._runner.run(command, key=key)
         for path in ostream:
             path = path.strip('\n')
             mpath = os.path.dirname(path)                        \
@@ -137,8 +138,8 @@ class Repository:
     def get_moves(self):
         commits = {c.sha: c for c in self.get_commits()}
 
-        command = COMMANDS['moves']
-        ostream, ethread = self._runner.run(command)
+        key, command = self._get_key('moves'), COMMANDS['moves']
+        ostream, ethread = self._runner.run(command, key=key)
 
         for sha, lines in parsers.GitLogParser.parse(ostream):
             yield _get_moves(lines, commits[sha])
@@ -154,7 +155,7 @@ class Repository:
                 tfile.write(f'{commit.sha}\n')
             tfile.close()
 
-            command = COMMANDS['commits'].format(filename=tfile.name)
+            command = COMMANDS['patches'].format(filename=tfile.name)
             ostream, ethread = self._runner.run(command)
             commits = {c.sha: c for c in commits}
             for sha, lines in parsers.GitLogParser.parse(ostream):
@@ -180,9 +181,13 @@ class Repository:
     def _get_active_files(self):
         files = None
 
+        key = self._get_key('files_active')
         command = COMMANDS['files']['active']
-        ostream, ethread = self._runner.run(command)
+        ostream, ethread = self._runner.run(command, key=key)
         files = {path.strip('\n') for path in ostream}
         ethread.join()
 
         return files
+
+    def _get_key(self, item):
+        return f'{self._project.name}_{self.get_version()}_{item}'
