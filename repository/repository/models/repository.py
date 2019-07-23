@@ -82,10 +82,9 @@ def _get_moves(lines, commit):
 
 @implementer(irepository.IRepository)
 class Repository:
-    def __init__(self, path, project, processes):
+    def __init__(self, path, project):
         self._path = path
         self._project = project
-        self._processes = processes
         self._runner = runner.Runner(path)
 
     def get_changes(self):

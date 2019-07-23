@@ -89,6 +89,6 @@ class RepositoryService:
         path = self._get_path(project)
         if not os.path.exists(path):
             raise NotCloned('{} has not been cloned yet'.format(project.name))
-        repository = Repository(path, project, processes)
+        repository = Repository(path, project)
         cache = Cache(self.config['CACHE_ROOT'])
         return RepositoryProxy(project, cache, repository)
