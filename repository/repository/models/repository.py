@@ -7,7 +7,7 @@ import tempfile
 from zope.interface.declarations import implementer
 
 from . import irepository
-from .. import parsers, runner
+from .. import parsers
 from ..commands import COMMANDS
 from ..models import Change, Changes, Commit, Developer, File, Module, Move, \
                      Moves, Patch
@@ -82,10 +82,10 @@ def _get_moves(lines, commit):
 
 @implementer(irepository.IRepository)
 class Repository:
-    def __init__(self, path, project):
+    def __init__(self, path, project, runner):
         self._path = path
         self._project = project
-        self._runner = runner.Runner(path)
+        self._runner = runner
 
     def get_changes(self):
         commits = {c.sha: c for c in self.get_commits()}
