@@ -1,6 +1,8 @@
 import io
 import logging
 
+from diskcache import Lock
+
 logger = logging.getLogger(__name__)
 
 
@@ -21,5 +23,6 @@ class Cacheable(io.TextIOWrapper):
         return line
 
     def _persist(self):
-        self._cache.set(self._key, ''.join(self._data))
+        with Lock(self._cache, f'{self._key}_lock'):
+            self._cache.set(self._key, ''.join(self._data))
         logger.debug('%s cached', self._key)
