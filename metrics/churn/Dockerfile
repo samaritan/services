@@ -15,5 +15,4 @@ COPY config.yml .
 COPY churn churn/
 COPY run.sh .
 RUN chmod +x run.sh
-EXPOSE 50051
 CMD . /samaritan/services/metrics/churn/run.sh
