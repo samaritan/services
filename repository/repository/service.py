@@ -1,10 +1,10 @@
 import logging
 import os
 
-from diskcache import Cache
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
+from .cache import Cache
 from .exceptions import NotCloned
 from .models import Repository
 from .runner import Runner
@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 class RepositoryService:
     name = 'repository'
 
+    cache = Cache()
     config = Config()
     project_rpc = RpcProxy('project')
 
@@ -90,6 +91,6 @@ class RepositoryService:
         path = self._get_path(project)
         if not os.path.exists(path):
             raise NotCloned('{} has not been cloned yet'.format(project.name))
-        runner = Runner(path, Cache(self.config['CACHE_ROOT']))
+        runner = Runner(path, self.cache)
         repository = Repository(path, project, runner)
         return repository
