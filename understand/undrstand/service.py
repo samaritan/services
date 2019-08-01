@@ -1,5 +1,4 @@
 import logging
-import os
 
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
@@ -36,11 +35,13 @@ class UnderstandService:
     def get_metrics(self, project, metrics):
         logger.debug(project)
         project = ProjectSchema().load(self.project_rpc.get(project)).data
-        path = self.repository_rpc.get_path(project.name)
-        version = self.repository_rpc.get_version(project.name)
-        udb = UDB(self._get_udbpath(project, version), project.language, path)
+        udb = self._get_udb(project)
         return MetricsSchema(many=True).dump(_get_metrics(udb, metrics)).data
 
-    def _get_udbpath(self, project, version):
+    def _get_udb(self, project):
+        path = self.repository_rpc.get_path(project.name)
+        version = self.repository_rpc.get_version(project.name)
         name = f'{project.name}@{version}.udb'
-        return os.path.join(self.config['UNDERSTAND_ROOT'], name)
+        root = self.config['UNDERSTAND_ROOT']
+        udb = UDB(root, name, project.language, path)
+        return udb

@@ -1,6 +1,7 @@
 import contextlib
 import logging
 import os
+import shutil
 
 import understand
 
@@ -54,8 +55,9 @@ def _open_udb(path):
 
 
 class UDB:
-    def __init__(self, path, source_language, source_path):
-        self._path = path
+    def __init__(self, root, name, source_language, source_path):
+        self._root = root
+        self._name = name
         self._source_language = 'c++' if source_language == 'c' \
                                  else source_language
         self._source_path = source_path
@@ -64,33 +66,37 @@ class UDB:
         if not self.exists:
             self.create()
 
-        command = f'und -quiet analyze {self._path}'
+        command = f'und -quiet analyze {self._name}'
         _ = self._get_output(command)
+        self._move()
 
     def create(self):
         if self.exists:
             return
 
         command = f'und -quiet create -languages {self._source_language} ' \
-                  f'{self._path}'
+                  f'{self._name}'
         _ = self._get_output(command)
-        logger.debug('%s created', self._path)
+        logger.debug('%s created', self._name)
 
-        command = f'und -quiet add {self._source_path} {self._path}'
+        command = f'und -quiet settings -AddMode Relative {self._name}'
         _ = self._get_output(command)
-        logger.debug('%s added to %s', self._source_path, self._path)
+        command = f'und -quiet add . {self._name}'
+        _ = self._get_output(command)
+        logger.debug('%s added to %s', self._source_path, self._name)
 
     def get_metrics(self, metrics):
         if not self.exists:
             self.analyze()
 
         values = list()
-        with _open_udb(self._path) as udb:
+        with _open_udb(self._udb_path) as udb:
             for entity in udb.ents('file,function,procedure,method'):
                 uid = entity.id()
                 name = _get_name(entity)
                 type_ = _get_type(entity)
                 path = name if type_ == 'file' else _get_file(entity)
+                path = path.replace('RELATIVE:/', '') if path else path
                 _entity = (uid, name, type_, path)
 
                 values.append((_entity, entity.metric(metrics)))
@@ -98,10 +104,20 @@ class UDB:
 
     @property
     def exists(self):
-        return os.path.exists(self._path)
+        return os.path.exists(self._udb_path)
+
+    @property
+    def _udb_path(self):
+        return os.path.join(self._root, self._name)
 
     def _get_output(self, command):
-        (out, err) = utilities.run(command)
+        (out, err) = utilities.run(command, work_dir=self._source_path)
         if err != '':
             logger.error(err)
         return out
+
+    def _move(self):
+        source = os.path.join(self._source_path, self._name)
+        destination = self._udb_path
+        shutil.move(source, destination)
+        logger.debug('Moved %s to %s', source, destination)
