@@ -112,10 +112,16 @@ class Repository:
     def get_developers(self):
         key, command = self._get_key('developers'), COMMANDS['developers']
         ostream, ethread = self._runner.run(command, key=key)
+        # TODO: See https://github.com/samaritan/services/issues/3 for context
+        #       on the use of temporary set to deduplicate developers.
+        developers = set()
         # TODO: See https://github.com/samaritan/services/issues/1 for context
         #       on the hardcoded number of fields below.
         for row in csv.reader(ostream):
-            yield Developer(*row[:2])
+            developer = Developer(*row[:2])
+            if developer not in developers:
+                developers.add(developer)
+                yield developer
         _handle_exit(ethread)
 
     def get_files(self):
