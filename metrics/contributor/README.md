@@ -1,3 +1,0 @@
-# Contributor Metric Service
-
-> TODO

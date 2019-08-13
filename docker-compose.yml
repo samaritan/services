@@ -120,22 +120,6 @@ services:
       placement:
         constraints:
           - node.role == manager
-  contributor:
-    image: nuthan-db.se.rit.edu/samaritan-metrics-contributor
-    depends_on:
-      - "rabbit"
-      - "repository"
-    environment:
-      RABBIT_PASSWORD: "guest"
-      RABBIT_HEARTBEAT: 600
-      RABBIT_USER: "guest"
-      RABBIT_HOST: "rabbit"
-      RABBIT_PORT: "5672"
-    deploy:
-      mode: global
-      placement:
-        constraints:
-          - node.role == manager
   complexity:
     image: nuthan-db.se.rit.edu/samaritan-metrics-complexity
     depends_on:
