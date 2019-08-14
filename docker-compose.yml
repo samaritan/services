@@ -252,3 +252,19 @@ services:
       placement:
         constraints:
           - node.role == manager
+  pastchanges:
+    image: nuthan-db.se.rit.edu/samaritan-metrics-pastchanges
+    depends_on:
+      - "rabbit"
+      - "repository"
+    environment:
+      RABBIT_PASSWORD: "guest"
+      RABBIT_HEARTBEAT: 600
+      RABBIT_USER: "guest"
+      RABBIT_HOST: "rabbit"
+      RABBIT_PORT: "5672"
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
