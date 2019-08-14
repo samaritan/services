@@ -19,12 +19,12 @@ def _get_pastchanges(changes):
     paths = dict()
     for change in changes:
         commit = change.commit
-        for _change in change.changes:
-            _pastchanges = paths.get(_change.path, 0)
+        for path in [c.path for c in change.changes]:
+            pchanges = paths.get(path, 0)
+            paths[path] = pchanges + 1
             pastchanges.append(PastChanges(
-                commit=commit, path=_change.path, pastchanges=_pastchanges
+                commit=commit, path=path, pastchanges=pchanges
             ))
-            paths[_change.path] = _pastchanges + 1
 
     return pastchanges
 
