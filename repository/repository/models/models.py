@@ -2,9 +2,6 @@ import dataclasses
 
 from typing import List
 
-__all__ = [
-    'Change', 'Changes', 'Commit', 'Developer', 'File', 'Module', 'Project'
-]
 
 @dataclasses.dataclass(frozen=True)
 class Developer:
@@ -38,6 +35,14 @@ class Changes:
 
     commit: Commit
     changes: List[Change]
+
+
+@dataclasses.dataclass
+class Message:
+    __slots__ = ['commit', 'message']
+
+    commit: Commit
+    message: str
 
 
 @dataclasses.dataclass(frozen=True)

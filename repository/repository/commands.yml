@@ -5,6 +5,7 @@ developers: git log --no-merges --pretty='"%aN","%aE"'| sort -u
 files:
   all: git log --no-merges --no-renames --pretty= --name-only | sort -u
   active: git ls-files
+messages: cat {filename} | xargs git show --no-merges --no-patch --pretty=*%n%H%n%n%B
 moves: git log -M100% --diff-filter=R --summary --pretty=*%n%H
 patches: cat {filename} | xargs git show --no-merges --patch --pretty=*%n%H
 version: git log --no-merges -1 --pretty=%h
