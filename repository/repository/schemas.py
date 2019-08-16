@@ -29,6 +29,11 @@ class ChangesSchema(Schema):
     changes = fields.Nested(ChangeSchema, many=True)
 
 
+class MessageSchema(Schema):
+    commit = fields.Nested(CommitSchema)
+    message = fields.String()
+
+
 class ModuleSchema(Schema):
     path = fields.String()
 
