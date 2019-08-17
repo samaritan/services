@@ -1,3 +1,4 @@
 marshmallow>=2.16
+kombu==4.6.3
 nameko>=2.11
 scikit-learn>=0.20
