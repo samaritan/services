@@ -203,6 +203,22 @@ services:
       placement:
         constraints:
           - node.role == manager
+  messagetokens:
+    image: nuthan-db.se.rit.edu/samaritan-metrics-messagetokens
+    depends_on:
+      - "rabbit"
+      - "repository"
+    environment:
+      RABBIT_PASSWORD: "guest"
+      RABBIT_HEARTBEAT: 600
+      RABBIT_USER: "guest"
+      RABBIT_HOST: "rabbit"
+      RABBIT_PORT: "5672"
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
   nesting:
     image: nuthan-db.se.rit.edu/samaritan-metrics-nesting
     depends_on:
