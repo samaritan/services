@@ -7,7 +7,7 @@ from nameko.rpc import rpc, RpcProxy
 
 from . import utilities
 from .exceptions import LanguageNotSupported
-from .keywrd import get_keywords
+from .keywrd import Keywrd
 from .schemas import KeywordSchema, PatchSchema, ProjectSchema
 
 logger = logging.getLogger(__name__)
@@ -33,6 +33,7 @@ class KeywordService:
             raise LanguageNotSupported(f'{project.language} not supported')
         keywords = self.config['KEYWORDS'].get(project.language.lower())
 
+        keywrd = Keywrd(keywords=keywords)
         commits = self.repository_rpc.get_commits(project.name)
         chunks = utilities.chunk(commits, size=round(len(commits) * 0.01))
 
@@ -41,6 +42,6 @@ class KeywordService:
         keyword = list()
         for patches in pool.starmap(_get_patches, arguments):
             patches = PatchSchema(many=True).load(patches).data
-            keyword.extend(get_keywords(patches, keywords))
+            keyword.extend(keywrd.get(patches))
 
         return KeywordSchema(many=True).dump(keyword).data
