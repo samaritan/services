@@ -109,6 +109,13 @@ class Repository:
             yield Commit(*row[:2], Developer(*row[2:4]))
         _handle_exit(ethread)
 
+    def get_content(self, oid):
+        command = COMMANDS['content'].format(oid=oid)
+        ostream, ethread = self._runner.run(command)
+        content = ostream.read()
+        _handle_exit(ethread)
+        return content
+
     def get_developers(self):
         key, command = self._get_key('developers'), COMMANDS['developers']
         ostream, ethread = self._runner.run(command, key=key)

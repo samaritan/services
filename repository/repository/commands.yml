@@ -1,6 +1,7 @@
 ---
 changes: git log --no-merges --no-renames --numstat --pretty=*%n%H
 commits: git log --no-merges --pretty='"%H","%ct","%aN","%aE"'
+content: git show {oid}
 developers: git log --no-merges --pretty='"%aN","%aE"'| sort -u
 files:
   all: git log --no-merges --no-renames --pretty= --name-only | sort -u
