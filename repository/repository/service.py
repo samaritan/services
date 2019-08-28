@@ -37,6 +37,12 @@ class RepositoryService:
         return CommitSchema(many=True).dump(commits).data
 
     @rpc
+    def get_content(self, project, oid, processes=os.cpu_count()):
+        project = ProjectSchema().load(self.project_rpc.get(project)).data
+        repository = self._get_repository(project, processes)
+        return repository.get_content(oid)
+
+    @rpc
     def get_developers(self, project, processes=os.cpu_count()):
         project = ProjectSchema().load(self.project_rpc.get(project)).data
         repository = self._get_repository(project, processes)
