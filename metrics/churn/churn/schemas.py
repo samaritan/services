@@ -9,7 +9,7 @@ class ChangeSchema(Schema):
     deletions = fields.Integer(missing=None)
 
     @post_load
-    def make_change(self, data):
+    def make_change(self, data, **kwargs):
         return Change(**data)
 
 
@@ -18,7 +18,7 @@ class DeveloperSchema(Schema):
     email = fields.String(missing=None)
 
     @post_load
-    def make_developer(self, data):
+    def make_developer(self, data, **kwargs):
         return Developer(**data)
 
 
@@ -28,7 +28,7 @@ class CommitSchema(Schema):
     author = fields.Nested(DeveloperSchema)
 
     @post_load
-    def make_commit(self, data):
+    def make_commit(self, data, **kwargs):
         return Commit(**data)
 
 
@@ -37,7 +37,7 @@ class ChangesSchema(Schema):
     changes = fields.Nested(ChangeSchema, many=True)
 
     @post_load
-    def make_changes(self, data):
+    def make_changes(self, data, **kwargs):
         return Changes(**data)
 
 

@@ -24,5 +24,5 @@ class ProjectSchema(Schema):
     repository_url = fields.String()
 
     @post_load
-    def make_project(self, data):
+    def make_project(self, data, **kwargs):
         return Project(**data)

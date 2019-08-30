@@ -28,7 +28,7 @@ class KeywordService:
     def collect(self, project, processes=os.cpu_count(), **options):
         logger.debug(project)
 
-        project = ProjectSchema().load(self.project_rpc.get(project)).data
+        project = ProjectSchema().load(self.project_rpc.get(project))
         if project.language.lower() not in self.config['KEYWORDS']:
             raise LanguageNotSupported(f'{project.language} not supported')
         keywords = self.config['KEYWORDS'].get(project.language.lower())
@@ -41,7 +41,7 @@ class KeywordService:
         arguments = [(project, c, self.repository_rpc) for c in chunks]
         keyword = list()
         for patches in pool.starmap(_get_patches, arguments):
-            patches = PatchSchema(many=True).load(patches).data
+            patches = PatchSchema(many=True).load(patches)
             keyword.extend(keywrd.get(patches))
 
-        return KeywordSchema(many=True).dump(keyword).data
+        return KeywordSchema(many=True).dump(keyword)

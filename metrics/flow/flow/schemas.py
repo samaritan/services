@@ -10,16 +10,18 @@ class EntitySchema(Schema):
     path = fields.String(missing=None)
 
     @post_load
-    def make_entity(self, data):
+    def make_entity(self, data, **kwargs):
         return Entity(**data)
 
 
 class MetricsSchema(Schema):
     entity = fields.Nested(EntitySchema)
-    metrics = fields.Dict(values=fields.Raw(), keys=fields.String())
+    metrics = fields.Dict(
+        values=fields.Raw(allow_none=True), keys=fields.String()
+    )
 
     @post_load
-    def make_metrics(self, data):
+    def make_metrics(self, data, **kwargs):
         return Metrics(**data)
 
 

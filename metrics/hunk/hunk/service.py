@@ -22,14 +22,14 @@ class HunkService:
     def collect(self, project, processes=os.cpu_count(), **options):
         logger.debug(project)
 
-        project = ProjectSchema().load(self.project_rpc.get(project)).data
+        project = ProjectSchema().load(self.project_rpc.get(project))
 
         hunks = list()
         commits = self.repository_rpc.get_commits(project.name, processes)
         for chunk in utilities.chunk(commits, size=round(len(commits) * 0.05)):
             patches = self.repository_rpc.get_patches(project.name, chunk)
-            patches = PatchSchema(many=True).load(patches).data
+            patches = PatchSchema(many=True).load(patches)
             hunks.extend(get_hunks(patches))
             patches.clear()
 
-        return HunkSchema(many=True).dump(hunks).data
+        return HunkSchema(many=True).dump(hunks)

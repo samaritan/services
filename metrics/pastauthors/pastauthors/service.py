@@ -40,7 +40,7 @@ class PastAuthorsService:
         logger.debug(project)
 
         changes = self.repository_rpc.get_changes(project, processes)
-        changes = ChangesSchema(many=True).load(changes).data
+        changes = ChangesSchema(many=True).load(changes)
         pastauthors = _get_pastauthors(changes)
 
-        return PastAuthorsSchema(many=True).dump(pastauthors).data
+        return PastAuthorsSchema(many=True).dump(pastauthors)

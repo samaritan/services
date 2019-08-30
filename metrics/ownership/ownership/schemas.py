@@ -8,7 +8,7 @@ class DeveloperSchema(Schema):
     email = fields.String(missing=None)
 
     @post_load
-    def make_developer(self, data):
+    def make_developer(self, data, **kwargs):
         return Developer(**data)
 
 
@@ -18,7 +18,7 @@ class CommitSchema(Schema):
     author = fields.Nested(DeveloperSchema)
 
     @post_load
-    def make_commit(self, data):
+    def make_commit(self, data, **kwargs):
         return Commit(**data)
 
 
@@ -36,5 +36,5 @@ class ProjectSchema(Schema):
     repository_url = fields.String()
 
     @post_load
-    def make_project(self, data):
+    def make_project(self, data, **kwargs):
         return Project(**data)

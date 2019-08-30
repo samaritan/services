@@ -27,10 +27,10 @@ class PatchTokensService:
     def collect(self, project, processes=os.cpu_count(), **options):
         logger.debug(project)
 
-        project = ProjectSchema().load(self.project_rpc.get(project)).data
+        project = ProjectSchema().load(self.project_rpc.get(project))
         patches = self._get_patches(project)
         patchtokens = get_patchtokens(patches)
-        return PatchTokensSchema().dump(patchtokens).data
+        return PatchTokensSchema().dump(patchtokens)
 
     def _get_patches(self, project):
         commits = self.repository_rpc.get_commits(project.name)
@@ -41,4 +41,4 @@ class PatchTokensService:
         patches = list()
         for _patches in pool.starmap(_get_patches, arguments):
             patches.extend(_patches)
-        return PatchSchema(many=True).load(patches).data
+        return PatchSchema(many=True).load(patches)

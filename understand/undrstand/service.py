@@ -34,9 +34,9 @@ class UnderstandService:
     @rpc
     def get_metrics(self, project, metrics):
         logger.debug(project)
-        project = ProjectSchema().load(self.project_rpc.get(project)).data
+        project = ProjectSchema().load(self.project_rpc.get(project))
         udb = self._get_udb(project)
-        return MetricsSchema(many=True).dump(_get_metrics(udb, metrics)).data
+        return MetricsSchema(many=True).dump(_get_metrics(udb, metrics))
 
     def _get_udb(self, project):
         path = self.repository_rpc.get_path(project.name)

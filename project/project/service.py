@@ -27,4 +27,4 @@ class ProjectService:
             if _project is None:
                 raise NotFound('{} not found'.format(project))
 
-        return ProjectSchema().dump(_project).data
+        return ProjectSchema().dump(_project)

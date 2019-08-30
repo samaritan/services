@@ -21,4 +21,4 @@ class OffenderService:
 
         offenders = get_offenders(project)
 
-        return OffenderSchema(many=True).dump(offenders).data
+        return OffenderSchema(many=True).dump(offenders)

@@ -24,77 +24,77 @@ class RepositoryService:
 
     @rpc
     def get_changes(self, project, processes=os.cpu_count()):
-        project = ProjectSchema().load(self.project_rpc.get(project)).data
+        project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project, processes)
         changes = list(repository.get_changes())
-        return ChangesSchema(many=True).dump(changes).data
+        return ChangesSchema(many=True).dump(changes)
 
     @rpc
     def get_commits(self, project, processes=os.cpu_count()):
-        project = ProjectSchema().load(self.project_rpc.get(project)).data
+        project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project, processes)
         commits = list(repository.get_commits())
-        return CommitSchema(many=True).dump(commits).data
+        return CommitSchema(many=True).dump(commits)
 
     @rpc
     def get_content(self, project, oid, processes=os.cpu_count()):
-        project = ProjectSchema().load(self.project_rpc.get(project)).data
+        project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project, processes)
         return repository.get_content(oid)
 
     @rpc
     def get_developers(self, project, processes=os.cpu_count()):
-        project = ProjectSchema().load(self.project_rpc.get(project)).data
+        project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project, processes)
         developers = list(repository.get_developers())
-        return DeveloperSchema(many=True).dump(developers).data
+        return DeveloperSchema(many=True).dump(developers)
 
     @rpc
     def get_files(self, project, processes=os.cpu_count()):
-        project = ProjectSchema().load(self.project_rpc.get(project)).data
+        project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project, processes)
         files = list(repository.get_files())
-        return FileSchema(many=True).dump(files).data
+        return FileSchema(many=True).dump(files)
 
     @rpc
     def get_messages(self, project, commits, processes=os.cpu_count()):
-        project = ProjectSchema().load(self.project_rpc.get(project)).data
-        commits = CommitSchema(many=True).load(commits).data
+        project = ProjectSchema().load(self.project_rpc.get(project))
+        commits = CommitSchema(many=True).load(commits)
         repository = self._get_repository(project, processes)
         messages = list(repository.get_messages(commits))
-        return MessageSchema(many=True).dump(messages).data
+        return MessageSchema(many=True).dump(messages)
 
     @rpc
     def get_modules(self, project, processes=os.cpu_count()):
-        project = ProjectSchema().load(self.project_rpc.get(project)).data
+        project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project, processes)
         modules = list(repository.get_modules())
-        return ModuleSchema(many=True).dump(modules).data
+        return ModuleSchema(many=True).dump(modules)
 
     @rpc
     def get_moves(self, project, processes=os.cpu_count()):
-        project = ProjectSchema().load(self.project_rpc.get(project)).data
+        project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project, processes)
         moves = list(repository.get_moves())
-        return MovesSchema(many=True).dump(moves).data
+        return MovesSchema(many=True).dump(moves)
 
     @rpc
     def get_patches(self, project, commits, processes=os.cpu_count()):
-        project = ProjectSchema().load(self.project_rpc.get(project)).data
-        commits = CommitSchema(many=True).load(commits).data
+        project = ProjectSchema().load(self.project_rpc.get(project))
+        commits = CommitSchema(many=True).load(commits)
         repository = self._get_repository(project, processes)
         patches = list(repository.get_patches(commits))
-        return PatchSchema(many=True).dump(patches).data
+        return PatchSchema(many=True).dump(patches)
 
     @rpc
     def get_path(self, project, processes=os.cpu_count()):
-        project = ProjectSchema().load(self.project_rpc.get(project)).data
+        project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project, processes)
         return repository.get_path()
 
     @rpc
     def get_version(self, project, processes=os.cpu_count()):
-        project = ProjectSchema().load(self.project_rpc.get(project)).data
+        project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project, processes)
         return repository.get_version()
 

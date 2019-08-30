@@ -27,10 +27,10 @@ class MessageTokensService:
     def collect(self, project, processes=os.cpu_count(), **options):
         logger.debug(project)
 
-        project = ProjectSchema().load(self.project_rpc.get(project)).data
+        project = ProjectSchema().load(self.project_rpc.get(project))
         messages = self._get_messages(project)
         messagetokens = get_messagetokens(messages)
-        return MessageTokensSchema().dump(messagetokens).data
+        return MessageTokensSchema().dump(messagetokens)
 
     def _get_messages(self, project):
         commits = self.repository_rpc.get_commits(project.name)
@@ -41,4 +41,4 @@ class MessageTokensService:
         messages = list()
         for _messages in pool.starmap(_get_messages, arguments):
             messages.extend(_messages)
-        return MessageSchema(many=True).load(messages).data
+        return MessageSchema(many=True).load(messages)

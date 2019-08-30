@@ -24,7 +24,11 @@ def _get_changes(lines, commit):
     changes = list()
     for line in lines:
         match = _CHANGE_RE.match(line.strip('\n'))
-        changes.append(Change(**match.groupdict()))
+        insertions, deletions, path = match.groups()
+        insertions = None if insertions == '-' else insertions
+        deletions = None if deletions == '-' else deletions
+        change = Change(path=path, insertions=insertions, deletions=deletions)
+        changes.append(change)
     return Changes(commit=commit, changes=changes)
 
 

@@ -21,7 +21,7 @@ class ContributionService:
         logger.debug(project)
 
         changes = self.repository_rpc.get_changes(project, processes)
-        changes = ChangesSchema(many=True).load(changes).data
+        changes = ChangesSchema(many=True).load(changes)
 
         contribution = get_contribution(changes, processes, **options)
-        return ContributionSchema(many=True).dump(contribution).data
+        return ContributionSchema(many=True).dump(contribution)

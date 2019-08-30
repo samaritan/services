@@ -32,5 +32,5 @@ class LocService:
     def collect(self, project, processes=os.cpu_count(), **options):
         logger.debug(project)
         metrics = self.understand_rpc.get_metrics(project, METRICS)
-        metrics = MetricsSchema(many=True).load(metrics).data
-        return LocSchema(many=True).dump(_transform(metrics)).data
+        metrics = MetricsSchema(many=True).load(metrics)
+        return LocSchema(many=True).dump(_transform(metrics))

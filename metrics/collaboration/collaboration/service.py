@@ -21,7 +21,7 @@ class CollaborationService:
         logger.debug(project)
 
         changes = self.repository_rpc.get_changes(project, processes)
-        changes = ChangesSchema(many=True).load(changes).data
+        changes = ChangesSchema(many=True).load(changes)
 
         collaboration = get_collaboration(changes, processes, **options)
-        return CollaborationSchema(many=True).dump(collaboration).data
+        return CollaborationSchema(many=True).dump(collaboration)

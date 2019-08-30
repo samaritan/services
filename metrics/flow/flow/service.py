@@ -34,5 +34,5 @@ class ComplexityService:
     def collect(self, project, processes=os.cpu_count(), **options):
         logger.debug(project)
         metrics = self.understand_rpc.get_metrics(project, METRICS)
-        metrics = MetricsSchema(many=True).load(metrics).data
-        return FlowSchema(many=True).dump(_transform(metrics)).data
+        metrics = MetricsSchema(many=True).load(metrics)
+        return FlowSchema(many=True).dump(_transform(metrics))

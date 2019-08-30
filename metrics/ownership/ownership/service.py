@@ -21,8 +21,8 @@ class OwnershipService:
     def collect(self, project, processes=os.cpu_count(), **options):
         logger.debug(project)
 
-        project = ProjectSchema().load(self.project_rpc.get(project)).data
+        project = ProjectSchema().load(self.project_rpc.get(project))
         commits = self.repository_rpc.get_commits(project.name, processes)
-        commits = CommitSchema(many=True).load(commits).data
+        commits = CommitSchema(many=True).load(commits)
         ownerships = get_ownership(commits)
-        return OwnershipSchema(many=True).dump(ownerships).data
+        return OwnershipSchema(many=True).dump(ownerships)

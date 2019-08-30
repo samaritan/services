@@ -10,7 +10,7 @@ class EntitySchema(Schema):
     path = fields.String(missing=None)
 
     @post_load
-    def make_entity(self, data):
+    def make_entity(self, data, **kwargs):
         return Entity(**data)
 
 
@@ -19,7 +19,7 @@ class MetricsSchema(Schema):
     metrics = fields.Dict(values=fields.Raw(), keys=fields.String())
 
     @post_load
-    def make_metrics(self, data):
+    def make_metrics(self, data, **kwargs):
         return Metrics(**data)
 
 

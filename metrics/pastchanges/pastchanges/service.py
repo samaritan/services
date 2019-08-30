@@ -40,7 +40,7 @@ class PastChangesService:
         logger.debug(project)
 
         changes = self.repository_rpc.get_changes(project, processes)
-        changes = ChangesSchema(many=True).load(changes).data
+        changes = ChangesSchema(many=True).load(changes)
         pastchanges = _get_pastchanges(changes)
 
-        return PastChangesSchema(many=True).dump(pastchanges).data
+        return PastChangesSchema(many=True).dump(pastchanges)

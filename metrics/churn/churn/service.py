@@ -21,7 +21,7 @@ class ChurnService:
         logger.debug(project)
 
         changes = self.repository_rpc.get_changes(project, processes)
-        changes = ChangesSchema(many=True).load(changes).data
+        changes = ChangesSchema(many=True).load(changes)
 
         churn = list()
         for change in changes:
@@ -31,4 +31,4 @@ class ChurnService:
                 for c in change.changes
             ])
 
-        return ChurnSchema(many=True).dump(churn).data
+        return ChurnSchema(many=True).dump(churn)
