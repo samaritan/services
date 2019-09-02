@@ -4,8 +4,6 @@ import os
 import re
 import tempfile
 
-from zope.interface.declarations import implementer
-
 from .. import parsers
 from ..commands import COMMANDS
 from ..models import Change, Changes, Commit, Developer, File, Message,       \
@@ -88,7 +86,6 @@ def _handle_exit(thread):
         thread.join()
 
 
-@implementer(irepository.IRepository)
 class Repository:
     def __init__(self, path, project, runner):
         self._path = path
