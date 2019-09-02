@@ -19,11 +19,3 @@ class Metrics:
 
     entity: Entity
     metrics: Dict[str, object]
-
-
-@dataclasses.dataclass(frozen=True)
-class Complexity:
-    __slots__ = ['entity', 'complexity']
-
-    entity: Entity
-    complexity: int
