@@ -1,8 +1,6 @@
 from sqlalchemy import Column, Text
 from sqlalchemy.ext.declarative import declarative_base
 
-__all__ = ['Project']
-
 DeclarativeBase = declarative_base()
 
 

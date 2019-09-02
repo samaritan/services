@@ -1,5 +1,3 @@
-__all__ = ['COMMANDS']
-
 import logging
 import os
 

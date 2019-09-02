@@ -1,5 +1,3 @@
-__all__ = ['Change', 'Changes', 'Commit', 'Developer', 'PastAuthors']
-
 import dataclasses
 
 from typing import List
