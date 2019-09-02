@@ -13,14 +13,13 @@ logger = logging.getLogger(__name__)
 
 
 def _get_messages(project, commits, repository_rpc):
-    return repository_rpc.get_messages(project.name, commits)
+    return repository_rpc.get_messages(project, commits)
 
 
 class MessageTokensService:
     name = 'messagetokens'
 
     config = Config()
-    project_rpc = RpcProxy('project')
     repository_rpc = RpcProxy('repository')
 
     @rpc
@@ -33,7 +32,7 @@ class MessageTokensService:
         return MessageTokensSchema().dump(messagetokens)
 
     def _get_messages(self, project):
-        commits = self.repository_rpc.get_commits(project.name)
+        commits = self.repository_rpc.get_commits(project)
         chunks = utilities.chunk(commits, size=round(len(commits) * 0.05))
 
         pool = GreenPool(os.cpu_count())
