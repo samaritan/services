@@ -6,7 +6,6 @@ import tempfile
 
 from zope.interface.declarations import implementer
 
-from . import irepository
 from .. import parsers
 from ..commands import COMMANDS
 from ..models import Change, Changes, Commit, Developer, File, Message,       \
