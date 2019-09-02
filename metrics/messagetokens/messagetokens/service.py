@@ -7,7 +7,7 @@ from nameko.rpc import rpc, RpcProxy
 
 from . import utilities
 from .messagetokens import get_messagetokens
-from .schemas import MessageSchema, MessageTokensSchema, ProjectSchema
+from .schemas import MessageSchema, MessageTokensSchema
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,6 @@ class MessageTokensService:
     def collect(self, project, processes=os.cpu_count(), **options):
         logger.debug(project)
 
-        project = ProjectSchema().load(self.project_rpc.get(project))
         messages = self._get_messages(project)
         messagetokens = get_messagetokens(messages)
         return MessageTokensSchema().dump(messagetokens)
