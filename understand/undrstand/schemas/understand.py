@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields, post_load
 
-from .models import Project
+from ..models import Entity, Metrics
 
 
 class EntitySchema(Schema):
@@ -9,20 +9,15 @@ class EntitySchema(Schema):
     name = fields.String()
     path = fields.String()
 
+    @post_load
+    def make_entity(self, data, **kwwargs):
+        return Entity(**data)
+
 
 class MetricsSchema(Schema):
     entity = fields.Nested(EntitySchema)
     metrics = fields.Dict(values=fields.Raw(), keys=fields.String())
 
-
-class ProjectSchema(Schema):
-    name = fields.String()
-    description = fields.String()
-    domain = fields.String()
-    language = fields.String()
-    project_url = fields.String()
-    repository_url = fields.String()
-
     @post_load
-    def make_project(self, data, **kwargs):
-        return Project(**data)
+    def make_metrics(self, data, **kwwargs):
+        return Metrics(**data)
