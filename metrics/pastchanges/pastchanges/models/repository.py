@@ -1,6 +1,6 @@
 import dataclasses
 
-from typing import List
+from typing import Dict, List
 
 
 @dataclasses.dataclass(frozen=True)
@@ -13,9 +13,8 @@ class Developer:
 
 @dataclasses.dataclass(frozen=True)
 class Change:
-    __slots__ = ['path', 'insertions', 'deletions']
+    __slots__ = ['insertions', 'deletions']
 
-    path: str
     insertions: int
     deletions: int
 
@@ -34,7 +33,7 @@ class Changes:
     __slots__ = ['commit', 'changes']
 
     commit: Commit
-    changes: List[Change]
+    changes: Dict[str, Change]
 
 
 @dataclasses.dataclass

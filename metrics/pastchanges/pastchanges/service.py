@@ -19,7 +19,7 @@ def _get_pastchanges(changes):
     paths = dict()
     for change in changes:
         commit = change.commit
-        for path in [c.path for c in change.changes]:
+        for path in change.changes:
             pchanges = paths.get(path, 0)
             paths[path] = pchanges + 1
             pastchanges.append(PastChanges(

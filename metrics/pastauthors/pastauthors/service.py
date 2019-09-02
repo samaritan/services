@@ -19,7 +19,7 @@ def _get_pastauthors(changes):
     paths = dict()
     for change in changes:
         commit = change.commit
-        for path in [c.path for c in change.changes]:
+        for path in change.changes:
             pauthors = paths.get(path, set()) - {commit.author}
             paths[path] = pauthors | {commit.author}
             pastauthors.append(PastAuthors(

@@ -27,8 +27,8 @@ class ChurnService:
         for change in changes:
             commit = change.commit
             churn.extend([
-                Churn(commit, c.path, c.insertions, c.deletions)
-                for c in change.changes
+                Churn(commit, path, c.insertions, c.deletions)
+                for (path, c) in change.changes.items()
             ])
 
         return ChurnSchema(many=True).dump(churn)

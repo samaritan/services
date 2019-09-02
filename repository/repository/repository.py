@@ -18,14 +18,13 @@ logger = logging.getLogger(__name__)
 
 
 def _get_changes(lines, commit):
-    changes = list()
+    changes = dict()
     for line in lines:
         match = _CHANGE_RE.match(line.strip('\n'))
         insertions, deletions, path = match.groups()
         insertions = None if insertions == '-' else insertions
         deletions = None if deletions == '-' else deletions
-        change = Change(path=path, insertions=insertions, deletions=deletions)
-        changes.append(change)
+        changes[path] = Change(insertions=insertions, deletions=deletions)
     return Changes(commit=commit, changes=changes)
 
 

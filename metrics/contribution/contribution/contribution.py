@@ -59,14 +59,14 @@ def get_contribution(changes, processes, **options):
             graph.vp.bipartite[developer] = False
             graph.vp.label[developer] = change.commit.author
 
-        for _change in change.changes:
-            path = nodes.get(_change.path, None)
+        for _path in change.changes:
+            path = nodes.get(_path, None)
             if path is None:
                 path = graph.add_vertex()
-                nodes[_change.path] = path
+                nodes[_path] = path
 
                 graph.vp.bipartite[path] = True
-                graph.vp.label[path] = _change.path
+                graph.vp.label[path] = _path
 
             edge = edges.get((developer, path), None)
             if edge is None:

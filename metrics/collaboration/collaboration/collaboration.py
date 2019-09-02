@@ -57,11 +57,11 @@ def get_collaboration(changes, processes, **options):
 
     files = dict()
     for change in changes:
-        for _change in change.changes:
-            if whitelister.is_valid(_change.path):
-                if _change.path not in files:
-                    files[_change.path] = set()
-                files[_change.path].add(change.commit.author)
+        for path in change.changes:
+            if whitelister.is_valid(path):
+                if path not in files:
+                    files[path] = set()
+                files[path].add(change.commit.author)
 
     graph = graph_tool.Graph(directed=False)
 

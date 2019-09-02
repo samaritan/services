@@ -5,7 +5,6 @@ from ..models import Change, Changes, Commit, Developer, File, Message,       \
 
 
 class ChangeSchema(Schema):
-    path = fields.String()
     insertions = fields.Integer(allow_none=True)
     deletions = fields.Integer(allow_none=True)
 
@@ -35,7 +34,7 @@ class CommitSchema(Schema):
 
 class ChangesSchema(Schema):
     commit = fields.Nested(CommitSchema)
-    changes = fields.Nested(ChangeSchema, many=True)
+    changes = fields.Dict(fields.String(), fields.Nested(ChangeSchema))
 
     @post_load
     def make_changes(self, data, **kwargs):
