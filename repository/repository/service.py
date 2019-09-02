@@ -6,7 +6,7 @@ from nameko.rpc import rpc, RpcProxy
 
 from .cache import Cache
 from .exceptions import NotCloned
-from .models import Repository
+from .repository import Repository
 from .runner import Runner
 from .schemas import ChangesSchema, CommitSchema, DeveloperSchema,            \
                      FileSchema, MessageSchema, ModuleSchema, MovesSchema,    \

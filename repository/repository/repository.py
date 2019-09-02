@@ -4,9 +4,9 @@ import os
 import re
 import tempfile
 
-from .. import parsers
-from ..commands import COMMANDS
-from ..models import Change, Changes, Commit, Developer, File, Message,       \
+from . import parsers
+from .commands import COMMANDS
+from .models import Change, Changes, Commit, Developer, File, Message,        \
                      Module, Move, Moves, Patch
 
 _CHANGE_RE = re.compile(
