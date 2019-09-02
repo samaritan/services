@@ -6,8 +6,8 @@ from ..models import Change, Changes, Commit, Developer, File, Message,       \
 
 class ChangeSchema(Schema):
     path = fields.String()
-    insertions = fields.Integer()
-    deletions = fields.Integer()
+    insertions = fields.Integer(allow_none=True)
+    deletions = fields.Integer(allow_none=True)
 
     @post_load
     def make_change(self, data, **kwargs):
