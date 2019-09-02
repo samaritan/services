@@ -19,11 +19,3 @@ class Metrics:
 
     entity: Entity
     metrics: Dict[str, object]
-
-
-@dataclasses.dataclass(frozen=True)
-class Nesting:
-    __slots__ = ['entity', 'nesting']
-
-    entity: Entity
-    nesting: int
