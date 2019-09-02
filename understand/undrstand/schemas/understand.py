@@ -16,7 +16,7 @@ class EntitySchema(Schema):
 
 class MetricsSchema(Schema):
     entity = fields.Nested(EntitySchema)
-    metrics = fields.Dict(values=fields.Raw(), keys=fields.String())
+    metrics = fields.Dict(fields.String(), fields.Raw(allow_none=True))
 
     @post_load
     def make_metrics(self, data, **kwwargs):
