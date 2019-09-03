@@ -38,7 +38,7 @@ def _get_deltas(lines, commit):
         insertions, deletions, path = match.groups()
         insertions = None if insertions == '-' else insertions
         deletions = None if deletions == '-' else deletions
-        deltas[path] = Change(insertions=insertions, deletions=deletions)
+        deltas[path] = Delta(insertions=insertions, deletions=deletions)
     return Deltas(commit=commit, deltas=deltas)
 
 
