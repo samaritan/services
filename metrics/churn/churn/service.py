@@ -5,7 +5,7 @@ from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
 from .models import Churn
-from .schemas import ChangesSchema, ChurnSchema
+from .schemas import DeltasSchema, ChurnSchema
 
 logger = logging.getLogger(__name__)
 
@@ -20,15 +20,15 @@ class ChurnService:
     def collect(self, project, processes=os.cpu_count(), **options):
         logger.debug(project)
 
-        changes = self.repository_rpc.get_changes(project, processes)
-        changes = ChangesSchema(many=True).load(changes)
+        deltas = self.repository_rpc.get_deltas(project, processes)
+        deltas = DeltasSchema(many=True).load(deltas)
 
         churn = list()
-        for change in changes:
-            commit = change.commit
+        for delta in deltas:
+            commit = delta.commit
             churn.extend([
-                Churn(commit, path, c.insertions, c.deletions)
-                for (path, c) in change.changes.items()
+                Churn(commit, path, d.insertions, d.deletions)
+                for (path, d) in delta.deltas.items()
             ])
 
         return ChurnSchema(many=True).dump(churn)
