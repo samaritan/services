@@ -1,7 +1,7 @@
 from marshmallow import Schema, fields, post_load
 
-from ..models import Change, Changes, Commit, Developer, File, Message,       \
-                     Module, Move, Moves, Patch
+from ..models import Change, Changes, Commit, Delta, Deltas, Developer, File, \
+                     Message, Module, Move, Moves, Patch
 
 
 class ChangeSchema(Schema):
@@ -11,6 +11,15 @@ class ChangeSchema(Schema):
     @post_load
     def make_change(self, data, **kwargs):
         return Change(**data)
+
+
+class DeltaSchema(Schema):
+    insertions = fields.Integer(allow_none=True)
+    deletions = fields.Integer(allow_none=True)
+
+    @post_load
+    def make_delta(self, data, **kwargs):
+        return Delta(**data)
 
 
 class DeveloperSchema(Schema):
@@ -30,6 +39,15 @@ class CommitSchema(Schema):
     @post_load
     def make_commit(self, data, **kwargs):
         return Commit(**data)
+
+
+class DeltasSchema(Schema):
+    commit = fields.Nested(CommitSchema)
+    deltas = fields.Dict(fields.String(), fields.Nested(DeltaSchema))
+
+    @post_load
+    def make_deltas(self, data, **kwargs):
+        return Deltas(**data)
 
 
 class ChangesSchema(Schema):

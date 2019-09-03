@@ -4,6 +4,14 @@ from typing import Dict, List
 
 
 @dataclasses.dataclass(frozen=True)
+class Delta:
+    __slots__ = ['insertions', 'deletions']
+
+    insertions: int
+    deletions: int
+
+
+@dataclasses.dataclass(frozen=True)
 class Developer:
     __slots__ = ['name', 'email']
 
@@ -34,6 +42,14 @@ class Changes:
 
     commit: Commit
     changes: Dict[str, Change]
+
+
+@dataclasses.dataclass
+class Deltas:
+    __slots__ = ['commit', 'deltas']
+
+    commit: Commit
+    deltas: Dict[str, Delta]
 
 
 @dataclasses.dataclass
