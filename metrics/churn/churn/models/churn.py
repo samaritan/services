@@ -4,10 +4,17 @@ from .repository import Commit
 
 
 @dataclasses.dataclass(frozen=True)
+class LineChurn:
+    __slots__ = ['insertions', 'deletions']
+
+    insertions: int
+    deletions: int
+
+
+@dataclasses.dataclass(frozen=True)
 class Churn:
-    __slots__ = ['commit', 'path', 'insertions', 'deletions']
+    __slots__ = ['commit', 'path', 'line']
 
     commit: Commit
     path: str
-    insertions: int
-    deletions: int
+    line: LineChurn

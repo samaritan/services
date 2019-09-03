@@ -1,4 +1,4 @@
-from .churn import ChurnSchema
+from .churn import ChurnSchema, LineChurnSchema
 from .repository import ChangeSchema, ChangesSchema, CommitSchema,            \
                         DeltaSchema, DeltasSchema, DeveloperSchema,           \
                         FileSchema, MessageSchema, ModuleSchema, MoveSchema,  \

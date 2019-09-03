@@ -4,7 +4,7 @@ import os
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
-from .models import Churn
+from .models import Churn, LineChurn
 from .schemas import DeltasSchema, ChurnSchema
 
 logger = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ class ChurnService:
         for delta in deltas:
             commit = delta.commit
             churn.extend([
-                Churn(commit, path, d.insertions, d.deletions)
+                Churn(commit, path, LineChurn(d.insertions, d.deletions))
                 for (path, d) in delta.deltas.items()
             ])
 
