@@ -8,9 +8,9 @@ from .cache import Cache
 from .exceptions import NotCloned
 from .repository import Repository
 from .runner import Runner
-from .schemas import ChangesSchema, CommitSchema, DeveloperSchema,            \
-                     FileSchema, MessageSchema, ModuleSchema, MovesSchema,    \
-                     PatchSchema, ProjectSchema
+from .schemas import ChangesSchema, CommitSchema, DeltasSchema,               \
+                     DeveloperSchema, FileSchema, MessageSchema,              \
+                     ModuleSchema, MovesSchema, PatchSchema, ProjectSchema
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +41,13 @@ class RepositoryService:
         project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project, processes)
         return repository.get_content(oid)
+
+    @rpc
+    def get_deltas(self, project, processes=os.cpu_count()):
+        project = ProjectSchema().load(self.project_rpc.get(project))
+        repository = self._get_repository(project, processes)
+        developers = list(repository.get_deltas())
+        return DeltasSchema(many=True).dump(developers)
 
     @rpc
     def get_developers(self, project, processes=os.cpu_count()):
