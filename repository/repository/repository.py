@@ -6,10 +6,13 @@ import tempfile
 
 from . import parsers
 from .commands import COMMANDS
-from .models import Change, Changes, Commit, Developer, File, Message,        \
-                     Module, Move, Moves, Patch
+from .models import Change, Changes, Commit, Deltas, Developer, File,         \
+                    Message, Module, Move, Moves, Patch
 
 _CHANGE_RE = re.compile(
+    r'^(?P<insertions>(?:\d+|\-))\s+(?P<deletions>(?:\d+|\-))\s+(?P<path>.+)'
+)
+_DELTA_RE = re.compile(
     r'^(?P<insertions>(?:\d+|\-))\s+(?P<deletions>(?:\d+|\-))\s+(?P<path>.+)'
 )
 _MOVESPECIFICATION_RE = re.compile(r'^ rename (?P<specification>.*) \(\d+%\)$')
@@ -26,6 +29,17 @@ def _get_changes(lines, commit):
         deletions = None if deletions == '-' else deletions
         changes[path] = Change(insertions=insertions, deletions=deletions)
     return Changes(commit=commit, changes=changes)
+
+
+def _get_deltas(lines, commit):
+    deltas = dict()
+    for line in lines:
+        match = _DELTA_RE.match(line.strip('\n'))
+        insertions, deletions, path = match.groups()
+        insertions = None if insertions == '-' else insertions
+        deletions = None if deletions == '-' else deletions
+        deltas[path] = Change(insertions=insertions, deletions=deletions)
+    return Deltas(commit=commit, deltas=deltas)
 
 
 def _get_indices(specification):
@@ -114,6 +128,16 @@ class Repository:
         content = ostream.read()
         _handle_exit(ethread)
         return content
+
+    def get_deltas(self):
+        commits = {c.sha: c for c in self.get_commits()}
+
+        key, command = self._get_key('deltas'), COMMANDS['deltas']
+        ostream, ethread = self._runner.run(command, key=key)
+
+        for sha, lines in parsers.GitLogParser.parse(ostream):
+            yield _get_deltas(lines, commits[sha])
+        _handle_exit(ethread)
 
     def get_developers(self):
         key, command = self._get_key('developers'), COMMANDS['developers']
