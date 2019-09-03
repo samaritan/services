@@ -1,12 +1,21 @@
 from marshmallow import Schema, fields, post_load
 
 from ..models import Change, Changes, Commit, Delta, Deltas, Developer, File, \
-                     Message, Module, Move, Moves, Patch
+                     Message, Module, Move, Moves, Oids, Patch
+
+
+class OidsSchema(Schema):
+    before = fields.String()
+    after = fields.String()
+
+    @post_load
+    def make_oids(self, data, **kwargs):
+        return Oids(**data)
 
 
 class ChangeSchema(Schema):
-    insertions = fields.Integer(allow_none=True)
-    deletions = fields.Integer(allow_none=True)
+    type = fields.Integer()
+    oids = fields.Nested(OidsSchema)
 
     @post_load
     def make_change(self, data, **kwargs):

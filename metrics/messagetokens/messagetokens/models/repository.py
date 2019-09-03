@@ -20,11 +20,19 @@ class Developer:
 
 
 @dataclasses.dataclass(frozen=True)
-class Change:
-    __slots__ = ['insertions', 'deletions']
+class Oids:
+    __slots__ = ['before', 'after']
 
-    insertions: int
-    deletions: int
+    before: str
+    after: str
+
+
+@dataclasses.dataclass(frozen=True)
+class Change:
+    __slots__ = ['type', 'oids']
+
+    type: int
+    oids: Oids
 
 
 @dataclasses.dataclass(frozen=True)
