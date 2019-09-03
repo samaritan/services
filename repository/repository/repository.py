@@ -6,16 +6,20 @@ import tempfile
 
 from . import parsers
 from .commands import COMMANDS
-from .models import Change, Changes, Commit, Deltas, Developer, File,         \
-                    Message, Module, Move, Moves, Patch
+from .models import Change, Changes, Commit, Delta, Deltas, Developer, File,  \
+                    Message, Module, Move, Moves, Oids, Patch
+from .models.enumerations import ChangeType
 
-_CHANGE_RE = re.compile(
-    r'^(?P<insertions>(?:\d+|\-))\s+(?P<deletions>(?:\d+|\-))\s+(?P<path>.+)'
-)
+_CHANGETYPE_MAP = {
+    'A': ChangeType.ADDED, 'C': ChangeType.COPIED, 'D': ChangeType.DELETED,
+    'M': ChangeType.MODIFIED, 'R': ChangeType.RENAMED,
+    'T': ChangeType.TYPECHANGE
+}
 _DELTA_RE = re.compile(
     r'^(?P<insertions>(?:\d+|\-))\s+(?P<deletions>(?:\d+|\-))\s+(?P<path>.+)'
 )
 _MOVESPECIFICATION_RE = re.compile(r'^ rename (?P<specification>.*) \(\d+%\)$')
+_SPACE_RE = re.compile(r'\s+')
 
 logger = logging.getLogger(__name__)
 
@@ -23,11 +27,10 @@ logger = logging.getLogger(__name__)
 def _get_changes(lines, commit):
     changes = dict()
     for line in lines:
-        match = _CHANGE_RE.match(line.strip('\n'))
-        insertions, deletions, path = match.groups()
-        insertions = None if insertions == '-' else insertions
-        deletions = None if deletions == '-' else deletions
-        changes[path] = Change(insertions=insertions, deletions=deletions)
+        components = _SPACE_RE.split(line)
+        path, type_ = components[-1], _CHANGETYPE_MAP[components[4]].value
+        oids = Oids(before=components[2], after=components[3])
+        changes[path] = Change(type=type_, oids=oids)
     return Changes(commit=commit, changes=changes)
 
 

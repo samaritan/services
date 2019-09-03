@@ -1,5 +1,5 @@
 ---
-changes: git log --no-merges --no-renames --numstat --pretty=*%n%H
+changes: git log --no-merges --pretty=%H | git diff-tree -r --no-renames --root --stdin --pretty=*%n%H
 commits: git log --no-merges --pretty='"%H","%ct","%aN","%aE"'
 content: git show {oid}
 deltas: git log --no-merges --no-renames --numstat --pretty=*%n%H
