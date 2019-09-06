@@ -30,7 +30,7 @@ class ChurnService:
         for delta in deltas:
             commit = delta.commit
             churn.extend([
-                Churn(commit, path, LineChurn(d.insertions, d.deletions))
+                Churn(commit, path, LineChurn(d.insertions, d.deletions), None)
                 for (path, d) in delta.deltas.items()
             ])
 
