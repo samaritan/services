@@ -14,6 +14,21 @@ services:
         constraints:
           - node.role == manager
   # Primitive Services
+  parser:
+    image: nuthan-db.se.rit.edu/samaritan-parser
+    depends_on:
+      - "rabbit"
+    environment:
+      RABBIT_HOST: "rabbit"
+      RABBIT_PORT: "5672"
+      RABBIT_USER: "guest"
+      RABBIT_PASSWORD: "guest"
+      RABBIT_HEARTBEAT: 600
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
   project:
     image: nuthan-db.se.rit.edu/samaritan-project
     depends_on:
