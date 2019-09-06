@@ -1,0 +1,12 @@
+c/c++:
+  names:
+  extensions:
+    - c  
+    - cc 
+    - cpp
+    - cxx
+    - h  
+    - hh 
+    - hpp
+    - hxx
+    - inl

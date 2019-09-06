@@ -1,0 +1,2 @@
+class NoParser(Exception):
+    pass
