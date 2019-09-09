@@ -19,6 +19,7 @@ services:
     depends_on:
       - "rabbit"
     environment:
+      LD_LIBRARY_PATH: "/usr/local/lib"
       RABBIT_HOST: "rabbit"
       RABBIT_PORT: "5672"
       RABBIT_USER: "guest"

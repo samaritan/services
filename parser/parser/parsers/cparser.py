@@ -25,9 +25,6 @@ def _kind_filter(functions):
 
 
 class CParser:
-    def __init__(self):
-        clang.cindex.Config.set_library_path('/usr/local/lib')
-
     def get_functions(self, name, contents):
         index = clang.cindex.Index.create()
         tunit = index.parse(name, unsaved_files=[(name, contents),])
