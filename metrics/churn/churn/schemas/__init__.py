@@ -1,4 +1,5 @@
 from .churn import ChurnSchema, LineChurnSchema
+from .parser import FunctionSchema
 from .project import ProjectSchema
 from .repository import ChangeSchema, ChangesSchema, CommitSchema,            \
                         DeltaSchema, DeltasSchema, DeveloperSchema,           \
