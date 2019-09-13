@@ -1,6 +1,6 @@
-from enum import Enum
+from enum import IntEnum
 
-class ChangeType(Enum):
+class ChangeType(IntEnum):
     ADDED = 1
     COPIED = 5
     DELETED = 2
