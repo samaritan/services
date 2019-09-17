@@ -14,5 +14,4 @@ RUN pip install --no-cache-dir --quiet --trusted-host pypi.python.org \
 COPY config.yml .
 COPY patchtokens patchtokens/
 COPY run.sh .
-RUN chmod +x run.sh
 CMD . /samaritan/services/metrics/patchtokens/run.sh

@@ -33,5 +33,4 @@ RUN pip install --no-cache-dir --quiet --trusted-host pypi.python.org \
 COPY config.yml .
 COPY parser parser/
 COPY run.sh .
-RUN chmod +x run.sh
 CMD . /samaritan/services/parser/run.sh

@@ -36,5 +36,4 @@ RUN pip install pip --upgrade && \
 COPY config.yml .
 COPY contribution contribution/
 COPY run.sh .
-RUN chmod +x run.sh
 CMD . /samaritan/services/metrics/contribution/run.sh

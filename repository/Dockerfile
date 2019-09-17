@@ -15,5 +15,4 @@ RUN pip install --no-cache-dir --quiet --trusted-host pypi.python.org \
 COPY config.yml .
 COPY repository repository/
 COPY run.sh .
-RUN chmod +x run.sh
 CMD . /samaritan/services/repository/run.sh

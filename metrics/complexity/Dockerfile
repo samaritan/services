@@ -14,5 +14,4 @@ RUN pip install --no-cache-dir --quiet --trusted-host pypi.python.org \
 COPY config.yml .
 COPY complexity complexity/
 COPY run.sh .
-RUN chmod +x run.sh
 CMD . /samaritan/services/metrics/complexity/run.sh

@@ -15,5 +15,4 @@ COPY config.yml .
 COPY projects.sqlite3 .
 COPY project project/
 COPY run.sh .
-RUN chmod +x run.sh
 CMD . /samaritan/services/project/run.sh
