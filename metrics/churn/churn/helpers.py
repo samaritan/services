@@ -44,7 +44,7 @@ class ChurnHelper:
     def collect(self, changes, deltas):
         data = _pack(changes, deltas)
         arguments = ((c, p, d) for ((c, p), d) in data.items())
-        pool = eventlet.GreenPool(100)
+        pool = eventlet.GreenPool()
         for churn in pool.starmap(self._get_churn, arguments):
             yield churn
 
@@ -74,16 +74,19 @@ class ChurnHelper:
         function = None
 
         if change is not None:
-            before, after = None, None
+            functions = None
 
-            if change.type in {ChangeType.DELETED, ChangeType.MODIFIED}:
-                before = self._get_functionnames(path, change.oids.before)
-            if change.type in {ChangeType.ADDED, ChangeType.MODIFIED}:
-                after = self._get_functionnames(path, change.oids.after)
+            if change.type == ChangeType.ADDED:
+                functions = self._get_functionnames(path, change.oids.after)
+                if functions is not None:
+                    functions = [('i', f) for f in functions]
+            elif change.type == ChangeType.DELETED:
+                functions = self._get_functionnames(path, change.oids.before)
+                if functions is not None:
+                    functions = [('d', f) for f in functions]
 
-            if before is not None and after is not None:
-                insertions = len(after - before)
-                deletions = len(before - after)
+            if functions:
+                insertions = len([f for (s, f) in functions if s == 'i'])
+                deletions = len([f for (s, f) in functions if s == 'd'])
                 function = FunctionChurn(insertions, deletions)
-
         return function
