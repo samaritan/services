@@ -22,10 +22,15 @@ class ParserService:
 
     @rpc
     def get_functions(self, name, contents):
+        functions = None
+
         language = self.inferer.infer(name)
         if language is None:
             logger.debug('%s is in an unsupported language', name)
-            return None
-        parser = get_parser(language)
-        functions = parser.get_functions(name, contents)
-        return FunctionSchema(many=True).dump(functions)
+        else:
+            parser = get_parser(language)
+            functions = parser.get_functions(name, contents)
+            if functions is not None:
+                functions = FunctionSchema(many=True).dump(functions)
+
+        return functions

@@ -26,6 +26,14 @@ def _kind_filter(functions):
 
 class CParser:
     def get_functions(self, name, contents):
+        functions = None
+        try:
+            functions = list(self._get_functions(name, contents))
+        except clang.cindex.TranslationUnitLoadError:
+            logger.error('libclang failed to parse %s', name)
+        return functions
+
+    def _get_functions(self, name, contents):
         index = clang.cindex.Index.create()
         tunit = index.parse(name, unsaved_files=[(name, contents),])
         cursor = tunit.cursor
