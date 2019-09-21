@@ -7,6 +7,12 @@ from ..models import Function
 logger = logging.getLogger(__name__)
 
 
+def _get_children(node):
+    yield node
+    for child in node.get_children():
+        yield from _get_children(child)
+
+
 def _filename_filter(functions, name):
     def _filter(item):
         return item.extent.start.file.name == name and                        \
@@ -37,7 +43,9 @@ class CParser:
         index = clang.cindex.Index.create()
         tunit = index.parse(name, unsaved_files=[(name, contents),])
         cursor = tunit.cursor
-        functions = _kind_filter(cursor.get_children())
+        children = _get_children(cursor)
+
+        functions = _kind_filter(children)
         for function in _filename_filter(functions, name):
             name = function.spelling
             begin, end = function.extent.start.line, function.extent.end.line
