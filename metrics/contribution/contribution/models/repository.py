@@ -61,6 +61,14 @@ class Deltas:
 
 
 @dataclasses.dataclass
+class LineChanges:
+    __slots__ = ['commit', 'linechanges']
+
+    commit: Commit
+    linechanges: Dict[str, Dict[str, List]]
+
+
+@dataclasses.dataclass
 class Message:
     __slots__ = ['commit', 'message']
 
