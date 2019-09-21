@@ -9,8 +9,9 @@ from .exceptions import NotCloned
 from .repository import Repository
 from .runner import Runner
 from .schemas import ChangesSchema, CommitSchema, DeltasSchema,               \
-                     DeveloperSchema, FileSchema, MessageSchema,              \
-                     ModuleSchema, MovesSchema, PatchSchema, ProjectSchema
+                     DeveloperSchema, FileSchema, LineChangesSchema,          \
+                     MessageSchema, ModuleSchema, MovesSchema, PatchSchema,   \
+                     ProjectSchema
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +63,14 @@ class RepositoryService:
         repository = self._get_repository(project, processes)
         files = list(repository.get_files())
         return FileSchema(many=True).dump(files)
+
+    @rpc
+    def get_linechanges(self, project, commit, processes=os.cpu_count()):
+        project = ProjectSchema().load(self.project_rpc.get(project))
+        commit = CommitSchema().load(commit)
+        repository = self._get_repository(project, processes)
+        linechanges = repository.get_linechanges(commit)
+        return LineChangesSchema().dump(linechanges)
 
     @rpc
     def get_messages(self, project, commits, processes=os.cpu_count()):
