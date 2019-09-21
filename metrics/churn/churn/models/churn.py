@@ -11,10 +11,14 @@ class BaseChurn:
     deletions: int
 
 
+@dataclasses.dataclass(frozen=True)
 class FunctionChurn(BaseChurn):
-    pass
+    __slots__ = ['modifications']
+
+    modifications: int
 
 
+@dataclasses.dataclass(frozen=True)
 class LineChurn(BaseChurn):
     pass
 

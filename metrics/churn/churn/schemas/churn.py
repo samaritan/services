@@ -10,6 +10,8 @@ class BaseChurnSchema(Schema):
 
 
 class FunctionChurnSchema(BaseChurnSchema):
+    modifications = fields.Integer()
+
     @post_load
     def make_functionchurn(self, data, **kwargs):
         return FunctionChurn(**data)

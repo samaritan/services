@@ -3,10 +3,28 @@ import logging
 import eventlet
 
 from .models import Churn, FunctionChurn, LineChurn
-from .models.enumerations import ChangeType
-from .schemas import FunctionSchema
+from .models.enumerations import ChangeType, LineType
+from .schemas import CommitSchema, FunctionSchema, LineChangesSchema
 
 logger = logging.getLogger(__name__)
+
+
+def _get_functionchurn(before, after, lines):
+    bnames = {f.name for f in before}
+    anames = {f.name for f in after}
+
+    insertions = len(anames - bnames)
+    deletions = len(bnames - anames)
+
+    modifications = 0
+    for function in (f for f in after if f.name in bnames & anames):
+        begin, end = function.lines
+        for line in lines:
+            if begin <= line <= end:
+                modifications += 1
+                break
+
+    return FunctionChurn(insertions, deletions, modifications)
 
 
 def _unpack_deltas(deltas):
@@ -50,7 +68,7 @@ class ChurnHelper:
 
     def _get_churn(self, commit, path, data):
         line = self._get_linechurn(**data)
-        function = self._get_functionchurn(path, **data)
+        function = self._get_functionchurn(commit, path, **data)
         return Churn(commit, path, line=line, function=function)
 
     def _get_linechurn(self, change=None, delta=None):
@@ -58,35 +76,38 @@ class ChurnHelper:
         return LineChurn(insertions, deletions)
 
     def _get_functions(self, path, oid):
-        contents = self._repository.get_content(self._project, oid)
-        functions = self._parser.get_functions(path, contents)
-        if functions is not None:
-            functions = FunctionSchema(many=True).load(functions)
+        functions = None
+        if self._parser.is_parsable(path):
+            contents = self._repository.get_content(self._project, oid)
+            functions = self._parser.get_functions(path, contents)
+            if functions is not None:
+                functions = FunctionSchema(many=True).load(functions)
         return functions
 
-    def _get_functionnames(self, path, oid):
-        functions = self._get_functions(path, oid)
-        if functions is not None:
-            functions = {i.name for i in functions} if functions else set()
-        return functions
-
-    def _get_functionchurn(self, path, change=None, delta=None):
+    def _get_functionchurn(self, commit, path, change=None, delta=None):
         function = None
 
         if change is not None:
-            functions = None
+            before = self._get_functions(path, change.oids.before)
+            after = self._get_functions(path, change.oids.after)
+            lines = None
+            if change.type == ChangeType.MODIFIED:
+                lines = self._get_lineschanged(commit, path)
 
-            if change.type == ChangeType.ADDED:
-                functions = self._get_functionnames(path, change.oids.after)
-                if functions is not None:
-                    functions = [('i', f) for f in functions]
-            elif change.type == ChangeType.DELETED:
-                functions = self._get_functionnames(path, change.oids.before)
-                if functions is not None:
-                    functions = [('d', f) for f in functions]
+            # `before` and `after` are None iff `path` is not parsed (either
+            #   because there is no parser to parse language that `path` is
+            #   written in or because there was an error when parsing `path`.
+            if before is not None and after is not None:
+                function = _get_functionchurn(before, after, lines)
 
-            if functions:
-                insertions = len([f for (s, f) in functions if s == 'i'])
-                deletions = len([f for (s, f) in functions if s == 'd'])
-                function = FunctionChurn(insertions, deletions)
         return function
+
+    def _get_lineschanged(self, commit, path):
+        commit = CommitSchema().dump(commit)
+        linechanges = self._repository.get_linechanges(self._project, commit)
+        linechanges = LineChangesSchema().load(linechanges)
+
+        inserted = linechanges.linechanges[path][LineType.INSERTED.value]
+        deleted = linechanges.linechanges[path][LineType.DELETED.value]
+
+        return sorted(inserted + deleted)
