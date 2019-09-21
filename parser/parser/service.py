@@ -21,6 +21,11 @@ class ParserService:
         return language in self.config['LANGUAGES']
 
     @rpc
+    def is_parsable(self, name):
+        language = self.inferer.infer(name)
+        return language is not None
+
+    @rpc
     def get_functions(self, name, contents):
         functions = None
 
