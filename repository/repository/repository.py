@@ -4,11 +4,13 @@ import os
 import re
 import tempfile
 
+import pygit2
+
 from . import parsers
 from .commands import COMMANDS
 from .models import Change, Changes, Commit, Delta, Deltas, Developer, File,  \
-                    Message, Module, Move, Moves, Oids, Patch
-from .models.enumerations import ChangeType
+                    LineChanges, Message, Module, Move, Moves, Oids, Patch
+from .models.enumerations import ChangeType, LineType
 
 _CHANGETYPE_MAP = {
     'A': ChangeType.ADDED, 'C': ChangeType.COPIED, 'D': ChangeType.DELETED,
@@ -45,6 +47,14 @@ def _get_deltas(lines, commit):
     return Deltas(commit=commit, deltas=deltas)
 
 
+def _get_diff(commit):
+    ctree = commit.tree
+    if commit.parents:
+        parent = commit.parents[0]
+        return ctree.diff_to_tree(parent.tree, context_lines=0, swap=True)
+    return ctree.diff_to_tree(context_lines=0, swap=True)
+
+
 def _get_indices(specification):
     lbrace, arrow, rbrace = None, None, None
     for (index, character) in enumerate(specification):
@@ -73,6 +83,16 @@ def _get_components(specification):
         bvariable = specification[arrow + 1:rbrace]
         bfixed = specification[rbrace + 1:len(specification)]
     return afixed, avariable, bvariable, bfixed
+
+
+def _get_linechanges(patch):
+    linechanges = {'+': list(), '-': list()}
+    for line in (l for h in patch.hunks for l in h.lines):
+        if line.origin == LineType.INSERTED.value:
+            linechanges[line.origin].append(line.new_lineno)
+        if line.origin == LineType.DELETED.value:
+            linechanges[line.origin].append(line.old_lineno)
+    return linechanges
 
 
 def _get_move(line):
@@ -107,6 +127,7 @@ class Repository:
         self._path = path
         self._project = project
         self._runner = runner
+        self._pygit_repository = pygit2.Repository(path)
 
     def get_changes(self):
         commits = {c.sha: c for c in self.get_commits()}
@@ -168,6 +189,15 @@ class Repository:
                     if os.path.dirname(path) != '' else '(root)'
             yield File(path, path in active_files, Module(mpath))
         _handle_exit(ethread)
+
+    def get_linechanges(self, commit):
+        linechanges = dict()
+
+        for patch in _get_diff(self._pygit_repository.get(commit.sha)):
+            path = patch.delta.new_file.path
+            linechanges[path] = _get_linechanges(patch)
+
+        return LineChanges(commit=commit, linechanges=linechanges)
 
     def get_messages(self, commits):
         tfile = None

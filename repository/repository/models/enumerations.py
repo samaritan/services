@@ -1,4 +1,5 @@
-from enum import IntEnum
+from enum import Enum, IntEnum
+
 
 class ChangeType(IntEnum):
     ADDED = 1
@@ -7,3 +8,8 @@ class ChangeType(IntEnum):
     MODIFIED = 3
     RENAMED = 4
     TYPECHANGE = 8
+
+
+class LineType(Enum):
+    INSERTED = '+'
+    DELETED = '-'
