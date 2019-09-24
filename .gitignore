@@ -144,6 +144,9 @@ tags
 
 # Beginning of Custom Ignores
 
+## Sensitive File
+.envrc
+
 ## Convenience Makefile used during development
 Makefile
 
