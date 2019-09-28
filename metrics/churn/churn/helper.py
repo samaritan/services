@@ -53,7 +53,7 @@ def _pack(changes, deltas):
     return data
 
 
-class ChurnHelper:
+class Helper:
     def __init__(self, project, repository, parser):
         self._project = project.name
         self._repository = repository

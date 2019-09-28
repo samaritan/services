@@ -4,7 +4,7 @@ import os
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
-from .helper import ChurnHelper
+from .helper import Helper
 from .schemas import DeltasSchema, ChangesSchema, ChurnSchema, ProjectSchema
 
 logger = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ class ChurnService:
         project = ProjectSchema().load(self.project_rpc.get(project))
         changes = self._get_changes(project)
         deltas = self._get_deltas(project)
-        helper = ChurnHelper(project, self.repository_rpc, self.parser_rpc)
+        helper = Helper(project, self.repository_rpc, self.parser_rpc)
         churn = helper.collect(changes, deltas)
 
         return ChurnSchema(many=True).dump(churn)
