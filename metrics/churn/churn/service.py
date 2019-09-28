@@ -4,7 +4,7 @@ import os
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
-from .helpers import ChurnHelper
+from .helper import ChurnHelper
 from .schemas import DeltasSchema, ChangesSchema, ChurnSchema, ProjectSchema
 
 logger = logging.getLogger(__name__)
