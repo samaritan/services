@@ -1,4 +1,5 @@
 import logging
+import os
 
 import graph_tool
 from graph_tool.centrality import betweenness
@@ -38,8 +39,8 @@ def _prune_graph(graph, options):
     return graph
 
 
-def get_contribution(changes, processes, **options):
-    graph_tool.openmp_set_num_threads(processes)
+def get_contribution(changes, **options):
+    graph_tool.openmp_set_num_threads(os.cpu_count())
 
     contribution = None
 

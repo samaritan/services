@@ -1,5 +1,4 @@
 import logging
-import os
 
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
@@ -25,7 +24,7 @@ class ChurnService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, processes=os.cpu_count(), **options):
+    def collect(self, project, **options):
         logger.debug(project)
 
         project = ProjectSchema().load(self.project_rpc.get(project))

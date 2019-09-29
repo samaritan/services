@@ -25,7 +25,7 @@ class KeywordService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, processes=os.cpu_count(), **options):
+    def collect(self, project, **options):
         logger.debug(project)
 
         project = ProjectSchema().load(self.project_rpc.get(project))

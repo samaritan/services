@@ -23,7 +23,7 @@ class MessageTokensService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, processes=os.cpu_count(), **options):
+    def collect(self, project, **options):
         logger.debug(project)
 
         messages = self._get_messages(project)

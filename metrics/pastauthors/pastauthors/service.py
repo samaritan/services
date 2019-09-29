@@ -1,5 +1,4 @@
 import logging
-import os
 
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
@@ -36,10 +35,10 @@ class PastAuthorsService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, processes=os.cpu_count(), **options):
+    def collect(self, project, **options):
         logger.debug(project)
 
-        changes = self.repository_rpc.get_changes(project, processes)
+        changes = self.repository_rpc.get_changes(project)
         changes = ChangesSchema(many=True).load(changes)
         pastauthors = _get_pastauthors(changes)
 

@@ -1,5 +1,6 @@
 import itertools
 import logging
+import os
 
 import graph_tool
 
@@ -49,8 +50,8 @@ def _transform(graph, centralities):
     return _centralities
 
 
-def get_collaboration(changes, processes, **options):
-    graph_tool.openmp_set_num_threads(processes)
+def get_collaboration(changes, **options):
+    graph_tool.openmp_set_num_threads(os.cpu_count())
     whitelister = _get_whitelister(**options)
 
     collaboration = None

@@ -1,5 +1,4 @@
 import logging
-import os
 
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc
@@ -16,7 +15,7 @@ class OffenderService:
     config = Config()
 
     @rpc
-    def collect(self, project, processes=os.cpu_count(), **options):
+    def collect(self, project, **options):
         logger.debug(project)
 
         offenders = get_offenders(project)

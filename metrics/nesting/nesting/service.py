@@ -1,5 +1,4 @@
 import logging
-import os
 
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
@@ -27,7 +26,7 @@ class ComplexityService:
     understand_rpc = RpcProxy('understand')
 
     @rpc
-    def collect(self, project, processes=os.cpu_count(), **options):
+    def collect(self, project, **options):
         logger.debug(project)
         metrics = self.understand_rpc.get_metrics(project, METRICS)
         metrics = MetricsSchema(many=True).load(metrics)
