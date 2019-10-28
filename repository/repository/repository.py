@@ -147,11 +147,11 @@ class Repository:
         _handle_exit(ethread)
 
     def get_content(self, oid):
-        command = COMMANDS['content'].format(oid=oid)
-        ostream, ethread = self._runner.run(command)
-        content = ostream.read()
-        _handle_exit(ethread)
-        return content
+        if oid in self._pygit_repository:
+            blob = self._pygit_repository[oid]
+            if not blob.is_binary:
+                return blob.data.decode(errors='replace')
+        return None
 
     def get_deltas(self):
         commits = {c.sha: c for c in self.get_commits()}
