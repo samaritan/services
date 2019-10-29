@@ -60,7 +60,8 @@ class Helper:
         functions = None
         if self._parser.is_parsable(path):
             contents = self._repository.get_content(self._project, oid)
-            functions = self._parser.get_functions(path, contents)
+            if contents:
+                functions = self._parser.get_functions(path, contents)
         return FunctionSchema(many=True).load(functions) if functions else None
 
     def _get_lineschanged(self, commit, path):
