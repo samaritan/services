@@ -7,7 +7,7 @@ class EntitySchema(Schema):
     uid = fields.Integer()
     type = fields.String()
     name = fields.String()
-    path = fields.String()
+    path = fields.String(allow_none=True)
 
     @post_load
     def make_entity(self, data, **kwwargs):
