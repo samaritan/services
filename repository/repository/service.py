@@ -6,6 +6,7 @@ from nameko.rpc import rpc, RpcProxy
 
 from .cache import Cache
 from .exceptions import NotCloned
+from .redis import Redis
 from .repository import Repository
 from .runner import Runner
 from .schemas import ChangesSchema, CommitSchema, DeltasSchema,               \
@@ -21,6 +22,7 @@ class RepositoryService:
 
     cache = Cache()
     config = Config()
+    redis = Redis()
     project_rpc = RpcProxy('project')
 
     @rpc
@@ -41,7 +43,16 @@ class RepositoryService:
     def get_content(self, project, oid):
         project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project)
-        return repository.get_content(oid)
+
+        key = f'{project.name}_{oid}'
+        content = self.redis.get(key)
+        if content is None:
+            content = repository.get_content(oid)
+            if content is not None:
+                self.redis.set(key, content)
+        else:
+            content = content.decode(errors='replace')
+        return content
 
     @rpc
     def get_deltas(self, project):
