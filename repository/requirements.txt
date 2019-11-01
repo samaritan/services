@@ -4,3 +4,4 @@ kombu==4.6.3
 nameko>=2.11
 pygit2>=0.28.2
 pyyaml>=5.1
+redis>=3.3

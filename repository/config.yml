@@ -2,6 +2,7 @@ AMQP_URI: amqp://${RABBIT_USER:guest}:${RABBIT_PASSWORD:guest}@${RABBIT_HOST:loc
 HEARTBEAT: ${RABBIT_HEARTBEAT:60}
 REPOSITORIES_ROOT: ${REPOSITORIES_ROOT:'/dev/shm'}
 CACHE_ROOT: ${CACHE_ROOT:'/dev/shm'}
+REDIS_URL: redis://:${REDIS_PASSWORD:guest}@${REDIS_HOST:localhost}/0
 LOGGING:
   version: 1
   disable_existing_loggers: False
