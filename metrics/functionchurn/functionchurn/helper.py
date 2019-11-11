@@ -28,10 +28,11 @@ def _get_functionchurn(before, after, lines):
 
 
 class Helper:
-    def __init__(self, project, repository, parser):
+    def __init__(self, project, repository, parser, redis):
         self._project = project.name
         self._repository = repository
         self._parser = parser
+        self._redis = redis
 
     def collect(self, changes):
         changes = (
@@ -42,6 +43,11 @@ class Helper:
             yield item
 
     def _get_functionchurn(self, commit, path, change):
+        key = f'{self._project}_{commit.sha}_{hash(path)}'
+        if self._redis.exists(key):
+            components = tuple(int(i) for i in self._redis.lrange(key, 0, 2))
+            return FunctionChurn(commit, path, *components)
+
         before = self._get_functions(path, change.oids.before)
         after = self._get_functions(path, change.oids.after)
         lines = None
@@ -51,9 +57,10 @@ class Helper:
         # `before` and `after` are None iff `path` is not parsed (either
         #   because there is no parser to parse language that `path` is
         #   written in (or) there was an error when parsing `path`.
-        components = None, None, None
+        components = (None, None, None)
         if before is not None and after is not None:
             components = _get_functionchurn(before, after, lines)
+            self._redis.rpush(key, *components)
         return FunctionChurn(commit, path, *components)
 
     def _get_functions(self, path, oid):
