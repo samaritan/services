@@ -2,7 +2,7 @@ version: "3.7"
 services:
   # Backend Services
   rabbit:
-    image: rabbitmq
+    image: rabbitmq:3.7
     ports:
       - "${RABBIT_PORT}:${RABBIT_PORT}"
     volumes:
