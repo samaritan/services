@@ -7,32 +7,23 @@ import understand
 
 from . import utilities
 
+_RELATIVE_PREFIX = 'RELATIVE:/'
 logger = logging.getLogger(__name__)
 
 
-def _get_name(entity):
-    name = None
-
-    type_ = _get_type(entity)
+def _get_name(entity, type_):
     if type_ == 'function':
-        name = f'{entity.simplename()}({entity.parameters()})'
-    elif type_ == 'file':
-        name = entity.relname()
-
-    return name
+        return f'{entity.simplename()}({entity.parameters()})'
+    return entity.relname().replace(_RELATIVE_PREFIX, '')
 
 
 def _get_file(entity):
-    file_ = None
-
     while entity is not None:
-        if entity.parent() is not None and \
-           _get_type(entity.parent()) == 'file':
-            file_ = entity.parent().relname()
-            break
+        if entity.parent() is not None:
+            type_ = _get_type(entity.parent())
+            if type_ == 'file':
+                return _get_name(entity.parent(), type_)
         entity = entity.parent()
-
-    return file_
 
 
 def _get_type(entity):
@@ -92,13 +83,11 @@ class UDB:
         values = list()
         with _open_udb(self._udb_path) as udb:
             for entity in udb.ents('file,function,procedure,method'):
-                uid = entity.id()
-                name = _get_name(entity)
                 type_ = _get_type(entity)
+                uid = entity.id()
+                name = _get_name(entity, type_)
                 path = name if type_ == 'file' else _get_file(entity)
-                path = path.replace('RELATIVE:/', '') if path else path
                 _entity = (uid, name, type_, path)
-
                 values.append((_entity, entity.metric(metrics)))
         return values
 
