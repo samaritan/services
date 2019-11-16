@@ -13,6 +13,20 @@ services:
       placement:
         constraints:
           - node.role == manager
+  redis:
+    image: redis
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT}"
+    volumes:
+      - /data/redis:/data
+    secrets:
+      - redis.conf
+    command: redis-server /run/secrets/redis.conf
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
   # Primitive Services
   parser:
     image: nuthan-db.se.rit.edu/samaritan-parser
@@ -61,6 +75,8 @@ services:
       RABBIT_USER: "${RABBIT_USER}"
       RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
       RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
+      REDIS_HOST: "redis"
+      REDIS_PASSWORD: "${REDIS_PASSWORD}"
     deploy:
       mode: replicated
       replicas: 2
@@ -332,3 +348,6 @@ services:
       placement:
         constraints:
           - node.role == manager
+secrets:
+  redis.conf:
+    external: true
