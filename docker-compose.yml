@@ -12,7 +12,7 @@ services:
       mode: global
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == ${HOSTNAME}
   redis:
     image: redis
     ports:
@@ -26,7 +26,7 @@ services:
       mode: global
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == ${HOSTNAME}
   # Primitive Services
   parser:
     image: nuthan-db.se.rit.edu/samaritan-parser
@@ -43,7 +43,7 @@ services:
       mode: global
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == ${HOSTNAME}
   project:
     image: nuthan-db.se.rit.edu/samaritan-project
     depends_on:
@@ -58,7 +58,7 @@ services:
       mode: global
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == ${HOSTNAME}
   repository:
     image: nuthan-db.se.rit.edu/samaritan-repository
     volumes:
@@ -82,7 +82,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == ${HOSTNAME}
   understand:
     image: nuthan-db.se.rit.edu/samaritan-understand
     volumes:
@@ -102,7 +102,7 @@ services:
       mode: global
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == ${HOSTNAME}
   # Metric Services
   churn:
     image: nuthan-db.se.rit.edu/samaritan-metrics-churn
@@ -119,7 +119,7 @@ services:
       mode: global
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == ${HOSTNAME}
   collaboration:
     image: nuthan-db.se.rit.edu/samaritan-metrics-collaboration
     depends_on:
@@ -135,7 +135,7 @@ services:
       mode: global
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == ${HOSTNAME}
   contribution:
     image: nuthan-db.se.rit.edu/samaritan-metrics-contribution
     depends_on:
@@ -151,7 +151,7 @@ services:
       mode: global
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == ${HOSTNAME}
   complexity:
     image: nuthan-db.se.rit.edu/samaritan-metrics-complexity
     depends_on:
@@ -168,7 +168,7 @@ services:
       mode: global
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == ${HOSTNAME}
   flow:
     image: nuthan-db.se.rit.edu/samaritan-metrics-flow
     depends_on:
@@ -185,7 +185,7 @@ services:
       mode: global
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == ${HOSTNAME}
   functionchurn:
     image: nuthan-db.se.rit.edu/samaritan-metrics-functionchurn
     depends_on:
@@ -205,7 +205,7 @@ services:
       mode: global
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == ${HOSTNAME}
   hunk:
     image: nuthan-db.se.rit.edu/samaritan-metrics-hunk
     depends_on:
@@ -221,7 +221,7 @@ services:
       mode: global
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == ${HOSTNAME}
   keyword:
     image: nuthan-db.se.rit.edu/samaritan-metrics-keyword
     depends_on:
@@ -237,7 +237,7 @@ services:
       mode: global
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == ${HOSTNAME}
   loc:
     image: nuthan-db.se.rit.edu/samaritan-metrics-loc
     depends_on:
@@ -254,7 +254,7 @@ services:
       mode: global
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == ${HOSTNAME}
   messagetokens:
     image: nuthan-db.se.rit.edu/samaritan-metrics-messagetokens
     depends_on:
@@ -270,7 +270,7 @@ services:
       mode: global
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == ${HOSTNAME}
   nesting:
     image: nuthan-db.se.rit.edu/samaritan-metrics-nesting
     depends_on:
@@ -287,7 +287,7 @@ services:
       mode: global
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == ${HOSTNAME}
   offender:
     image: nuthan-db.se.rit.edu/samaritan-metrics-offender
     depends_on:
@@ -303,7 +303,7 @@ services:
       mode: global
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == ${HOSTNAME}
   ownership:
     image: nuthan-db.se.rit.edu/samaritan-metrics-ownership
     depends_on:
@@ -319,7 +319,7 @@ services:
       mode: global
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == ${HOSTNAME}
   pastauthors:
     image: nuthan-db.se.rit.edu/samaritan-metrics-pastauthors
     depends_on:
@@ -335,7 +335,7 @@ services:
       mode: global
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == ${HOSTNAME}
   pastchanges:
     image: nuthan-db.se.rit.edu/samaritan-metrics-pastchanges
     depends_on:
@@ -351,7 +351,7 @@ services:
       mode: global
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == ${HOSTNAME}
   patchtokens:
     image: nuthan-db.se.rit.edu/samaritan-metrics-patchtokens
     depends_on:
@@ -367,7 +367,7 @@ services:
       mode: global
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == ${HOSTNAME}
 secrets:
   redis.conf:
     external: true
