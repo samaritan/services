@@ -4,7 +4,7 @@ services:
   rabbit:
     image: rabbitmq
     ports:
-      - "5672:5672"
+      - "${RABBIT_PORT}:${RABBIT_PORT}"
     volumes:
       - ./configuration/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
       - ./configuration/enabled_plugins:/etc/rabbitmq/enabled_plugins
@@ -21,10 +21,10 @@ services:
     environment:
       LD_LIBRARY_PATH: "/usr/local/lib"
       RABBIT_HOST: "rabbit"
-      RABBIT_PORT: "5672"
-      RABBIT_USER: "guest"
-      RABBIT_PASSWORD: "guest"
-      RABBIT_HEARTBEAT: 600
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
       mode: global
       placement:
@@ -36,10 +36,10 @@ services:
       - "rabbit"
     environment:
       RABBIT_HOST: "rabbit"
-      RABBIT_PORT: "5672"
-      RABBIT_USER: "guest"
-      RABBIT_PASSWORD: "guest"
-      RABBIT_HEARTBEAT: 600
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
       mode: global
       placement:
@@ -48,8 +48,8 @@ services:
   repository:
     image: nuthan-db.se.rit.edu/samaritan-repository
     volumes:
-      - /data/repositories:/samaritan/repositories
-      - /data/cache:/samaritan/cache
+      - ${REPOSITORIES_ROOT}:/samaritan/repositories
+      - ${CACHE_ROOT}:/samaritan/cache
     depends_on:
       - "rabbit"
       - "project"
@@ -57,10 +57,10 @@ services:
       REPOSITORIES_ROOT: "/samaritan/repositories"
       CACHE_ROOT: "/samaritan/cache"
       RABBIT_HOST: "rabbit"
-      RABBIT_PORT: "5672"
-      RABBIT_USER: "guest"
-      RABBIT_PASSWORD: "guest"
-      RABBIT_HEARTBEAT: 600
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
       mode: replicated
       replicas: 2
@@ -70,18 +70,18 @@ services:
   understand:
     image: nuthan-db.se.rit.edu/samaritan-understand
     volumes:
-      - /data/repositories:/samaritan/repositories
-      - /data/understand:/samaritan/understand
+      - ${REPOSITORIES_ROOT}:/samaritan/repositories
+      - ${UNDERSTAND_ROOT}:/samaritan/understand
     depends_on:
       - "rabbit"
       - "project"
     environment:
       UNDERSTAND_ROOT: "/samaritan/understand"
       RABBIT_HOST: "rabbit"
-      RABBIT_PORT: "5672"
-      RABBIT_USER: "guest"
-      RABBIT_PASSWORD: "guest"
-      RABBIT_HEARTBEAT: 600
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
       mode: global
       placement:
@@ -94,11 +94,11 @@ services:
       - "rabbit"
       - "repository"
     environment:
-      RABBIT_PASSWORD: "guest"
-      RABBIT_HEARTBEAT: 600
-      RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
-      RABBIT_PORT: "5672"
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
       mode: global
       placement:
@@ -110,11 +110,11 @@ services:
       - "rabbit"
       - "repository"
     environment:
-      RABBIT_PASSWORD: "guest"
-      RABBIT_HEARTBEAT: 600
-      RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
-      RABBIT_PORT: "5672"
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
       mode: global
       placement:
@@ -126,11 +126,11 @@ services:
       - "rabbit"
       - "repository"
     environment:
-      RABBIT_PASSWORD: "guest"
-      RABBIT_HEARTBEAT: 600
-      RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
-      RABBIT_PORT: "5672"
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
       mode: global
       placement:
@@ -143,11 +143,11 @@ services:
       - "rabbit"
       - "understand"
     environment:
-      RABBIT_PASSWORD: "guest"
-      RABBIT_HEARTBEAT: 600
-      RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
-      RABBIT_PORT: "5672"
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
       mode: global
       placement:
@@ -160,11 +160,11 @@ services:
       - "rabbit"
       - "understand"
     environment:
-      RABBIT_PASSWORD: "guest"
-      RABBIT_HEARTBEAT: 600
-      RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
-      RABBIT_PORT: "5672"
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
       mode: global
       placement:
@@ -176,11 +176,11 @@ services:
       - "project"
       - "rabbit"
     environment:
-      RABBIT_PASSWORD: "guest"
-      RABBIT_HEARTBEAT: 600
-      RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
-      RABBIT_PORT: "5672"
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
       mode: global
       placement:
@@ -192,11 +192,11 @@ services:
       - "project"
       - "rabbit"
     environment:
-      RABBIT_PASSWORD: "guest"
-      RABBIT_HEARTBEAT: 600
-      RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
-      RABBIT_PORT: "5672"
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
       mode: global
       placement:
@@ -209,11 +209,11 @@ services:
       - "repository"
       - "understand"
     environment:
-      RABBIT_PASSWORD: "guest"
-      RABBIT_HEARTBEAT: 600
-      RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
-      RABBIT_PORT: "5672"
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
       mode: global
       placement:
@@ -225,11 +225,11 @@ services:
       - "rabbit"
       - "repository"
     environment:
-      RABBIT_PASSWORD: "guest"
-      RABBIT_HEARTBEAT: 600
-      RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
-      RABBIT_PORT: "5672"
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
       mode: global
       placement:
@@ -242,11 +242,11 @@ services:
       - "rabbit"
       - "understand"
     environment:
-      RABBIT_PASSWORD: "guest"
-      RABBIT_HEARTBEAT: 600
-      RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
-      RABBIT_PORT: "5672"
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
       mode: global
       placement:
@@ -258,11 +258,11 @@ services:
       - "rabbit"
       - "repository"
     environment:
-      RABBIT_PASSWORD: "guest"
-      RABBIT_HEARTBEAT: 600
-      RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
-      RABBIT_PORT: "5672"
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
       mode: global
       placement:
@@ -274,11 +274,11 @@ services:
       - "rabbit"
       - "repository"
     environment:
-      RABBIT_PASSWORD: "guest"
-      RABBIT_HEARTBEAT: 600
-      RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
-      RABBIT_PORT: "5672"
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
       mode: global
       placement:
@@ -290,11 +290,11 @@ services:
       - "rabbit"
       - "repository"
     environment:
-      RABBIT_PASSWORD: "guest"
-      RABBIT_HEARTBEAT: 600
-      RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
-      RABBIT_PORT: "5672"
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
       mode: global
       placement:
@@ -306,11 +306,11 @@ services:
       - "rabbit"
       - "repository"
     environment:
-      RABBIT_PASSWORD: "guest"
-      RABBIT_HEARTBEAT: 600
-      RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
-      RABBIT_PORT: "5672"
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
       mode: global
       placement:
@@ -322,11 +322,11 @@ services:
       - "rabbit"
       - "repository"
     environment:
-      RABBIT_PASSWORD: "guest"
-      RABBIT_HEARTBEAT: 600
-      RABBIT_USER: "guest"
       RABBIT_HOST: "rabbit"
-      RABBIT_PORT: "5672"
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
       mode: global
       placement:
