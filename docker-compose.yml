@@ -186,6 +186,26 @@ services:
       placement:
         constraints:
           - node.role == manager
+  functionchurn:
+    image: nuthan-db.se.rit.edu/samaritan-metrics-functionchurn
+    depends_on:
+      - "project"
+      - "rabbit"
+      - "repository"
+      - "redis"
+    environment:
+      RABBIT_HOST: "rabbit"
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
+      REDIS_HOST: "redis"
+      REDIS_PASSWORD: "${REDIS_PASSWORD}"
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
   hunk:
     image: nuthan-db.se.rit.edu/samaritan-metrics-hunk
     depends_on:
