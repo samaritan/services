@@ -7,7 +7,7 @@ RUN apt-get update && \
   apt-get -y install netcat wget && \
   apt-get clean && \
   wget --quiet -O - \
-    http://builds.scitools.com/all_builds/b955/Understand/Understand-5.0.955-Linux-64bit.tgz | \
+    http://builds.scitools.com/all_builds/b1007/Understand/Understand-5.1.1007-Linux-64bit.tgz | \
     tar zxf -
 
 ENV PYTHONPATH=/samaritan/services/understand/scitools/bin/linux64/Python/ \
