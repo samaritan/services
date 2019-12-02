@@ -183,7 +183,10 @@ class Repository:
 
         key, command = self._get_key('files_all'), COMMANDS['files']['all']
         ostream, ethread = self._runner.run(command, key=key)
-        for path in ostream:
+        paths = set()
+        for _, lines in parsers.GitLogParser.parse(ostream):
+            paths |= set(lines)
+        for path in paths:
             path = path.strip('\n')
             mpath = os.path.dirname(path)                        \
                     if os.path.dirname(path) != '' else '(root)'

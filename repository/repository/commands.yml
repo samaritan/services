@@ -1,13 +1,13 @@
 ---
-changes: git log --no-merges --pretty=%H | git diff-tree -r --no-renames --root --stdin --pretty=*%n%H
-commits: git log --no-merges --pretty='"%H","%ct","%aN","%aE"'
+changes: git log --pretty=%H | git diff-tree -r --no-renames --root --stdin --pretty=*%n%H
+commits: git log --pretty='"%H","%ct","%aN","%aE"'
 content: git show {oid}
-deltas: git log --no-merges --no-renames --numstat --pretty=*%n%H
-developers: git log --no-merges --pretty='"%aN","%aE"'| sort -u
+deltas: git log --no-renames --numstat --pretty=*%n%H
+developers: git log --pretty='"%aN","%aE"'| sort -u
 files:
-  all: git log --no-merges --no-renames --pretty= --name-only | sort -u
+  all: git log --pretty=%H | git show --name-only --no-renames --stdin --pretty=*%n%H
   active: git ls-files
-messages: cat {filename} | xargs git show --no-merges --no-patch --pretty=*%n%H%n%n%B
+messages: cat {filename} | xargs git show --no-patch --pretty=*%n%H%n%n%B
 moves: git log -M100% --diff-filter=R --summary --pretty=*%n%H
-patches: cat {filename} | xargs git show --no-merges --patch --pretty=*%n%H
-version: git log --no-merges -1 --pretty=%h
+patches: cat {filename} | xargs git show --patch --pretty=*%n%H
+version: git log -1 --pretty=%h
