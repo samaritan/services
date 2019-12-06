@@ -231,8 +231,8 @@ class Repository:
     def get_moves(self):
         commits = {c.sha: c for c in self.get_commits()}
 
-        key, command = self._get_key('moves'), COMMANDS['moves']
-        ostream, ethread = self._runner.run(command, key=key)
+        command = COMMANDS['moves']
+        ostream, ethread = self._runner.run(command)
 
         for sha, lines in parsers.GitLogParser.parse(ostream):
             yield _get_moves(lines, commits[sha])
