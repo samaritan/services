@@ -8,6 +8,6 @@ files:
   all: git log --pretty=%H | git show --name-only --no-renames --stdin --pretty=*%n%H
   active: git ls-files
 messages: cat {filename} | xargs git show --no-patch --pretty=*%n%H%n%n%B
-moves: git log -M100% --diff-filter=R --summary --pretty=*%n%H
+moves: git log -M{similarity}% --diff-filter=R --summary --pretty=*%n%H
 patches: cat {filename} | xargs git show --patch --pretty=*%n%H
 version: git log -1 --pretty=%h

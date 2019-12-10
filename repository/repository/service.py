@@ -99,10 +99,10 @@ class RepositoryService:
         return ModuleSchema(many=True).dump(modules)
 
     @rpc
-    def get_moves(self, project):
+    def get_moves(self, project, similarity=100):
         project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project)
-        moves = list(repository.get_moves())
+        moves = list(repository.get_moves(similarity))
         return MovesSchema(many=True).dump(moves)
 
     @rpc

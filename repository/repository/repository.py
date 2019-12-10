@@ -228,10 +228,11 @@ class Repository:
                 yield file_.module
                 modules.add(file_.module)
 
-    def get_moves(self):
+    def get_moves(self, similarity=100):
+        similarity = min(similarity, 100)
         commits = {c.sha: c for c in self.get_commits()}
 
-        command = COMMANDS['moves']
+        command = COMMANDS['moves'].format(similarity=similarity)
         ostream, ethread = self._runner.run(command)
 
         for sha, lines in parsers.GitLogParser.parse(ostream):
