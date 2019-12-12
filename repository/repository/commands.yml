@@ -1,5 +1,5 @@
 ---
-changes: git log --pretty=%H | git diff-tree -r --no-renames --root --stdin --pretty=*%n%H
+changes: git log --pretty=%H,%P | awk -F",| " '{ print $1 " " $2 }' | git diff-tree -r -m --no-renames --root --stdin --pretty=*%n%H
 commits: git log --pretty='"%H","%ct","%aN","%aE"'
 content: git show {oid}
 deltas: git log --no-renames --numstat --pretty=*%n%H
