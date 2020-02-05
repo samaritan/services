@@ -2,6 +2,7 @@ import logging
 
 import eventlet
 
+from . import utilities
 from .models import FunctionChurn
 from .models.enumerations import ChangeType, LineType
 from .schemas import CommitSchema, FunctionSchema, LineChangesSchema
@@ -46,7 +47,7 @@ class Helper:
             yield item
 
     def _get_functionchurn(self, commit, path, change):
-        key = f'{self._project}_{commit.sha}_{hash(path)}'
+        key = f'{self._project}_{commit.sha}_{utilities.hashit(path)}'
         if self._redis.exists(key):
             components = tuple(int(i) for i in self._redis.lrange(key, 0, 2))
             return FunctionChurn(commit, path, *components)
