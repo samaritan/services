@@ -10,6 +10,9 @@ logger = logging.getLogger(__name__)
 
 
 def _get_functionchurn(before, after, lines):
+    before = list() if before is None else before  # File could have been added
+    after = list() if after is None else after  # File could have been deleted
+
     bnames = {f.name for f in before}
     anames = {f.name for f in after}
 
@@ -58,7 +61,7 @@ class Helper:
         #   because there is no parser to parse language that `path` is
         #   written in (or) there was an error when parsing `path`.
         components = (None, None, None)
-        if before is not None and after is not None:
+        if before is not None or after is not None:
             components = _get_functionchurn(before, after, lines)
             self._redis.rpush(key, *components)
         return FunctionChurn(commit, path, *components)
