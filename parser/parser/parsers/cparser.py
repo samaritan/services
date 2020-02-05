@@ -20,6 +20,9 @@ def _filename_filter(functions, name):
     return filter(_filter, functions)
 
 
+# Since our implementation of the Function Churn metric is based on that in
+#   VCCFinder the filters below are from their implementation. See
+#   https://github.com/hperl/vccfinder/blob/master/function.c#L124.
 def _kind_filter(functions):
     kinds = {
         clang.cindex.CursorKind.FUNCTION_DECL,
