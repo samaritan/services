@@ -93,6 +93,7 @@ services:
       - "project"
     environment:
       UNDERSTAND_ROOT: "/samaritan/understand"
+      UNDERSTAND_LICENSE: "${UNDERSTAND_LICENSE}"
       RABBIT_HOST: "rabbit"
       RABBIT_PORT: ${RABBIT_PORT}
       RABBIT_USER: "${RABBIT_USER}"
