@@ -40,7 +40,8 @@ services:
       RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
       RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 2
       placement:
         constraints:
           - node.hostname == ${HOSTNAME}
