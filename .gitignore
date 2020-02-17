@@ -146,6 +146,7 @@ tags
 
 ## Sensitive File
 .envrc
+rabbitmq.conf
 
 ## Convenience Makefile used during development
 Makefile
