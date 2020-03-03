@@ -10,7 +10,7 @@ ENV PYTHON_PIP_VERSION 18.1
 RUN apt-get update && \
   # Install gpg to allow key from publishers of Graph Tool
   apt-get install -y gnupg && \
-  apt-key adv --batch --keyserver pgp.skewed.de --recv-key $GPGKEY && \
+  apt-key adv --batch --keyserver keyserver.ubuntu.com --recv-key $GPGKEY && \
   echo "deb $DEB" >> /etc/apt/sources.list && \
   echo "deb-src $DEBSRC" >> /etc/apt/sources.list && \
   # Install Python 3.7 and Graph Tool
