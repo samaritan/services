@@ -29,7 +29,7 @@ services:
           - node.hostname == ${HOSTNAME}
   # Primitive Services
   parser:
-    image: nuthan-db.se.rit.edu/samaritan-parser
+    image: docker.pkg.github.com/samaritan/services/samaritan-parser
     depends_on:
       - "rabbit"
     environment:
@@ -46,7 +46,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   project:
-    image: nuthan-db.se.rit.edu/samaritan-project
+    image: docker.pkg.github.com/samaritan/services/samaritan-project
     depends_on:
       - "rabbit"
     environment:
@@ -61,7 +61,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   repository:
-    image: nuthan-db.se.rit.edu/samaritan-repository
+    image: docker.pkg.github.com/samaritan/services/samaritan-repository
     volumes:
       - ${REPOSITORIES_ROOT}:/samaritan/repositories
       - ${CACHE_ROOT}:/samaritan/cache
@@ -85,7 +85,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   understand:
-    image: nuthan-db.se.rit.edu/samaritan-understand
+    image: docker.pkg.github.com/samaritan/services/samaritan-understand
     volumes:
       - ${REPOSITORIES_ROOT}:/samaritan/repositories
       - ${UNDERSTAND_ROOT}:/samaritan/understand
@@ -107,7 +107,7 @@ services:
           - node.hostname == ${HOSTNAME}
   # Metric Services
   churn:
-    image: nuthan-db.se.rit.edu/samaritan-metrics-churn
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-churn
     depends_on:
       - "rabbit"
       - "repository"
@@ -123,7 +123,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   collaboration:
-    image: nuthan-db.se.rit.edu/samaritan-metrics-collaboration
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-collaboration
     depends_on:
       - "rabbit"
       - "repository"
@@ -139,7 +139,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   contribution:
-    image: nuthan-db.se.rit.edu/samaritan-metrics-contribution
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-contribution
     depends_on:
       - "rabbit"
       - "repository"
@@ -155,7 +155,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   complexity:
-    image: nuthan-db.se.rit.edu/samaritan-metrics-complexity
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-complexity
     depends_on:
       - "project"
       - "rabbit"
@@ -172,7 +172,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   flow:
-    image: nuthan-db.se.rit.edu/samaritan-metrics-flow
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-flow
     depends_on:
       - "project"
       - "rabbit"
@@ -189,7 +189,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   functionchurn:
-    image: nuthan-db.se.rit.edu/samaritan-metrics-functionchurn
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-functionchurn
     depends_on:
       - "project"
       - "rabbit"
@@ -209,7 +209,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   hunk:
-    image: nuthan-db.se.rit.edu/samaritan-metrics-hunk
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-hunk
     depends_on:
       - "project"
       - "rabbit"
@@ -225,7 +225,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   keyword:
-    image: nuthan-db.se.rit.edu/samaritan-metrics-keyword
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-keyword
     depends_on:
       - "project"
       - "rabbit"
@@ -241,7 +241,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   loc:
-    image: nuthan-db.se.rit.edu/samaritan-metrics-loc
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-loc
     depends_on:
       - "rabbit"
       - "repository"
@@ -258,7 +258,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   messagetokens:
-    image: nuthan-db.se.rit.edu/samaritan-metrics-messagetokens
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-messagetokens
     depends_on:
       - "rabbit"
       - "repository"
@@ -274,7 +274,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   nesting:
-    image: nuthan-db.se.rit.edu/samaritan-metrics-nesting
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-nesting
     depends_on:
       - "project"
       - "rabbit"
@@ -291,7 +291,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   offender:
-    image: nuthan-db.se.rit.edu/samaritan-metrics-offender
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-offender
     depends_on:
       - "rabbit"
       - "repository"
@@ -307,7 +307,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   ownership:
-    image: nuthan-db.se.rit.edu/samaritan-metrics-ownership
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-ownership
     depends_on:
       - "rabbit"
       - "repository"
@@ -323,7 +323,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   pastauthors:
-    image: nuthan-db.se.rit.edu/samaritan-metrics-pastauthors
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-pastauthors
     depends_on:
       - "rabbit"
       - "repository"
@@ -339,7 +339,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   pastchanges:
-    image: nuthan-db.se.rit.edu/samaritan-metrics-pastchanges
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-pastchanges
     depends_on:
       - "rabbit"
       - "repository"
@@ -355,7 +355,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   patchtokens:
-    image: nuthan-db.se.rit.edu/samaritan-metrics-patchtokens
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-patchtokens
     depends_on:
       - "rabbit"
       - "repository"
