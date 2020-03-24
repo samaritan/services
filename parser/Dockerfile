@@ -1,4 +1,4 @@
-FROM nuthan-db.se.rit.edu/clang
+FROM docker.pkg.github.com/samaritan/supplements/clang:0.1.0-alpha
 
 WORKDIR /samaritan/services/parser
 ENV PYTHON_PIP_VERSION 18.1
