@@ -26,7 +26,7 @@ class RepositoryService:
     project_rpc = RpcProxy('project')
 
     @rpc
-    def get_changes(self, project): 
+    def get_changes(self, project):
         project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project)
         changes = list(repository.get_changes())
@@ -118,6 +118,14 @@ class RepositoryService:
         project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project)
         return repository.get_path()
+
+    @rpc
+    def get_size(self, project, oid):
+        content = self.get_content(project, oid)
+        if content is not None:
+            content = content.split('\n')
+            return len(content) if content[-1] else len(content) - 1
+        return None
 
     @rpc
     def get_version(self, project):
