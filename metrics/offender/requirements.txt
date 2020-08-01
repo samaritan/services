@@ -1,3 +1,2 @@
 marshmallow>=3.0
-kombu==4.6.3
 nameko>=2.11

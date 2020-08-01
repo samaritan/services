@@ -1,6 +1,5 @@
 diskcache>=3.1
 marshmallow>=3.0
-kombu==4.6.3
 nameko>=2.11
 pygit2>=0.28.2
 pyyaml>=5.1
