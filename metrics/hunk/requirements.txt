@@ -1,2 +1,2 @@
-marshmallow>=3.0
-nameko>=2.11
+marshmallow~=3.0
+nameko~=2.11
