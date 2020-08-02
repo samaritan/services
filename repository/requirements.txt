@@ -1,4 +1,4 @@
-diskcache~=3.1
+diskcache~=4.1
 marshmallow~=3.0
 nameko~=2.11
 pygit2~=0.28
