@@ -9,10 +9,11 @@ from .exceptions import NotCloned
 from .redis import Redis
 from .repository import Repository
 from .runner import Runner
-from .schemas import ChangesSchema, CommitSchema, DeltasSchema,               \
-                     DeveloperSchema, FileSchema, LineChangesSchema,          \
-                     MessageSchema, ModuleSchema, MovesSchema, PatchSchema,   \
-                     ProjectSchema
+from .schemas import ChangeSchema, ChangesSchema, CommitSchema,            \
+                     DeltaSchema, DeltasSchema, DeveloperSchema,           \
+                     FileSchema, LastModifierSchema, LineChangesSchema,    \
+                     MessageSchema, ModuleSchema, MoveSchema, MovesSchema, \
+                     PatchSchema, ProjectSchema
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +75,14 @@ class RepositoryService:
         repository = self._get_repository(project)
         files = list(repository.get_files())
         return FileSchema(many=True).dump(files)
+
+    @rpc
+    def get_lastmodifiers(self, project, commit, path, lines):
+        project = ProjectSchema().load(self.project_rpc.get(project))
+        commit = CommitSchema().load(commit)
+        repository = self._get_repository(project)
+        lastmodifiers = list(repository.get_lastmodifiers(commit, path, lines))
+        return LastModifierSchema(many=True).dump(lastmodifiers)
 
     @rpc
     def get_linechanges(self, project, commit):
