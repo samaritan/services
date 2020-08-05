@@ -8,8 +8,9 @@ import pygit2
 
 from . import parsers
 from .commands import COMMANDS
-from .models import Change, Changes, Commit, Delta, Deltas, Developer, File,  \
-                    LineChanges, Message, Module, Move, Moves, Oids, Patch
+from .models import Change, Changes, Commit, Delta, Deltas, Developer, File, \
+                    LastModifier, LineChanges, Message, Module, Move, Moves, \
+                    Oids, Patch
 from .models.enumerations import ChangeType, LineType
 
 _CHANGETYPE_MAP = {
@@ -24,6 +25,16 @@ _MOVESPECIFICATION_RE = re.compile(r'^ rename (?P<specification>.*) \(\d+%\)$')
 _SPACE_RE = re.compile(r'\s+')
 
 logger = logging.getLogger(__name__)
+
+
+def _collapse(data):
+    i = 0
+    while i < len(data):
+        j = i + 1
+        while j < len(data) and data[j] - data[j - 1] == 1:
+            j += 1
+        yield (data[i], data[j - 1])
+        i = j
 
 
 def _get_changes(lines, commit):
@@ -191,6 +202,20 @@ class Repository:
             mpath = os.path.dirname(path)                        \
                     if os.path.dirname(path) != '' else '(root)'
             yield File(path, path in active_files, Module(mpath))
+        _handle_exit(ethread)
+
+    def get_lastmodifiers(self, commit, path, lines):
+        commits = {c.sha: c for c in self.get_commits()}
+
+        command = COMMANDS['lastmodifiers']
+        lines = ' '.join(f'-L {a},{b}' for a, b in _collapse(lines))
+        command = command.format(sha=commit.sha, lines=lines, path=path)
+        ostream, ethread = self._runner.run(command)
+        for line in ostream:
+            components = line.split()
+            line = int(components[5].strip(')'))
+            commit = commits[components[0]]
+            yield LastModifier(line=line, commit=commit)
         _handle_exit(ethread)
 
     def get_linechanges(self, commit):
