@@ -60,6 +60,14 @@ class Deltas:
     deltas: Dict[str, Delta]
 
 
+@dataclasses.dataclass(frozen=True)
+class LastModifier:
+    __slots__ = ['line', 'commit']
+
+    line: int
+    commit: Commit
+
+
 @dataclasses.dataclass
 class LineChanges:
     __slots__ = ['commit', 'linechanges']

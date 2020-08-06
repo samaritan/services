@@ -1,8 +1,8 @@
 from marshmallow import Schema, fields, post_load
 
 from ..models import Change, Changes, Commit, Delta, Deltas, Developer, File, \
-                     LineChanges, Message, Module, Move, Moves, Oids, Patch
-
+                     LastModifier, LineChanges, Message, Module, Move, Moves, \
+                     Oids, Patch
 
 class OidsSchema(Schema):
     before = fields.String()
@@ -66,6 +66,15 @@ class ChangesSchema(Schema):
     @post_load
     def make_changes(self, data, **kwargs):
         return Changes(**data)
+
+
+class LastModifierSchema(Schema):
+    line = fields.Integer()
+    commit = fields.Nested(CommitSchema)
+
+    @post_load
+    def make_lastmodifier(self, data, **kwargs):
+        return LastModifier(**data)
 
 
 class LineChangesSchema(Schema):
