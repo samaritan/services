@@ -213,7 +213,8 @@ class Repository:
         ostream, ethread = self._runner.run(command)
         for line in ostream:
             components = line.split()
-            line = int(components[5].strip(')'))
+            line = line[line[:line.find(')')].rfind(' ') + 1:line.find(')')]
+            line = int(line)
             commit = commits[components[0]]
             yield LastModifier(line=line, commit=commit)
         _handle_exit(ethread)
