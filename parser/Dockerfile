@@ -1,28 +1,24 @@
-FROM docker.pkg.github.com/samaritan/supplements/clang:0.1.0-alpha
+FROM python:3.7-slim-buster
 
 WORKDIR /samaritan/services/parser
-ENV PYTHON_PIP_VERSION 18.1
 
 # Install Dependencies
-RUN apt-get update && \
-  # Install Python 3.7
-  apt-get update && \
-  apt-get -y install netcat netbase wget python3.7 python3-distutils && \
-  apt-get clean && \
-  ln -s /usr/bin/python3.7 /usr/local/bin/python && \
-  # Install pip
-  wget -qO get-pip.py "https://bootstrap.pypa.io/get-pip.py" && \
-  python get-pip.py --disable-pip-version-check --no-cache-dir \
-    "pip==$PYTHON_PIP_VERSION" && \
-  rm -f get-pip.py && \
-  # Install clang Python Bindings
-  cd /tmp/ && \
-  wget -q "https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/cfe-8.0.1.src.tar.xz.sig" && \
-  wget -q "https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/cfe-8.0.1.src.tar.xz" && \
-  gpg --verify cfe-8.0.1.src.tar.xz.sig cfe-8.0.1.src.tar.xz && \
-  mkdir clang && tar xf cfe-8.0.1.src.tar.xz -C clang --strip-components=1 && \
-  cp -r clang/bindings/python/clang /usr/lib/python3.7/ && \
-  rm -rf cfe-8.0.1.src.tar.xz.sig cfe-8.0.1.src.tar.xz clang
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN apt-get update && apt-get install -qq --no-install-recommends \
+      gnupg=2.2.* \
+      netcat=1.10-* \
+      wget=1.20.* && \
+    wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
+    echo "deb http://apt.llvm.org/buster/ llvm-toolchain-buster main" >> \
+      /etc/apt/sources.list && \
+    echo "deb-src http://apt.llvm.org/buster/ llvm-toolchain-buster main" \
+      >> /etc/apt/souces.list && \
+    apt-get update && \
+    apt-get install -qq --no-install-recommends \
+      python3-clang-12=1:12* && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV PYTHONPATH="${PYTHONPATH}:/usr/lib/python3/dist-packages/"
 
 # Setup Application Environment
 COPY requirements.txt .
@@ -33,4 +29,4 @@ RUN pip install --no-cache-dir --quiet --trusted-host pypi.python.org \
 COPY config.yml .
 COPY parser parser/
 COPY run.sh .
-CMD . /samaritan/services/parser/run.sh
+ENTRYPOINT ["/samaritan/services/parser/run.sh"]
