@@ -1,11 +1,10 @@
 import dataclasses
 
-from .understand import Entity
-
 
 @dataclasses.dataclass(frozen=True)
 class Complexity:
-    __slots__ = ['entity', 'complexity']
+    __slots__ = ['function', 'path', 'complexity']
 
-    entity: Entity
+    function: str
+    path: str
     complexity: int

@@ -1,11 +1,11 @@
 from marshmallow import Schema, fields, post_load
 
-from .understand import EntitySchema
 from ..models import Complexity
 
 
 class ComplexitySchema(Schema):
-    entity = fields.Nested(EntitySchema)
+    function = fields.String()
+    path = fields.String()
     complexity = fields.Integer()
 
     @post_load

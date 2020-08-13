@@ -1,23 +1,25 @@
 import logging
 
+from eventlet.greenpool import GreenPool
+from lizard import get_all_source_files, get_extensions, FileAnalyzer
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
 from .models import Complexity
-from .schemas import ComplexitySchema, MetricsSchema
+from .schemas import ComplexitySchema
 
 logger = logging.getLogger(__name__)
-METRICS = ['Cyclomatic']
+analyzer = FileAnalyzer(get_extensions([]))  # pylint: disable=invalid-name
 
-def _transform(metrics):
+
+def _get_complexities(path, file_):
     complexities = list()
-    for item in metrics:
-        entity = item.entity
-        complexity = item.metrics['Cyclomatic']
-        if entity.type == 'function' and complexity is not None:
-            complexities.append(Complexity(
-                entity=entity, complexity=complexity
-            ))
+
+    path = file_.replace(f'{path}/', '')
+    for function in analyzer(file_).function_list:
+        complexity = function.cyclomatic_complexity
+        complexities.append(Complexity(function.long_name, path, complexity))
+
     return complexities
 
 
@@ -25,11 +27,16 @@ class ComplexityService:
     name = 'complexity'
 
     config = Config()
-    understand_rpc = RpcProxy('understand')
+    repository_rpc = RpcProxy('repository')
 
     @rpc
     def collect(self, project, **options):
         logger.debug(project)
-        metrics = self.understand_rpc.get_metrics(project, METRICS)
-        metrics = MetricsSchema(many=True).load(metrics)
-        return ComplexitySchema(many=True).dump(_transform(metrics))
+        path = self.repository_rpc.get_path(project)
+
+        pool = GreenPool()
+        arguments = ((path, f) for f in get_all_source_files([path], [], None))
+        complexities = list()
+        for item in pool.starmap(_get_complexities, arguments):
+            complexities.extend(item)
+        return ComplexitySchema(many=True).dump(complexities)
