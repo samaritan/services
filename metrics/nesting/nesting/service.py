@@ -1,33 +1,42 @@
 import logging
 
+from eventlet.greenpool import GreenPool
+from lizard import get_all_source_files, get_extensions, FileAnalyzer
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
 from .models import Nesting
-from .schemas import NestingSchema, MetricsSchema
+from .schemas import NestingSchema
 
 logger = logging.getLogger(__name__)
-METRICS = ['MaxNesting']
+analyzer = FileAnalyzer(get_extensions(['nd']))  # pylint: disable=invalid-name
 
-def _transform(metrics):
+
+def _get_nestings(path, file_):
     nestings = list()
-    for item in metrics:
-        entity = item.entity
-        nesting = item.metrics['MaxNesting']
-        if nesting is not None:
-            nestings.append(Nesting(entity=entity, nesting=nesting))
+
+    path = file_.replace(f'{path}/', '')
+    for function in analyzer(file_).function_list:
+        nesting = function.max_nesting_depth
+        nestings.append(Nesting(function.long_name, path, nesting))
+
     return nestings
 
 
-class ComplexityService:
+class NestingService:
     name = 'nesting'
 
     config = Config()
-    understand_rpc = RpcProxy('understand')
+    repository_rpc = RpcProxy('repository')
 
     @rpc
     def collect(self, project, **options):
         logger.debug(project)
-        metrics = self.understand_rpc.get_metrics(project, METRICS)
-        metrics = MetricsSchema(many=True).load(metrics)
-        return NestingSchema(many=True).dump(_transform(metrics))
+        path = self.repository_rpc.get_path(project)
+
+        pool = GreenPool()
+        arguments = ((path, f) for f in get_all_source_files([path], [], None))
+        nestings = list()
+        for item in pool.starmap(_get_nestings, arguments):
+            nestings.extend(item)
+        return NestingSchema(many=True).dump(nestings)

@@ -1,11 +1,10 @@
 import dataclasses
 
-from .understand import Entity
-
 
 @dataclasses.dataclass(frozen=True)
 class Nesting:
-    __slots__ = ['entity', 'nesting']
+    __slots__ = ['function', 'path', 'nesting']
 
-    entity: Entity
+    function: str
+    path: str
     nesting: int

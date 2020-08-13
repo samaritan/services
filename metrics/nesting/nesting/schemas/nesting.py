@@ -1,11 +1,11 @@
 from marshmallow import Schema, fields, post_load
 
-from .understand import EntitySchema
 from ..models import Nesting
 
 
 class NestingSchema(Schema):
-    entity = fields.Nested(EntitySchema)
+    function = fields.String()
+    path = fields.String()
     nesting = fields.Integer()
 
     @post_load
