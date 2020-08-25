@@ -14,3 +14,7 @@ class ProjectNotFound(Exception):
 
 class NotCloned(Exception):
     pass
+
+
+class CommitNotFound(Exception):
+    pass

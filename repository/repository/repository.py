@@ -7,6 +7,7 @@ import tempfile
 import pygit2
 
 from . import parsers
+from .exceptions import CommitNotFound
 from .commands import COMMANDS
 from .models import Change, Changes, Commit, Delta, Deltas, Developer, File, \
                     LastModifier, LineChanges, Message, Module, Move, Moves, \
@@ -149,6 +150,21 @@ class Repository:
         for sha, lines in parsers.GitLogParser.parse(ostream):
             yield _get_changes(lines, commits[sha])
         _handle_exit(ethread)
+
+    def get_commit(self, sha):
+        if sha not in self._pygit_repository:
+            msg = f'No commit identified by `{sha}` in `{self._project.name}`'
+            raise CommitNotFound(msg)
+
+        commit = None
+
+        command = COMMANDS['commit'].format(sha=sha)
+        ostream, ethread = self._runner.run(command)
+        for row in csv.reader(ostream):
+            commit = Commit(*row[:2], Developer(*row[2:4]))
+        _handle_exit(ethread)
+
+        return commit
 
     def get_commits(self):
         key, command = self._get_key('commits'), COMMANDS['commits']
