@@ -34,6 +34,13 @@ class RepositoryService:
         return ChangesSchema(many=True).dump(changes)
 
     @rpc
+    def get_commit(self, project, sha):
+        project = ProjectSchema().load(self.project_rpc.get(project))
+        repository = self._get_repository(project)
+        commit = repository.get_commit(sha)
+        return CommitSchema().dump(commit)
+
+    @rpc
     def get_commits(self, project):
         project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project)
