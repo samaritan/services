@@ -1,19 +1,17 @@
 import logging
-import os
 
 from eventlet.greenpool import GreenPool
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
-from . import utilities
 from .messagetokens import get_messagetokens
-from .schemas import MessageSchema, MessageTokensSchema
+from .schemas import CommitSchema, MessageSchema, MessageTokensSchema
 
 logger = logging.getLogger(__name__)
 
 
-def _get_messages(project, commits, repository_rpc):
-    return repository_rpc.get_messages(project, commits)
+def _get_message(project, commit, repository_rpc):
+    return repository_rpc.get_message(project, commit.sha)
 
 
 class MessageTokensService:
@@ -23,20 +21,24 @@ class MessageTokensService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, **options):
+    def collect(self, project, sha=None, **options):
         logger.debug(project)
 
-        messages = self._get_messages(project)
+        messages = self._get_messages(project, sha)
         messagetokens = get_messagetokens(messages)
         return MessageTokensSchema().dump(messagetokens)
 
-    def _get_messages(self, project):
-        commits = self.repository_rpc.get_commits(project)
-        chunks = utilities.chunk(commits, size=round(len(commits) * 0.05))
+    def _get_messages(self, project, sha):
+        commits = None
+        if sha is None:
+            commits = self.repository_rpc.get_commits(project)
+        else:
+            commits = [self.repository_rpc.get_commit(project, sha)]
+        commits = CommitSchema(many=True).load(commits)
 
-        pool = GreenPool(os.cpu_count())
-        arguments = [(project, c, self.repository_rpc) for c in chunks]
+        pool = GreenPool()
+        arguments = ((project, c, self.repository_rpc) for c in commits)
         messages = list()
-        for _messages in pool.starmap(_get_messages, arguments):
-            messages.extend(_messages)
+        for item in pool.starmap(_get_message, arguments):
+            messages.append(item)
         return MessageSchema(many=True).load(messages)
