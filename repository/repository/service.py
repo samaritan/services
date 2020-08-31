@@ -100,6 +100,13 @@ class RepositoryService:
         return LineChangesSchema().dump(linechanges)
 
     @rpc
+    def get_message(self, project, sha):
+        project = ProjectSchema().load(self.project_rpc.get(project))
+        repository = self._get_repository(project)
+        message = repository.get_message(sha)
+        return MessageSchema().dump(message)
+
+    @rpc
     def get_messages(self, project, commits):
         project = ProjectSchema().load(self.project_rpc.get(project))
         commits = CommitSchema(many=True).load(commits)

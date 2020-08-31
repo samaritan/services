@@ -242,6 +242,19 @@ class Repository:
 
         return LineChanges(commit=commit, linechanges=linechanges)
 
+    def get_message(self, sha):
+        message = None
+
+        commit = self.get_commit(sha)
+
+        command = COMMANDS['messages']['commit'].format(sha=sha)
+        ostream, ethread = self._runner.run(command)
+        for _, lines in parsers.GitLogParser.parse(ostream):
+            message = Message(commit=commit, message='\n'.join(lines))
+        _handle_exit(ethread)
+
+        return message
+
     def get_messages(self, commits):
         tfile = None
         try:
