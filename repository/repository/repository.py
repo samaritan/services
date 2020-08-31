@@ -141,15 +141,11 @@ class Repository:
         self._runner = runner
         self._pygit_repository = pygit2.Repository(path)
 
-    def get_changes(self):
-        commits = {c.sha: c for c in self.get_commits()}
-
-        key, command = self._get_key('changes'), COMMANDS['changes']['all']
-        ostream, ethread = self._runner.run(command, key=key)
-
-        for sha, lines in parsers.GitLogParser.parse(ostream):
-            yield _get_changes(lines, commits[sha])
-        _handle_exit(ethread)
+    def get_changes(self, sha=None):
+        if sha is None:
+            yield from self._get_changes()
+        else:
+            yield from self._get_changes_for_sha(sha)
 
     def get_commit(self, sha):
         if sha not in self._pygit_repository:
@@ -331,6 +327,26 @@ class Repository:
         _handle_exit(ethread)
 
         return files
+
+    def _get_changes(self):
+        commits = {c.sha: c for c in self.get_commits()}
+
+        key, command = self._get_key('changes'), COMMANDS['changes']['all']
+        ostream, ethread = self._runner.run(command, key=key)
+
+        for sha, lines in parsers.GitLogParser.parse(ostream):
+            yield _get_changes(lines, commits[sha])
+        _handle_exit(ethread)
+
+    def _get_changes_for_sha(self, sha):
+        commit = self.get_commit(sha)
+
+        command = COMMANDS['changes']['commit'].format(sha=sha)
+        ostream, ethread = self._runner.run(command)
+
+        for _, lines in parsers.GitLogParser.parse(ostream):
+            yield _get_changes(lines, commit)
+        _handle_exit(ethread)
 
     def _get_key(self, item):
         return f'{self._project.name}_{self.get_version()}_{item}'
