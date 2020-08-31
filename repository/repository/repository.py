@@ -144,7 +144,7 @@ class Repository:
     def get_changes(self):
         commits = {c.sha: c for c in self.get_commits()}
 
-        key, command = self._get_key('changes'), COMMANDS['changes']
+        key, command = self._get_key('changes'), COMMANDS['changes']['all']
         ostream, ethread = self._runner.run(command, key=key)
 
         for sha, lines in parsers.GitLogParser.parse(ostream):
@@ -158,7 +158,7 @@ class Repository:
 
         commit = None
 
-        command = COMMANDS['commit'].format(sha=sha)
+        command = COMMANDS['commits']['commit'].format(sha=sha)
         ostream, ethread = self._runner.run(command)
         for row in csv.reader(ostream):
             commit = Commit(*row[:2], Developer(*row[2:4]))
@@ -167,7 +167,7 @@ class Repository:
         return commit
 
     def get_commits(self):
-        key, command = self._get_key('commits'), COMMANDS['commits']
+        key, command = self._get_key('commits'), COMMANDS['commits']['all']
         ostream, ethread = self._runner.run(command, key=key)
         for row in csv.reader(ostream):
             yield Commit(*row[:2], Developer(*row[2:4]))
@@ -183,7 +183,7 @@ class Repository:
     def get_deltas(self):
         commits = {c.sha: c for c in self.get_commits()}
 
-        key, command = self._get_key('deltas'), COMMANDS['deltas']
+        key, command = self._get_key('deltas'), COMMANDS['deltas']['all']
         ostream, ethread = self._runner.run(command, key=key)
 
         for sha, lines in parsers.GitLogParser.parse(ostream):
@@ -260,7 +260,7 @@ class Repository:
                 tfile.write(f'{commit.sha}\n')
             tfile.close()
 
-            command = COMMANDS['messages'].format(filename=tfile.name)
+            command = COMMANDS['messages']['all'].format(filename=tfile.name)
             ostream, ethread = self._runner.run(command)
             commits = {c.sha: c for c in commits}
             for sha, lines in parsers.GitLogParser.parse(ostream):
@@ -298,7 +298,7 @@ class Repository:
                 tfile.write(f'{commit.sha}\n')
             tfile.close()
 
-            command = COMMANDS['patches'].format(filename=tfile.name)
+            command = COMMANDS['patches']['all'].format(filename=tfile.name)
             ostream, ethread = self._runner.run(command)
             commits = {c.sha: c for c in commits}
             for sha, lines in parsers.GitLogParser.parse(ostream):

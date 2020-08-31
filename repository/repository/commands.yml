@@ -1,15 +1,20 @@
 ---
-changes: git log --pretty=%H,%P | awk -F",| " '{ print $1 " " $2 }' | git diff-tree -r -m --no-renames --root --always --stdin --pretty=*%n%H
-commit: git log --pretty='"%H","%ct","%aN","%aE"' -1 {sha}
-commits: git log --pretty='"%H","%ct","%aN","%aE"'
+changes:
+  all: git log --pretty=%H,%P | awk -F",| " '{ print $1 " " $2 }' | git diff-tree -r -m --no-renames --root --always --stdin --pretty=*%n%H
+commits:
+  all: git log --pretty='"%H","%ct","%aN","%aE"'
+  commit: git log --pretty='"%H","%ct","%aN","%aE"' -1 {sha}
 content: git show {oid}
-deltas: git log --no-renames --numstat --pretty=*%n%H
+deltas:
+  all: git log --no-renames --numstat --pretty=*%n%H
 developers: git log --pretty='"%aN","%aE"'| sort -u
 files:
   all: git log --pretty=%H | git show --name-only --no-renames --stdin --pretty=*%n%H
   active: git ls-files
 lastmodifiers: git blame --root -leftw {lines} {sha}^ -- {path}
-messages: cat {filename} | xargs git show --no-patch --pretty=*%n%H%n%n%B
+messages:
+  all: cat {filename} | xargs git show --no-patch --pretty=*%n%H%n%n%B
 moves: git log -M{similarity}% --diff-filter=R --summary --pretty=*%n%H
-patches: cat {filename} | xargs git show --patch --pretty=*%n%H
+patches:
+  all: cat {filename} | xargs git show --patch --pretty=*%n%H
 version: git log -1 --pretty=%h
