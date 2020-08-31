@@ -4,6 +4,7 @@ changes:
   commit: git log --pretty=%H,%P -1 {sha} | awk -F",| " '{{ print $1 " " $2 }}' | git diff-tree -r -m --no-renames --root --always --stdin --pretty=*%n%H
 commits:
   all: git log --pretty='"%H","%ct","%aN","%aE"'
+  limit: git log --pretty='"%H","%ct","%aN","%aE"' {sha}
   commit: git log --pretty='"%H","%ct","%aN","%aE"' -1 {sha}
 content: git show {oid}
 deltas:

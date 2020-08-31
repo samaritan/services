@@ -162,12 +162,11 @@ class Repository:
 
         return commit
 
-    def get_commits(self):
-        key, command = self._get_key('commits'), COMMANDS['commits']['all']
-        ostream, ethread = self._runner.run(command, key=key)
-        for row in csv.reader(ostream):
-            yield Commit(*row[:2], Developer(*row[2:4]))
-        _handle_exit(ethread)
+    def get_commits(self, sha=None):
+        if sha is None:
+            yield from self._get_commits()
+        else:
+            yield from self._get_commits_till_sha(sha)
 
     def get_content(self, oid):
         if oid in self._pygit_repository:
@@ -346,6 +345,20 @@ class Repository:
 
         for _, lines in parsers.GitLogParser.parse(ostream):
             yield _get_changes(lines, commit)
+        _handle_exit(ethread)
+
+    def _get_commits(self):
+        key, command = self._get_key('commits'), COMMANDS['commits']['all']
+        ostream, ethread = self._runner.run(command, key=key)
+        for row in csv.reader(ostream):
+            yield Commit(*row[:2], Developer(*row[2:4]))
+        _handle_exit(ethread)
+
+    def _get_commits_till_sha(self, sha):
+        command = COMMANDS['commits']['limit'].format(sha=sha)
+        ostream, ethread = self._runner.run(command)
+        for row in csv.reader(ostream):
+            yield Commit(*row[:2], Developer(*row[2:4]))
         _handle_exit(ethread)
 
     def _get_key(self, item):
