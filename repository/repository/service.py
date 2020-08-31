@@ -63,10 +63,10 @@ class RepositoryService:
         return content
 
     @rpc
-    def get_deltas(self, project):
+    def get_deltas(self, project, sha=None):
         project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project)
-        deltas = list(repository.get_deltas())
+        deltas = list(repository.get_deltas(sha))
         return DeltasSchema(many=True).dump(deltas)
 
     @rpc

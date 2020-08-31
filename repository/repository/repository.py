@@ -175,15 +175,11 @@ class Repository:
                 return blob.data.decode(errors='replace')
         return None
 
-    def get_deltas(self):
-        commits = {c.sha: c for c in self.get_commits()}
-
-        key, command = self._get_key('deltas'), COMMANDS['deltas']['all']
-        ostream, ethread = self._runner.run(command, key=key)
-
-        for sha, lines in parsers.GitLogParser.parse(ostream):
-            yield _get_deltas(lines, commits[sha])
-        _handle_exit(ethread)
+    def get_deltas(self, sha=None):
+        if sha is None:
+            yield from self._get_deltas()
+        else:
+            yield from self._get_deltas_for_sha(sha)
 
     def get_developers(self):
         key, command = self._get_key('developers'), COMMANDS['developers']
@@ -359,6 +355,26 @@ class Repository:
         ostream, ethread = self._runner.run(command)
         for row in csv.reader(ostream):
             yield Commit(*row[:2], Developer(*row[2:4]))
+        _handle_exit(ethread)
+
+    def _get_deltas(self):
+        commits = {c.sha: c for c in self.get_commits()}
+
+        key, command = self._get_key('deltas'), COMMANDS['deltas']['all']
+        ostream, ethread = self._runner.run(command, key=key)
+
+        for sha, lines in parsers.GitLogParser.parse(ostream):
+            yield _get_deltas(lines, commits[sha])
+        _handle_exit(ethread)
+
+    def _get_deltas_for_sha(self, sha):
+        commit = self.get_commit(sha)
+
+        command = COMMANDS['deltas']['commit'].format(sha=sha)
+        ostream, ethread = self._runner.run(command)
+
+        for _, lines in parsers.GitLogParser.parse(ostream):
+            yield _get_deltas(lines, commit)
         _handle_exit(ethread)
 
     def _get_key(self, item):
