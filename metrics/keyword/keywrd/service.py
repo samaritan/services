@@ -5,16 +5,17 @@ from eventlet.greenpool import GreenPool
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
-from . import utilities
 from .exceptions import LanguageNotSupported
 from .keywrd import Keywrd
-from .schemas import KeywordSchema, PatchSchema, ProjectSchema
+from .schemas import CommitSchema, KeywordSchema, PatchSchema, ProjectSchema
 
 logger = logging.getLogger(__name__)
 
 
-def _get_patches(project, commits, repository_rpc):
-    return repository_rpc.get_patches(project.name, commits)
+def _get_keyword(project, commit, keyword, repository_rpc):
+    patch = repository_rpc.get_patch(project.name, commit.sha)
+    patch = PatchSchema().load(patch)
+    return keyword.get(patch)
 
 
 class KeywordService:
@@ -25,7 +26,7 @@ class KeywordService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, **options):
+    def collect(self, project, sha=None, **options):
         logger.debug(project)
 
         project = ProjectSchema().load(self.project_rpc.get(project))
@@ -34,14 +35,19 @@ class KeywordService:
         keywords = self.config['KEYWORDS'].get(project.language.lower())
 
         keywrd = Keywrd(keywords=keywords)
-        commits = self.repository_rpc.get_commits(project.name)
-        chunks = utilities.chunk(commits, size=round(len(commits) * 0.01))
+        commits = None
+        if sha is None:
+            commits = self.repository_rpc.get_commits(project.name)
+        else:
+            commits = [self.repository_rpc.get_commit(project.name, sha)]
+        commits = CommitSchema(many=True).load(commits)
 
         pool = GreenPool(os.cpu_count())
-        arguments = [(project, c, self.repository_rpc) for c in chunks]
+        arguments = (
+            (project, c, keywrd, self.repository_rpc) for c in commits
+        )
         keyword = list()
-        for patches in pool.starmap(_get_patches, arguments):
-            patches = PatchSchema(many=True).load(patches)
-            keyword.extend(keywrd.get(patches))
+        for item in pool.starmap(_get_keyword, arguments):
+            keyword.append(item)
 
         return KeywordSchema(many=True).dump(keyword)
