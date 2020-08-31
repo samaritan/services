@@ -293,6 +293,19 @@ class Repository:
 
         _handle_exit(ethread)
 
+    def get_patch(self, sha):
+        patch = None
+
+        commit = self.get_commit(sha)
+
+        command = COMMANDS['patches']['commit'].format(sha=sha)
+        ostream, ethread = self._runner.run(command)
+        for _, lines in parsers.GitLogParser.parse(ostream):
+            patch = Patch(commit=commit, patch='\n'.join(lines))
+        _handle_exit(ethread)
+
+        return patch
+
     def get_patches(self, commits):
         tfile = None
         try:
