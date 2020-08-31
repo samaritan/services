@@ -53,11 +53,11 @@ class InteractiveChurnService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, **options):
+    def collect(self, project, sha=None, **options):
         logger.debug(project)
 
         project = ProjectSchema().load(self.project_rpc.get(project))
-        commits = self._get_commits(project)
+        commits = self._get_commits(project, sha)
 
         pool = GreenPool()
         arguments = [(project, c, self.repository_rpc) for c in commits]
@@ -66,6 +66,10 @@ class InteractiveChurnService:
             interactivechurn.extend(item)
         return InteractiveChurnSchema(many=True).dump(interactivechurn)
 
-    def _get_commits(self, project):
-        commits = self.repository_rpc.get_commits(project.name)
+    def _get_commits(self, project, sha=None):
+        commits = None
+        if sha is not None:
+            commits = [self.repository_rpc.get_commit(project.name, sha)]
+        else:
+            commits = self.repository_rpc.get_commits(project.name)
         return CommitSchema(many=True).load(commits)
