@@ -16,10 +16,10 @@ class OwnershipService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, **options):
+    def collect(self, project, sha=None, **options):
         logger.debug(project)
 
-        commits = self.repository_rpc.get_commits(project)
+        commits = self.repository_rpc.get_commits(project, sha)
         commits = CommitSchema(many=True).load(commits)
         ownerships = get_ownership(commits)
         return OwnershipSchema(many=True).dump(ownerships)
