@@ -38,12 +38,12 @@ class RelativeChurnService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, **options):
+    def collect(self, project, sha=None, **options):
         logger.debug(project)
 
         project = ProjectSchema().load(self.project_rpc.get(project))
-        changes = self._get_changes(project)
-        churn = self._get_churn(project)
+        changes = self._get_changes(project, sha)
+        churn = self._get_churn(project, sha)
 
         pool = GreenPool(os.cpu_count())
         arguments = [(project, c, changes, self.repository_rpc) for c in churn]
@@ -52,14 +52,14 @@ class RelativeChurnService:
             relativechurn.append(item)
         return RelativeChurnSchema(many=True).dump(relativechurn)
 
-    def _get_changes(self, project):
-        changes = self.repository_rpc.get_changes(project.name)
+    def _get_changes(self, project, sha):
+        changes = self.repository_rpc.get_changes(project.name, sha)
         changes = ChangesSchema(many=True).load(changes)
         changes = {
             (c.commit, p): cc for c in changes for p, cc in c.changes.items()
         }
         return changes
 
-    def _get_churn(self, project):
-        churn = self.churn_rpc.collect(project.name)
+    def _get_churn(self, project, sha):
+        churn = self.churn_rpc.collect(project.name, sha)
         return ChurnSchema(many=True).load(churn)
