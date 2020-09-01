@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields, post_load
 
-from .models import Offender
+from ..models import Offender
 
 
 class OffenderSchema(Schema):
