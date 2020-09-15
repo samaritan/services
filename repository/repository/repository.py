@@ -247,25 +247,6 @@ class Repository:
 
         return message
 
-    def get_messages(self, commits):
-        tfile = None
-        try:
-            # Workaround for limit on command line arguments
-            tfile = tempfile.NamedTemporaryFile(mode='w', delete=False)
-            for commit in commits:
-                tfile.write(f'{commit.sha}\n')
-            tfile.close()
-
-            command = COMMANDS['messages']['all'].format(filename=tfile.name)
-            ostream, ethread = self._runner.run(command)
-            commits = {c.sha: c for c in commits}
-            for sha, lines in parsers.GitLogParser.parse(ostream):
-                yield Message(commit=commits[sha], message='\n'.join(lines))
-            _handle_exit(ethread)
-        finally:
-            if tfile is not None and os.path.exists(tfile.name):
-                os.remove(tfile.name)
-
     def get_modules(self):
         modules = set()
         for file_ in self.get_files():

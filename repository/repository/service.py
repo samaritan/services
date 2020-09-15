@@ -107,14 +107,6 @@ class RepositoryService:
         return MessageSchema().dump(message)
 
     @rpc
-    def get_messages(self, project, commits):
-        project = ProjectSchema().load(self.project_rpc.get(project))
-        commits = CommitSchema(many=True).load(commits)
-        repository = self._get_repository(project)
-        messages = list(repository.get_messages(commits))
-        return MessageSchema(many=True).dump(messages)
-
-    @rpc
     def get_modules(self, project):
         project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project)

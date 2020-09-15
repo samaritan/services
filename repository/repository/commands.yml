@@ -14,7 +14,6 @@ files:
   active: git ls-files
 lastmodifiers: git blame --root -leftw {lines} {sha}^ -- {path}
 messages:
-  all: cat {filename} | xargs git show --no-patch --pretty=*%n%H%n%n%B
   commit: git show --no-patch --pretty=*%n%H%n%n%B {sha}
 moves: git log -M{similarity}% --diff-filter=R --summary --pretty=*%n%H
 patches:
