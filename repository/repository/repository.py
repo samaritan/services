@@ -141,11 +141,8 @@ class Repository:
         self._runner = runner
         self._pygit_repository = pygit2.Repository(path)
 
-    def get_changes(self, sha=None):
-        if sha is None:
-            yield from self._get_changes()
-        else:
-            yield from self._get_changes_for_sha(sha)
+    def get_changes(self, sha):
+        yield from self._get_changes_for_sha(sha)
 
     def get_commit(self, sha):
         if sha not in self._pygit_repository:
@@ -175,11 +172,8 @@ class Repository:
                 return blob.data.decode(errors='replace')
         return None
 
-    def get_deltas(self, sha=None):
-        if sha is None:
-            yield from self._get_deltas()
-        else:
-            yield from self._get_deltas_for_sha(sha)
+    def get_deltas(self, sha):
+        yield from self._get_deltas_for_sha(sha)
 
     def get_developers(self):
         key, command = self._get_key('developers'), COMMANDS['developers']
@@ -215,8 +209,6 @@ class Repository:
     #       https://github.com/samaritan/services/issues/10 for more
     #       information.
     def get_lastmodifiers(self, commit, path, lines):
-        commits = {c.sha: c for c in self.get_commits()}
-
         _lines = set(lines)
         command = COMMANDS['lastmodifiers']
         lines = ' '.join(f'-L {a},{b}' for a, b in _collapse(lines))
@@ -226,7 +218,7 @@ class Repository:
             components = line.split()
             line = line[line[:line.find(')')].rfind(' ') + 1:line.find(')')]
             line = int(line)
-            commit = commits[components[0]]
+            commit = self.get_commit(components[0])
             if line in _lines:
                 yield LastModifier(line=int(line), commit=commit)
             else:
@@ -283,13 +275,12 @@ class Repository:
 
     def get_moves(self, similarity=100):
         similarity = min(similarity, 100)
-        commits = {c.sha: c for c in self.get_commits()}
 
         command = COMMANDS['moves'].format(similarity=similarity)
         ostream, ethread = self._runner.run(command)
 
         for sha, lines in parsers.GitLogParser.parse(ostream):
-            yield _get_moves(lines, commits[sha])
+            yield _get_moves(lines, self.get_commit(sha))
 
         _handle_exit(ethread)
 
@@ -349,16 +340,6 @@ class Repository:
 
         return files
 
-    def _get_changes(self):
-        commits = {c.sha: c for c in self.get_commits()}
-
-        key, command = self._get_key('changes'), COMMANDS['changes']['all']
-        ostream, ethread = self._runner.run(command, key=key)
-
-        for sha, lines in parsers.GitLogParser.parse(ostream):
-            yield _get_changes(lines, commits[sha])
-        _handle_exit(ethread)
-
     def _get_changes_for_sha(self, sha):
         commit = self.get_commit(sha)
 
@@ -381,16 +362,6 @@ class Repository:
         ostream, ethread = self._runner.run(command)
         for row in csv.reader(ostream):
             yield Commit(*row[:2], Developer(*row[2:4]))
-        _handle_exit(ethread)
-
-    def _get_deltas(self):
-        commits = {c.sha: c for c in self.get_commits()}
-
-        key, command = self._get_key('deltas'), COMMANDS['deltas']['all']
-        ostream, ethread = self._runner.run(command, key=key)
-
-        for sha, lines in parsers.GitLogParser.parse(ostream):
-            yield _get_deltas(lines, commits[sha])
         _handle_exit(ethread)
 
     def _get_deltas_for_sha(self, sha):

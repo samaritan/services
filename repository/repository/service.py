@@ -27,7 +27,7 @@ class RepositoryService:
     project_rpc = RpcProxy('project')
 
     @rpc
-    def get_changes(self, project, sha=None):
+    def get_changes(self, project, sha):
         project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project)
         changes = list(repository.get_changes(sha))
@@ -63,7 +63,7 @@ class RepositoryService:
         return content
 
     @rpc
-    def get_deltas(self, project, sha=None):
+    def get_deltas(self, project, sha):
         project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project)
         deltas = list(repository.get_deltas(sha))
