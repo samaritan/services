@@ -22,14 +22,13 @@ class OffenderService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha=None, **options):
+    def collect(self, project, sha, **options):
         logger.debug(project)
 
-        offenders = get_offenders(project)
-        offenders = OffenderSchema(many=True).load(offenders)
-        if sha is not None:
-            commit = self.repository_rpc.get_commit(project, sha)
-            commit = CommitSchema().load(commit)
-            offenders = filter(_get_filter(commit), offenders)
+        commit = self.repository_rpc.get_commit(project, sha)
+        commit = CommitSchema().load(commit)
+
+        offenders = OffenderSchema(many=True).load(get_offenders(project))
+        offenders = filter(_get_filter(commit), offenders)
 
         return OffenderSchema(many=True).dump(offenders)

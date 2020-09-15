@@ -24,7 +24,7 @@ class ChurnService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha=None, **options):
+    def collect(self, project, sha, **options):
         logger.debug(project)
 
         project = ProjectSchema().load(self.project_rpc.get(project))

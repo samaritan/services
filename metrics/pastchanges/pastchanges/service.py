@@ -40,7 +40,7 @@ class PastChangesService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha=None, **options):
+    def collect(self, project, sha, **options):
         logger.debug(project)
 
         commits = self.repository_rpc.get_commits(project, sha)
@@ -52,7 +52,6 @@ class PastChangesService:
         for item in pool.starmap(_get_changes, arguments):
             changes.extend(item)
         pastchanges = _get_pastchanges(changes)
-        if sha is not None:
-            pastchanges = [i for i in pastchanges if i.commit.sha == sha]
+        pastchanges = [i for i in pastchanges if i.commit.sha == sha]
 
         return PastChangesSchema(many=True).dump(pastchanges)

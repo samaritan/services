@@ -40,7 +40,7 @@ class PastAuthorsService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha=None, **options):
+    def collect(self, project, sha, **options):
         logger.debug(project)
 
         commits = self.repository_rpc.get_commits(project, sha)
@@ -52,7 +52,6 @@ class PastAuthorsService:
         for item in pool.starmap(_get_changes, arguments):
             changes.extend(item)
         pastauthors = _get_pastauthors(changes)
-        if sha is not None:
-            pastauthors = [i for i in pastauthors if i.commit.sha == sha]
+        pastauthors = [i for i in pastauthors if i.commit.sha == sha]
 
         return PastAuthorsSchema(many=True).dump(pastauthors)

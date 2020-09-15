@@ -22,7 +22,7 @@ class CollaborationService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha=None, **options):
+    def collect(self, project, sha, **options):
         logger.debug(project)
 
         commits = self.repository_rpc.get_commits(project, sha)

@@ -21,7 +21,7 @@ class PatchTokensService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha=None, **options):
+    def collect(self, project, sha, **options):
         logger.debug(project)
 
         patches = self._get_patches(project, sha)
@@ -29,11 +29,7 @@ class PatchTokensService:
         return PatchTokensSchema().dump(patchtokens)
 
     def _get_patches(self, project, sha):
-        commits = None
-        if sha is None:
-            commits = self.repository_rpc.get_commits(project)
-        else:
-            commits = [self.repository_rpc.get_commit(project, sha)]
+        commits = [self.repository_rpc.get_commit(project, sha)]
         commits = CommitSchema(many=True).load(commits)
 
         pool = GreenPool()

@@ -26,7 +26,7 @@ class KeywordService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha=None, **options):
+    def collect(self, project, sha, **options):
         logger.debug(project)
 
         project = ProjectSchema().load(self.project_rpc.get(project))
@@ -35,11 +35,7 @@ class KeywordService:
         keywords = self.config['KEYWORDS'].get(project.language.lower())
 
         keywrd = Keywrd(keywords=keywords)
-        commits = None
-        if sha is None:
-            commits = self.repository_rpc.get_commits(project.name)
-        else:
-            commits = [self.repository_rpc.get_commit(project.name, sha)]
+        commits = [self.repository_rpc.get_commit(project.name, sha)]
         commits = CommitSchema(many=True).load(commits)
 
         pool = GreenPool(os.cpu_count())

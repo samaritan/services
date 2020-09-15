@@ -21,7 +21,7 @@ class MessageTokensService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha=None, **options):
+    def collect(self, project, sha, **options):
         logger.debug(project)
 
         messages = self._get_messages(project, sha)
@@ -29,11 +29,7 @@ class MessageTokensService:
         return MessageTokensSchema().dump(messagetokens)
 
     def _get_messages(self, project, sha):
-        commits = None
-        if sha is None:
-            commits = self.repository_rpc.get_commits(project)
-        else:
-            commits = [self.repository_rpc.get_commit(project, sha)]
+        commits = [self.repository_rpc.get_commit(project, sha)]
         commits = CommitSchema(many=True).load(commits)
 
         pool = GreenPool()
