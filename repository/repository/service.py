@@ -128,14 +128,6 @@ class RepositoryService:
         return PatchSchema().dump(patch)
 
     @rpc
-    def get_patches(self, project, commits):
-        project = ProjectSchema().load(self.project_rpc.get(project))
-        commits = CommitSchema(many=True).load(commits)
-        repository = self._get_repository(project)
-        patches = list(repository.get_patches(commits))
-        return PatchSchema(many=True).dump(patches)
-
-    @rpc
     def get_path(self, project):
         project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project)

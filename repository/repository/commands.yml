@@ -17,6 +17,5 @@ messages:
   commit: git show --no-patch --pretty=*%n%H%n%n%B {sha}
 moves: git log -M{similarity}% --diff-filter=R --summary --pretty=*%n%H
 patches:
-  all: cat {filename} | xargs git show --patch --pretty=*%n%H
   commit: git show --patch --pretty=*%n%H {sha}
 version: git log -1 --pretty=%h

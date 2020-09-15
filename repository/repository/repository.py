@@ -278,25 +278,6 @@ class Repository:
 
         return patch
 
-    def get_patches(self, commits):
-        tfile = None
-        try:
-            # Workaround for limit on command line arguments
-            tfile = tempfile.NamedTemporaryFile(mode='w', delete=False)
-            for commit in commits:
-                tfile.write(f'{commit.sha}\n')
-            tfile.close()
-
-            command = COMMANDS['patches']['all'].format(filename=tfile.name)
-            ostream, ethread = self._runner.run(command)
-            commits = {c.sha: c for c in commits}
-            for sha, lines in parsers.GitLogParser.parse(ostream):
-                yield Patch(commit=commits[sha], patch='\n'.join(lines))
-            _handle_exit(ethread)
-        finally:
-            if tfile is not None and os.path.exists(tfile.name):
-                os.remove(tfile.name)
-
     def get_path(self):
         return self._path
 
