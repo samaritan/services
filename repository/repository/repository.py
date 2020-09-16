@@ -141,8 +141,11 @@ class Repository:
         self._runner = runner
         self._pygit_repository = pygit2.Repository(path)
 
-    def get_changes(self, sha):
-        yield from self._get_changes_for_sha(sha)
+    def get_changes(self, sha, path=None):
+        if path is None:
+            yield from self._get_changes_for_sha(sha)
+        else:
+            yield from self._get_changes_for_sha_to_path(sha, path)
 
     def get_commit(self, sha):
         if sha not in self._pygit_repository:
@@ -315,6 +318,16 @@ class Repository:
         commit = self.get_commit(sha)
 
         command = COMMANDS['changes']['commit'].format(sha=sha)
+        ostream, ethread = self._runner.run(command)
+
+        for _, lines in parsers.GitLogParser.parse(ostream):
+            yield _get_changes(lines, commit)
+        _handle_exit(ethread)
+
+    def _get_changes_for_sha_to_path(self, sha, path):
+        commit = self.get_commit(sha)
+
+        command = COMMANDS['changes']['commitpath'].format(sha=sha, path=path)
         ostream, ethread = self._runner.run(command)
 
         for _, lines in parsers.GitLogParser.parse(ostream):

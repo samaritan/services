@@ -27,10 +27,10 @@ class RepositoryService:
     project_rpc = RpcProxy('project')
 
     @rpc
-    def get_changes(self, project, sha):
+    def get_changes(self, project, sha, path=None):
         project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project)
-        changes = list(repository.get_changes(sha))
+        changes = list(repository.get_changes(sha, path))
         return ChangesSchema(many=True).dump(changes)
 
     @rpc
