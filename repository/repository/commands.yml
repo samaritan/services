@@ -8,6 +8,7 @@ commits:
 content: git show {oid}
 deltas:
   commit: git log --no-renames --numstat --pretty=*%n%H -1 {sha}
+  commitpath: git log --no-renames --numstat --pretty=*%n%H -1 {sha} -- {path}
 developers: git log --pretty='"%aN","%aE"'| sort -u
 files:
   all: git log --pretty=%H | git show --name-only --no-renames --stdin --pretty=*%n%H

@@ -172,8 +172,11 @@ class Repository:
                 return blob.data.decode(errors='replace')
         return None
 
-    def get_deltas(self, sha):
-        yield from self._get_deltas_for_sha(sha)
+    def get_deltas(self, sha, path=None):
+        if path is None:
+            yield from self._get_deltas_for_sha(sha)
+        else:
+            yield from self._get_deltas_for_sha_to_path(sha, path)
 
     def get_developers(self):
         key, command = self._get_key('developers'), COMMANDS['developers']
@@ -330,6 +333,16 @@ class Repository:
         commit = self.get_commit(sha)
 
         command = COMMANDS['deltas']['commit'].format(sha=sha)
+        ostream, ethread = self._runner.run(command)
+
+        for _, lines in parsers.GitLogParser.parse(ostream):
+            yield _get_deltas(lines, commit)
+        _handle_exit(ethread)
+
+    def _get_deltas_for_sha_to_path(self, sha, path):
+        commit = self.get_commit(sha)
+
+        command = COMMANDS['deltas']['commitpath'].format(sha=sha, path=path)
         ostream, ethread = self._runner.run(command)
 
         for _, lines in parsers.GitLogParser.parse(ostream):
