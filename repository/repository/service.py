@@ -92,11 +92,11 @@ class RepositoryService:
         return LastModifierSchema(many=True).dump(lastmodifiers)
 
     @rpc
-    def get_linechanges(self, project, commit):
+    def get_linechanges(self, project, commit, path=None):
         project = ProjectSchema().load(self.project_rpc.get(project))
         commit = CommitSchema().load(commit)
         repository = self._get_repository(project)
-        linechanges = repository.get_linechanges(commit)
+        linechanges = repository.get_linechanges(commit, path)
         return LineChangesSchema().dump(linechanges)
 
     @rpc

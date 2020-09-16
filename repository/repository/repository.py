@@ -228,12 +228,12 @@ class Repository:
                 logger.warning('%d in %s at %s', line, path, commit.sha)
         _handle_exit(ethread)
 
-    def get_linechanges(self, commit):
+    def get_linechanges(self, commit, path=None):
         linechanges = dict()
 
         for patch in _get_diff(self._pygit_repository.get(commit.sha)):
-            path = patch.delta.new_file.path
-            linechanges[path] = _get_linechanges(patch)
+            linechanges[patch.delta.new_file.path] = _get_linechanges(patch)
+        linechanges = {path: linechanges[path]} if path else linechanges
 
         return LineChanges(commit=commit, linechanges=linechanges)
 
