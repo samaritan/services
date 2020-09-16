@@ -159,11 +159,17 @@ class Repository:
 
         return commit
 
-    def get_commits(self, sha=None):
+    def get_commits(self, sha=None, path=None):
         if sha is None:
-            yield from self._get_commits()
+            if path is None:
+                yield from self._get_commits()
+            else:
+                yield from self._get_commits_to_path(path)
         else:
-            yield from self._get_commits_till_sha(sha)
+            if path is None:
+                yield from self._get_commits_till_sha(sha)
+            else:
+                yield from self._get_commits_till_sha_to_path(sha, path)
 
     def get_content(self, oid):
         if oid in self._pygit_repository:
@@ -322,8 +328,22 @@ class Repository:
             yield Commit(*row[:2], Developer(*row[2:4]))
         _handle_exit(ethread)
 
+    def _get_commits_to_path(self, path):
+        command = COMMANDS['commits']['allpath'].format(path=path)
+        ostream, ethread = self._runner.run(command)
+        for row in csv.reader(ostream):
+            yield Commit(*row[:2], Developer(*row[2:4]))
+        _handle_exit(ethread)
+
     def _get_commits_till_sha(self, sha):
         command = COMMANDS['commits']['limit'].format(sha=sha)
+        ostream, ethread = self._runner.run(command)
+        for row in csv.reader(ostream):
+            yield Commit(*row[:2], Developer(*row[2:4]))
+        _handle_exit(ethread)
+
+    def _get_commits_till_sha_to_path(self, sha, path):
+        command = COMMANDS['commits']['limitpath'].format(sha=sha, path=path)
         ostream, ethread = self._runner.run(command)
         for row in csv.reader(ostream):
             yield Commit(*row[:2], Developer(*row[2:4]))

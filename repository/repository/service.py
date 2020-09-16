@@ -41,10 +41,10 @@ class RepositoryService:
         return CommitSchema().dump(commit)
 
     @rpc
-    def get_commits(self, project, sha=None):
+    def get_commits(self, project, sha=None, path=None):
         project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project)
-        commits = list(repository.get_commits(sha))
+        commits = list(repository.get_commits(sha, path))
         return CommitSchema(many=True).dump(commits)
 
     @rpc
