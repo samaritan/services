@@ -15,6 +15,13 @@ def _get_filter(commit):
     return _filter
 
 
+def _get_path_filter(path):
+    def _filter(item):
+        return (item.path == path or (item.aliases is not None and
+                                      any(i == path for i in item.aliases)))
+    return _filter
+
+
 class OffenderService:
     name = 'offender'
 
@@ -22,7 +29,7 @@ class OffenderService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha, **options):
+    def collect(self, project, sha, path=None, **options):
         logger.debug(project)
 
         commit = self.repository_rpc.get_commit(project, sha)
@@ -30,5 +37,7 @@ class OffenderService:
 
         offenders = OffenderSchema(many=True).load(get_offenders(project))
         offenders = filter(_get_filter(commit), offenders)
+        if path is not None:
+            offenders = filter(_get_path_filter(path), offenders)
 
         return OffenderSchema(many=True).dump(offenders)
