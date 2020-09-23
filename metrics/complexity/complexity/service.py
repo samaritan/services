@@ -36,10 +36,10 @@ class ComplexityService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha, **options):
+    def collect(self, project, sha, path=None, **options):
         logger.debug(project)
 
-        changes = self.repository_rpc.get_changes(project, sha)
+        changes = self.repository_rpc.get_changes(project, sha, path)
         changes = ChangesSchema(many=True).load(changes)
         changes = ((p, cc) for c in changes for p, cc in c.changes.items())
 
