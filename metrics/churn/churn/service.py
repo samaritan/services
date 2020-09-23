@@ -24,13 +24,13 @@ class ChurnService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha, **options):
+    def collect(self, project, sha, path=None, **options):
         logger.debug(project)
 
         project = ProjectSchema().load(self.project_rpc.get(project))
-        deltas = self._get_deltas(project, sha)
+        deltas = self._get_deltas(project, sha, path)
         return ChurnSchema(many=True).dump(_get_churn(deltas))
 
-    def _get_deltas(self, project, sha):
-        deltas = self.repository_rpc.get_deltas(project.name, sha)
+    def _get_deltas(self, project, sha, path):
+        deltas = self.repository_rpc.get_deltas(project.name, sha, path)
         return DeltasSchema(many=True).load(deltas)
