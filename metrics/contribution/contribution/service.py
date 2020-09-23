@@ -10,6 +10,12 @@ from .schemas import ChangesSchema, CommitSchema, ContributionSchema
 logger = logging.getLogger(__name__)
 
 
+def _get_filter(path):
+    def _filter(value):
+        return value.path == path
+    return _filter
+
+
 def _get_changes(project, commit, repository_rpc):
     changes = repository_rpc.get_changes(project, commit.sha)
     return ChangesSchema(many=True).load(changes)
@@ -22,7 +28,7 @@ class ContributionService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha, **options):
+    def collect(self, project, sha, path=None, **options):
         logger.debug(project)
 
         commits = self.repository_rpc.get_commits(project, sha)
@@ -35,4 +41,6 @@ class ContributionService:
             changes.extend(item)
 
         contribution = get_contribution(changes, **options)
+        if path is not None:
+            contribution = filter(_get_filter(path), contribution)
         return ContributionSchema(many=True).dump(contribution)
