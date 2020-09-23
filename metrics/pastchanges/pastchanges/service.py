@@ -10,8 +10,8 @@ from .schemas import ChangesSchema, CommitSchema, PastChangesSchema
 logger = logging.getLogger(__name__)
 
 
-def _get_changes(project, commit, repository_rpc):
-    changes = repository_rpc.get_changes(project, commit.sha)
+def _get_changes(project, commit, path, repository_rpc):
+    changes = repository_rpc.get_changes(project, commit.sha, path)
     return ChangesSchema(many=True).load(changes)
 
 
@@ -40,14 +40,14 @@ class PastChangesService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha, **options):
+    def collect(self, project, sha, path=None, **options):
         logger.debug(project)
 
-        commits = self.repository_rpc.get_commits(project, sha)
+        commits = self.repository_rpc.get_commits(project, sha, path)
         commits = CommitSchema(many=True).load(commits)
 
         pool = GreenPool()
-        arguments = [(project, c, self.repository_rpc) for c in commits]
+        arguments = [(project, c, path, self.repository_rpc) for c in commits]
         changes = list()
         for item in pool.starmap(_get_changes, arguments):
             changes.extend(item)
