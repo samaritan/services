@@ -17,10 +17,12 @@ logger = logging.getLogger(__name__)
 def _get_pattern(names, extensions):
     _names = None
     if names is not None:
-        _names = _NPATTERN.format(names='|'.join(names))
+        _names = (re.escape(i) for i in names)
+        _names = _NPATTERN.format(names='|'.join(_names))
     _extensions = None
     if extensions is not None:
-        _extensions = _EPATTERN.format(extensions='|'.join(extensions))
+        _extensions = (re.escape(i) for i in extensions)
+        _extensions = _EPATTERN.format(extensions='|'.join(_extensions))
 
     if _names is not None and _extensions is not None:
         return '({0}|{1})$'.format(_names, _extensions)
