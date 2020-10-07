@@ -4,6 +4,7 @@ from nameko.dependency_providers import Config
 from nameko.rpc import rpc
 
 from . import utilities
+from .languages import get_languages
 from .parsers import get_parser
 from .schemas import FunctionSchema
 
@@ -13,12 +14,13 @@ logger = logging.getLogger(__name__)
 class ParserService:
     name = 'parser'
 
+    languages = get_languages()
     inferer = utilities.LanguageInferer()
     config = Config()
 
     @rpc
     def is_supported(self, language):
-        return language in self.config['LANGUAGES']
+        return language in self.languages
 
     @rpc
     def is_parsable(self, name):
