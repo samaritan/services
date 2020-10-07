@@ -1,7 +1,7 @@
 from .cparser import CParser
 from ..exceptions import NoParser
 
-PARSERS = {'c/c++': CParser}
+PARSERS = {'c': CParser, 'c++': CParser}
 
 
 def get_parser(language):

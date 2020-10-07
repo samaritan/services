@@ -1,11 +1,14 @@
-c/c++:
+c:
   names:
   extensions:
-    - c  
+    - c
+    - h
+c++:
+  names:
+  extensions:
     - cc 
     - cpp
     - cxx
-    - h  
     - hh 
     - hpp
     - hxx
