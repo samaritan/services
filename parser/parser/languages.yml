@@ -1,9 +1,9 @@
-c:
+C:
   names:
   extensions:
     - c
     - h
-c++:
+C++:
   names:
   extensions:
     - cc 
