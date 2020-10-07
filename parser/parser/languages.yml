@@ -3,13 +3,21 @@ C:
   extensions:
     - c
     - h
+    - i
 C++:
   names:
   extensions:
-    - cc 
+    - C
+    - c++
+    - cc
+    - cp
     - cpp
+    - CPP
     - cxx
-    - hh 
+    - H
+    - h++
+    - hh
     - hpp
     - hxx
-    - inl
+    - ii
+    - tcc
