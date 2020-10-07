@@ -224,6 +224,22 @@ services:
       placement:
         constraints:
           - node.hostname == ${HOSTNAME}
+  interactivechurn:
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-interactivechurn:0.2.0-alpha
+    depends_on:
+      - "rabbit"
+      - "repository"
+    environment:
+      RABBIT_HOST: "rabbit"
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.hostname == ${HOSTNAME}
   keyword:
     image: docker.pkg.github.com/samaritan/services/samaritan-metrics-keyword:0.2.0-alpha
     depends_on:
