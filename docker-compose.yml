@@ -29,7 +29,7 @@ services:
           - node.hostname == ${HOSTNAME}
   # Primitive Services
   parser:
-    image: docker.pkg.github.com/samaritan/services/samaritan-parser:0.2.0-alpha
+    image: docker.pkg.github.com/samaritan/services/samaritan-parser:0.3.0-alpha
     depends_on:
       - "rabbit"
     environment:
