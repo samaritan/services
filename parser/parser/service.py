@@ -15,7 +15,7 @@ class ParserService:
     name = 'parser'
 
     languages = get_languages()
-    inferer = utilities.LanguageInferer()
+    inferer = utilities.LanguageInferer(languages)
     config = Config()
 
     @rpc
