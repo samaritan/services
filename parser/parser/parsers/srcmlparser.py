@@ -25,12 +25,14 @@ def _get_declarations(srcml):
 def _get_definitions(srcml):
     for function in srcml.findall('src:function', NS):
         name = function.find('src:name', NS).text
-        begin, _ = _get_linerange(function)
+        begin, end = _get_linerange(function)
         # TODO: Use `end` from `src:function` after Issue #20 is resolved
         block = function.find('src:block', NS)
         block_content = block.find('src:block_content', NS)
-        _, end = _get_linerange(block_content)
-        yield Function(name=name, lines=(begin, (end + 1)))
+        if block_content.attrib:
+            _, end = _get_linerange(block_content)
+            end += 1
+        yield Function(name=name, lines=(begin, end))
 
 
 def _get_linerange(element):
