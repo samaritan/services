@@ -13,7 +13,7 @@ NS = {'src': SRC_NS, 'pos': POS_NS}
 
 
 def _get_declarations(srcml):
-    for function in srcml.findall('src:function_decl', NS):
+    for function in srcml.iter(f'{{{SRC_NS}}}function_decl'):
         name = _get_name(function)
         begin, _ = _get_linerange(function)
         # TODO: Use `end` from `src:function_decl` after Issue #20 is resolved
@@ -23,7 +23,7 @@ def _get_declarations(srcml):
 
 
 def _get_definitions(srcml):
-    for function in srcml.findall('src:function', NS):
+    for function in srcml.iter(f'{{{SRC_NS}}}function'):
         name = _get_name(function)
         begin, end = _get_linerange(function)
         # TODO: Use `end` from `src:function` after Issue #20 is resolved
