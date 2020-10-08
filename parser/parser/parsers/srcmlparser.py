@@ -14,7 +14,7 @@ NS = {'src': SRC_NS, 'pos': POS_NS}
 
 def _get_declarations(srcml):
     for function in srcml.findall('src:function_decl', NS):
-        name = function.find('src:name', NS).text
+        name = _get_name(function)
         begin, _ = _get_linerange(function)
         # TODO: Use `end` from `src:function_decl` after Issue #20 is resolved
         parameter_list = function.find('src:parameter_list', NS)
@@ -24,7 +24,7 @@ def _get_declarations(srcml):
 
 def _get_definitions(srcml):
     for function in srcml.findall('src:function', NS):
-        name = function.find('src:name', NS).text
+        name = _get_name(function)
         begin, end = _get_linerange(function)
         # TODO: Use `end` from `src:function` after Issue #20 is resolved
         block = function.find('src:block', NS)
@@ -33,6 +33,11 @@ def _get_definitions(srcml):
             _, end = _get_linerange(block_content)
             end += 1
         yield Function(name=name, lines=(begin, end))
+
+
+def _get_name(element):
+    name = element.find('src:name', NS)
+    return name.text if name is not None else None
 
 
 def _get_linerange(element):
