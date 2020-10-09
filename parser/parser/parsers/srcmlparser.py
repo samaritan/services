@@ -39,7 +39,9 @@ def _get_definitions(srcml):
 
 def _get_name(element):
     name = element.find('src:name', NS)
-    return ''.join(name.itertext()) if name is not None else None
+    if name is not None:
+        name = ''.join(i.strip() for i in name.itertext())
+    return name
 
 
 def _get_linerange(element):
