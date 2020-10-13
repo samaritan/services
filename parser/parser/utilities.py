@@ -7,8 +7,6 @@ try:
 except ImportError:
     from yaml import Loader
 
-from .languages import get_languages
-
 _NPATTERN = r'((^|\/)({names}))'
 _EPATTERN = r'((\.)({extensions}))'
 logger = logging.getLogger(__name__)
@@ -17,10 +15,12 @@ logger = logging.getLogger(__name__)
 def _get_pattern(names, extensions):
     _names = None
     if names is not None:
-        _names = _NPATTERN.format(names='|'.join(names))
+        _names = (re.escape(i) for i in names)
+        _names = _NPATTERN.format(names='|'.join(_names))
     _extensions = None
     if extensions is not None:
-        _extensions = _EPATTERN.format(extensions='|'.join(extensions))
+        _extensions = (re.escape(i) for i in extensions)
+        _extensions = _EPATTERN.format(extensions='|'.join(_extensions))
 
     if _names is not None and _extensions is not None:
         return '({0}|{1})$'.format(_names, _extensions)
@@ -39,9 +39,9 @@ class Yaml:
 
 
 class LanguageInferer:
-    def __init__(self):
+    def __init__(self, languages):
         self._patterns = dict()
-        for language, specification in get_languages().items():
+        for language, specification in languages.items():
             pattern = _get_pattern(**specification)
             logger.debug('Compiled pattern is %s', pattern)
             self._patterns[language] = re.compile(pattern)

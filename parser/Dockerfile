@@ -5,17 +5,12 @@ WORKDIR /samaritan/services/parser
 # Install Dependencies
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apt-get update && apt-get install -qq --no-install-recommends \
-      gnupg=2.2.* \
       netcat=1.10-* \
       wget=1.20.* && \
-    wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
-    echo "deb http://apt.llvm.org/buster/ llvm-toolchain-buster main" >> \
-      /etc/apt/sources.list && \
-    echo "deb-src http://apt.llvm.org/buster/ llvm-toolchain-buster main" \
-      >> /etc/apt/souces.list && \
-    apt-get update && \
-    apt-get install -qq --no-install-recommends \
-      python3-clang-12=1:12* && \
+    wget --quiet -O /tmp/srcml.deb \
+      "http://131.123.42.38/lmcrs/v1.0.0/srcml_1.0.0-1_ubuntu18.04.deb" && \
+    apt-get install -qq --no-install-recommends /tmp/srcml.deb && \
+    rm /tmp/srcml.deb && \
     rm -rf /var/lib/apt/lists/*
 
 ENV PYTHONPATH="${PYTHONPATH}:/usr/lib/python3/dist-packages/"

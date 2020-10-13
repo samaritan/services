@@ -29,7 +29,7 @@ services:
           - node.hostname == ${HOSTNAME}
   # Primitive Services
   parser:
-    image: docker.pkg.github.com/samaritan/services/samaritan-parser
+    image: docker.pkg.github.com/samaritan/services/samaritan-parser:0.3.1-alpha
     depends_on:
       - "rabbit"
     environment:
@@ -46,7 +46,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   project:
-    image: docker.pkg.github.com/samaritan/services/samaritan-project
+    image: docker.pkg.github.com/samaritan/services/samaritan-project:0.2.0-alpha
     depends_on:
       - "rabbit"
     environment:
@@ -61,7 +61,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   repository:
-    image: docker.pkg.github.com/samaritan/services/samaritan-repository
+    image: docker.pkg.github.com/samaritan/services/samaritan-repository:0.2.0-alpha
     volumes:
       - ${REPOSITORIES_ROOT}:/samaritan/repositories
       - ${CACHE_ROOT}:/samaritan/cache
@@ -85,7 +85,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   understand:
-    image: docker.pkg.github.com/samaritan/services/samaritan-understand
+    image: docker.pkg.github.com/samaritan/services/samaritan-understand:0.1.0-alpha
     volumes:
       - ${REPOSITORIES_ROOT}:/samaritan/repositories
       - ${UNDERSTAND_ROOT}:/samaritan/understand
@@ -107,7 +107,7 @@ services:
           - node.hostname == ${HOSTNAME}
   # Metric Services
   churn:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-churn
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-churn:0.2.0-alpha
     depends_on:
       - "rabbit"
       - "repository"
@@ -123,7 +123,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   collaboration:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-collaboration
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-collaboration:0.2.0-alpha
     depends_on:
       - "rabbit"
       - "repository"
@@ -139,7 +139,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   contribution:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-contribution
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-contribution:0.2.0-alpha
     depends_on:
       - "rabbit"
       - "repository"
@@ -155,7 +155,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   complexity:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-complexity
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-complexity:0.2.0-alpha
     depends_on:
       - "project"
       - "rabbit"
@@ -172,7 +172,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   flow:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-flow
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-flow:0.2.0-alpha
     depends_on:
       - "project"
       - "rabbit"
@@ -189,7 +189,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   functionchurn:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-functionchurn
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-functionchurn:0.2.0-alpha
     depends_on:
       - "project"
       - "rabbit"
@@ -209,7 +209,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   hunk:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-hunk
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-hunk:0.2.0-alpha
     depends_on:
       - "project"
       - "rabbit"
@@ -224,8 +224,24 @@ services:
       placement:
         constraints:
           - node.hostname == ${HOSTNAME}
+  interactivechurn:
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-interactivechurn:0.2.0-alpha
+    depends_on:
+      - "rabbit"
+      - "repository"
+    environment:
+      RABBIT_HOST: "rabbit"
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.hostname == ${HOSTNAME}
   keyword:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-keyword
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-keyword:0.2.0-alpha
     depends_on:
       - "project"
       - "rabbit"
@@ -241,7 +257,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   loc:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-loc
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-loc:0.2.0-alpha
     depends_on:
       - "rabbit"
       - "repository"
@@ -258,7 +274,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   messagetokens:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-messagetokens
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-messagetokens:0.2.0-alpha
     depends_on:
       - "rabbit"
       - "repository"
@@ -274,7 +290,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   nesting:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-nesting
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-nesting:0.2.0-alpha
     depends_on:
       - "project"
       - "rabbit"
@@ -291,7 +307,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   offender:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-offender
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-offender:0.2.0-alpha
     depends_on:
       - "rabbit"
       - "repository"
@@ -307,7 +323,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   ownership:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-ownership
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-ownership:0.2.0-alpha
     depends_on:
       - "rabbit"
       - "repository"
@@ -323,7 +339,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   pastauthors:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-pastauthors
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-pastauthors:0.2.0-alpha
     depends_on:
       - "rabbit"
       - "repository"
@@ -339,7 +355,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   pastchanges:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-pastchanges
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-pastchanges:0.2.0-alpha
     depends_on:
       - "rabbit"
       - "repository"
@@ -355,10 +371,27 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   patchtokens:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-patchtokens
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-patchtokens:0.2.0-alpha
     depends_on:
       - "rabbit"
       - "repository"
+    environment:
+      RABBIT_HOST: "rabbit"
+      RABBIT_PORT: ${RABBIT_PORT}
+      RABBIT_USER: "${RABBIT_USER}"
+      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.hostname == ${HOSTNAME}
+  relativechurn:
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-relativechurn:0.2.0-alpha
+    depends_on:
+      - "rabbit"
+      - "repository"
+      - "churn"
     environment:
       RABBIT_HOST: "rabbit"
       RABBIT_PORT: ${RABBIT_PORT}

@@ -1,12 +1,23 @@
-c/c++:
+C:
   names:
   extensions:
-    - c  
-    - cc 
+    - c
+    - h
+    - i
+C++:
+  names:
+  extensions:
+    - C
+    - c++
+    - cc
+    - cp
     - cpp
+    - CPP
     - cxx
-    - h  
-    - hh 
+    - H
+    - h++
+    - hh
     - hpp
     - hxx
-    - inl
+    - ii
+    - tcc
