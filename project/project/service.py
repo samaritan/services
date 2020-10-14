@@ -23,7 +23,9 @@ class ProjectService:
 
         _project = None
         with self.database.get_session() as session:
-            _project = session.query(Project).get(project)
+            _project = session.query(Project) \
+                              .filter_by(name=project) \
+                              .one_or_none()
             if _project is None:
                 raise NotFound('{} not found'.format(project))
 
