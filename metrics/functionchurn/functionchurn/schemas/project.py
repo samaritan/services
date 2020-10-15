@@ -2,8 +2,8 @@ from marshmallow import Schema, fields, post_load
 
 from ..models import Project
 
-
 class ProjectSchema(Schema):
+    id = fields.Integer()
     name = fields.String()
     description = fields.String()
     domain = fields.String()
