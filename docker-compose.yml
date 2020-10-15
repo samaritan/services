@@ -61,7 +61,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   repository:
-    image: docker.pkg.github.com/samaritan/services/samaritan-repository:0.2.0-alpha
+    image: docker.pkg.github.com/samaritan/services/samaritan-repository:0.3.0-alpha
     volumes:
       - ${REPOSITORIES_ROOT}:/samaritan/repositories
       - ${CACHE_ROOT}:/samaritan/cache
@@ -107,7 +107,7 @@ services:
           - node.hostname == ${HOSTNAME}
   # Metric Services
   churn:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-churn:0.2.0-alpha
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-churn:0.3.0-alpha
     depends_on:
       - "rabbit"
       - "repository"
@@ -189,7 +189,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   functionchurn:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-functionchurn:0.2.0-alpha
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-functionchurn:0.3.0-alpha
     depends_on:
       - "project"
       - "rabbit"
@@ -225,7 +225,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   interactivechurn:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-interactivechurn:0.2.0-alpha
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-interactivechurn:0.3.0-alpha
     depends_on:
       - "rabbit"
       - "repository"
@@ -241,7 +241,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   keyword:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-keyword:0.2.0-alpha
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-keyword:0.3.0-alpha
     depends_on:
       - "project"
       - "rabbit"
@@ -387,7 +387,7 @@ services:
         constraints:
           - node.hostname == ${HOSTNAME}
   relativechurn:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-relativechurn:0.2.0-alpha
+    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-relativechurn:0.3.0-alpha
     depends_on:
       - "rabbit"
       - "repository"
