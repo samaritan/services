@@ -1,4 +1,3 @@
-from .project import ProjectSchema
 from .interactivechurn import InteractiveChurnSchema
 from .repository import ChangeSchema, ChangesSchema, CommitSchema,            \
                         DeltaSchema, DeltasSchema, DeveloperSchema,           \

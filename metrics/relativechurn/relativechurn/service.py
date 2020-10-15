@@ -6,8 +6,7 @@ from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
 from .models import ChangeType, RelativeChurn
-from .schemas import ChangesSchema, ChurnSchema, ProjectSchema,               \
-                     RelativeChurnSchema
+from .schemas import ChangesSchema, ChurnSchema, RelativeChurnSchema
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +21,7 @@ def _get_relativechurn(project, churn, changes, repository_rpc):
     elif change.type == ChangeType.DELETED:
         insertions, deletions = None, None
     else:
-        size = repository_rpc.get_size(project.name, change.oids.after)
+        size = repository_rpc.get_size(project, change.oids.after)
         if size is not None:
             insertions = insertions / size if insertions is not None else None
             deletions = deletions / size if deletions is not None else None
@@ -34,14 +33,12 @@ class RelativeChurnService:
 
     config = Config()
     churn_rpc = RpcProxy('churn')
-    project_rpc = RpcProxy('project')
     repository_rpc = RpcProxy('repository')
 
     @rpc
     def collect(self, project, **options):
         logger.debug(project)
 
-        project = ProjectSchema().load(self.project_rpc.get(project))
         changes = self._get_changes(project)
         churn = self._get_churn(project)
 
@@ -53,7 +50,7 @@ class RelativeChurnService:
         return RelativeChurnSchema(many=True).dump(relativechurn)
 
     def _get_changes(self, project):
-        changes = self.repository_rpc.get_changes(project.name)
+        changes = self.repository_rpc.get_changes(project)
         changes = ChangesSchema(many=True).load(changes)
         changes = {
             (c.commit, p): cc for c in changes for p, cc in c.changes.items()
@@ -61,5 +58,5 @@ class RelativeChurnService:
         return changes
 
     def _get_churn(self, project):
-        churn = self.churn_rpc.collect(project.name)
+        churn = self.churn_rpc.collect(project)
         return ChurnSchema(many=True).load(churn)
