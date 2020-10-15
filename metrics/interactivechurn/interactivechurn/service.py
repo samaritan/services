@@ -6,7 +6,7 @@ from nameko.rpc import rpc, RpcProxy
 
 from .models import InteractiveChurn
 from .schemas import CommitSchema, InteractiveChurnSchema,                    \
-                     LastModifierSchema, LineChangesSchema, ProjectSchema
+                     LastModifierSchema, LineChangesSchema
 
 logger = logging.getLogger(__name__)
 
@@ -34,14 +34,14 @@ def _get_interactivechurn(project, commit, path, repository_rpc):
 def _get_lastmodifiers(project, commit, path, lines, repository_rpc):
     commit = CommitSchema().dump(commit)
     lastmodifiers = repository_rpc.get_lastmodifiers(
-        project.name, commit, path, lines
+        project, commit, path, lines
     )
     return LastModifierSchema(many=True).load(lastmodifiers)
 
 
 def _get_linechanges(project, commit, path, repository_rpc):
     commit = CommitSchema().dump(commit)
-    linechanges = repository_rpc.get_linechanges(project.name, commit, path)
+    linechanges = repository_rpc.get_linechanges(project, commit, path)
     return LineChangesSchema().load(linechanges)
 
 
@@ -49,14 +49,12 @@ class InteractiveChurnService:
     name = 'interactivechurn'
 
     config = Config()
-    project_rpc = RpcProxy('project')
     repository_rpc = RpcProxy('repository')
 
     @rpc
     def collect(self, project, sha, path=None, **options):
         logger.debug(project)
 
-        project = ProjectSchema().load(self.project_rpc.get(project))
         commits = self._get_commits(project, sha)
 
         pool = GreenPool()
@@ -67,5 +65,5 @@ class InteractiveChurnService:
         return InteractiveChurnSchema(many=True).dump(interactivechurn)
 
     def _get_commits(self, project, sha):
-        commits = [self.repository_rpc.get_commit(project.name, sha)]
+        commits = [self.repository_rpc.get_commit(project, sha)]
         return CommitSchema(many=True).load(commits)
