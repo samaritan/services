@@ -29,7 +29,7 @@ class OffenderService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha, path=None, **options):
+    def collect(self, project, sha, path, **options):
         logger.debug(project)
 
         commit = self.repository_rpc.get_commit(project, sha)
@@ -37,7 +37,6 @@ class OffenderService:
 
         offenders = OffenderSchema(many=True).load(get_offenders(project))
         offenders = filter(_get_filter(commit), offenders)
-        if path is not None:
-            offenders = filter(_get_path_filter(path), offenders)
+        offenders = filter(_get_path_filter(path), offenders)
 
         return OffenderSchema(many=True).dump(offenders)

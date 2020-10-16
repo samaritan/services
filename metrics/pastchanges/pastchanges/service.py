@@ -1,36 +1,12 @@
 import logging
 
-from eventlet import GreenPool
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
 from .models import PastChanges
-from .schemas import ChangesSchema, CommitSchema, PastChangesSchema
+from .schemas import CommitSchema, PastChangesSchema
 
 logger = logging.getLogger(__name__)
-
-
-def _get_changes(project, commit, path, repository_rpc):
-    changes = repository_rpc.get_changes(project, commit.sha, path)
-    return ChangesSchema(many=True).load(changes)
-
-
-def _get_pastchanges(changes):
-    pastchanges = list()
-
-    changes = sorted(changes, key=lambda i: i.commit.timestamp)
-
-    paths = dict()
-    for change in changes:
-        commit = change.commit
-        for path in change.changes:
-            pchanges = paths.get(path, 0)
-            paths[path] = pchanges + 1
-            pastchanges.append(PastChanges(
-                commit=commit, path=path, pastchanges=pchanges
-            ))
-
-    return pastchanges
 
 
 class PastChangesService:
@@ -40,18 +16,16 @@ class PastChangesService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha, path=None, **options):
+    def collect(self, project, sha, path, **options):
         logger.debug(project)
 
         commits = self.repository_rpc.get_commits(project, sha, path)
-        commits = CommitSchema(many=True).load(commits)
 
-        pool = GreenPool()
-        arguments = [(project, c, path, self.repository_rpc) for c in commits]
-        changes = list()
-        for item in pool.starmap(_get_changes, arguments):
-            changes.extend(item)
-        pastchanges = _get_pastchanges(changes)
-        pastchanges = [i for i in pastchanges if i.commit.sha == sha]
+        commit = self.repository_rpc.get_commit(project, sha)
+        commit = CommitSchema().load(commit)
 
-        return PastChangesSchema(many=True).dump(pastchanges)
+        pastchanges = len(commits) - 1 if commits else 0
+        pastchanges = PastChanges(
+            commit=commit, path=path, pastchanges=pastchanges
+        )
+        return PastChangesSchema().dump(pastchanges)

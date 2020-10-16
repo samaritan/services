@@ -36,7 +36,7 @@ class ComplexityService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha, path=None, **options):
+    def collect(self, project, sha, path, **options):
         logger.debug(project)
 
         changes = self.repository_rpc.get_changes(project, sha, path)

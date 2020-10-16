@@ -1,6 +1,5 @@
 import logging
 
-from eventlet import GreenPool
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
@@ -8,12 +7,6 @@ from .hunk import get_hunk
 from .schemas import CommitSchema, HunkSchema, PatchSchema
 
 logger = logging.getLogger(__name__)
-
-
-def _get_hunks(project, commit, repository_rpc):
-    patch = repository_rpc.get_patch(project, commit.sha)
-    patch = PatchSchema().load(patch)
-    return get_hunk(patch)
 
 
 class HunkService:
@@ -26,13 +19,8 @@ class HunkService:
     def collect(self, project, sha, **options):
         logger.debug(project)
 
-        commits = [self.repository_rpc.get_commit(project, sha)]
-        commits = CommitSchema(many=True).load(commits)
+        patch = self.repository_rpc.get_patch(project, sha)
+        patch = PatchSchema().load(patch)
+        hunk = get_hunk(patch)
 
-        pool = GreenPool()
-        arguments = ((project, c, self.repository_rpc) for c in commits)
-        hunks = list()
-        for item in pool.starmap(_get_hunks, arguments):
-            hunks.append(item)
-
-        return HunkSchema(many=True).dump(hunks)
+        return HunkSchema().dump(hunk)

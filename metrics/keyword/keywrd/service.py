@@ -1,7 +1,5 @@
 import logging
-import os
 
-from eventlet.greenpool import GreenPool
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
@@ -10,12 +8,6 @@ from .keywrd import Keywrd
 from .schemas import CommitSchema, KeywordSchema, PatchSchema, ProjectSchema
 
 logger = logging.getLogger(__name__)
-
-
-def _get_keyword(project, commit, keyword, repository_rpc):
-    patch = repository_rpc.get_patch(project.name, commit.sha)
-    patch = PatchSchema().load(patch)
-    return keyword.get(patch)
 
 
 class KeywordService:
@@ -33,17 +25,10 @@ class KeywordService:
         if project.language.lower() not in self.config['KEYWORDS']:
             raise LanguageNotSupported(f'{project.language} not supported')
         keywords = self.config['KEYWORDS'].get(project.language.lower())
-
         keywrd = Keywrd(keywords=keywords)
-        commits = [self.repository_rpc.get_commit(project.name, sha)]
-        commits = CommitSchema(many=True).load(commits)
 
-        pool = GreenPool(os.cpu_count())
-        arguments = (
-            (project, c, keywrd, self.repository_rpc) for c in commits
-        )
-        keyword = list()
-        for item in pool.starmap(_get_keyword, arguments):
-            keyword.append(item)
+        patch = self.repository_rpc.get_patch(project.name, sha)
+        patch = PatchSchema().load(patch)
+        keyword = keywrd.get(patch)
 
-        return KeywordSchema(many=True).dump(keyword)
+        return KeywordSchema().dump(keyword)

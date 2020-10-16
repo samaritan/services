@@ -1,7 +1,5 @@
 import logging
-import os
 
-from eventlet.greenpool import GreenPool
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
@@ -11,10 +9,9 @@ from .schemas import ChangesSchema, ChurnSchema, RelativeChurnSchema
 logger = logging.getLogger(__name__)
 
 
-def _get_relativechurn(project, churn, changes, repository_rpc):
+def _get_relativechurn(project, churn, change, repository_rpc):
     commit, path = churn.commit, churn.path
     insertions, deletions = churn.insertions, churn.deletions
-    change = changes[(commit, path)]
 
     if change.type == ChangeType.ADDED:
         insertions, deletions = 1.0, 0.0
@@ -36,27 +33,24 @@ class RelativeChurnService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha, path=None, **options):
+    def collect(self, project, sha, path, **options):
         logger.debug(project)
 
-        changes = self._get_changes(project, sha, path)
+        change = self._get_change(project, sha, path)
         churn = self._get_churn(project, sha, path)
 
-        pool = GreenPool(os.cpu_count())
-        arguments = [(project, c, changes, self.repository_rpc) for c in churn]
-        relativechurn = list()
-        for item in pool.starmap(_get_relativechurn, arguments):
-            relativechurn.append(item)
-        return RelativeChurnSchema(many=True).dump(relativechurn)
+        relativechurn = _get_relativechurn(
+            project, churn, change, self.repository_rpc
+        )
+        return RelativeChurnSchema().dump(relativechurn)
 
-    def _get_changes(self, project, sha, path):
+    def _get_change(self, project, sha, path):
         changes = self.repository_rpc.get_changes(project, sha, path)
         changes = ChangesSchema(many=True).load(changes)
-        changes = {
-            (c.commit, p): cc for c in changes for p, cc in c.changes.items()
-        }
-        return changes
+        for change in changes:
+            return change.changes[path]
+        return None
 
     def _get_churn(self, project, sha, path):
         churn = self.churn_rpc.collect(project, sha, path)
-        return ChurnSchema(many=True).load(churn)
+        return ChurnSchema().load(churn)

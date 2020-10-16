@@ -10,12 +10,6 @@ from .schemas import ChangesSchema, CollaborationSchema, CommitSchema
 logger = logging.getLogger(__name__)
 
 
-def _get_filter(path):
-    def _filter(value):
-        return value.path == path
-    return _filter
-
-
 def _get_changes(project, commit, repository_rpc):
     changes = repository_rpc.get_changes(project, commit.sha)
     return ChangesSchema(many=True).load(changes)
@@ -28,19 +22,23 @@ class CollaborationService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha, path=None, **options):
+    def collect(self, project, sha, path, **options):
         logger.debug(project)
 
         commits = self.repository_rpc.get_commits(project, sha)
         commits = CommitSchema(many=True).load(commits)
 
+        changes = self._get_changes(project, commits)
+
+        collaboration = get_collaboration(changes, **options)
+        for collaboration in filter(lambda i: i.path == path, collaboration):
+            return CollaborationSchema().dump(collaboration)
+        return None
+
+    def _get_changes(self, project, commits):
         pool = GreenPool()
         arguments = [(project, c, self.repository_rpc) for c in commits]
         changes = list()
         for item in pool.starmap(_get_changes, arguments):
             changes.extend(item)
-
-        collaboration = get_collaboration(changes, **options)
-        if path is not None:
-            collaboration = filter(_get_filter(path), collaboration)
-        return CollaborationSchema(many=True).dump(collaboration)
+        return changes

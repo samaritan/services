@@ -1,6 +1,5 @@
 import logging
 
-from eventlet.greenpool import GreenPool
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
@@ -12,23 +11,18 @@ logger = logging.getLogger(__name__)
 
 
 def _get_interactivechurn(project, commit, path, repository_rpc):
-    ichurns = list()
-
     linechanges = _get_linechanges(project, commit, path, repository_rpc)
-    for _path in linechanges.linechanges:
-        deletions = linechanges.linechanges[_path]['-']
-        if not deletions:
-            ichurns.append(InteractiveChurn(commit, _path, 0.0))
-            continue
 
-        lastmodifiers = _get_lastmodifiers(
-            project, commit, _path, deletions, repository_rpc
-        )
-        authors = (i.commit.author for i in lastmodifiers)
-        ichurn = sum(i != commit.author for i in authors) / len(deletions)
-        ichurns.append(InteractiveChurn(commit, _path, ichurn))
+    deletions = linechanges.linechanges[path]['-']
+    if not deletions:
+        return InteractiveChurn(commit, path, 0.0)
 
-    return ichurns
+    lastmodifiers = _get_lastmodifiers(
+        project, commit, path, deletions, repository_rpc
+    )
+    authors = (i.commit.author for i in lastmodifiers)
+    ichurn = sum(i != commit.author for i in authors) / len(deletions)
+    return InteractiveChurn(commit, path, ichurn)
 
 
 def _get_lastmodifiers(project, commit, path, lines, repository_rpc):
@@ -52,18 +46,16 @@ class InteractiveChurnService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha, path=None, **options):
+    def collect(self, project, sha, path, **options):
         logger.debug(project)
 
-        commits = self._get_commits(project, sha)
+        commit = self._get_commit(project, sha)
 
-        pool = GreenPool()
-        arguments = [(project, c, path, self.repository_rpc) for c in commits]
-        interactivechurn = list()
-        for item in pool.starmap(_get_interactivechurn, arguments):
-            interactivechurn.extend(item)
-        return InteractiveChurnSchema(many=True).dump(interactivechurn)
+        interactivechurn = _get_interactivechurn(
+            project, commit, path, self.repository_rpc
+        )
+        return InteractiveChurnSchema().dump(interactivechurn)
 
-    def _get_commits(self, project, sha):
-        commits = [self.repository_rpc.get_commit(project, sha)]
-        return CommitSchema(many=True).load(commits)
+    def _get_commit(self, project, sha):
+        commit = self.repository_rpc.get_commit(project, sha)
+        return CommitSchema().load(commit)

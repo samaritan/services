@@ -10,9 +10,10 @@ logger = logging.getLogger(__name__)
 
 
 def _get_churn(deltas):
-    deltas = ((d.commit, p, dd) for d in deltas for p, dd in d.deltas.items())
-    for commit, path, delta in deltas:
-        yield Churn(commit, path, delta.insertions, delta.deletions)
+    churn = None
+    for path, delta in deltas.deltas.items():
+        churn = Churn(deltas.commit, path, delta.insertions, delta.deletions)
+    return churn
 
 
 class ChurnService:
@@ -23,12 +24,12 @@ class ChurnService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha, path=None, **options):
+    def collect(self, project, sha, path, **options):
         logger.debug(project)
 
         deltas = self._get_deltas(project, sha, path)
-        return ChurnSchema(many=True).dump(_get_churn(deltas))
+        return ChurnSchema().dump(_get_churn(deltas))
 
     def _get_deltas(self, project, sha, path):
         deltas = self.repository_rpc.get_deltas(project, sha, path)
-        return DeltasSchema(many=True).load(deltas)
+        return DeltasSchema().load(deltas)

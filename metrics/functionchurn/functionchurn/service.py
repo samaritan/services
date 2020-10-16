@@ -21,18 +21,18 @@ class FunctionChurnService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha, path=None, **options):
+    def collect(self, project, sha, path, **options):
         logger.debug(project)
 
-        functionchurn = list()
         project = ProjectSchema().load(self.project_rpc.get(project))
         if self.parser_rpc.is_supported(project.language):
             changes = self._get_changes(project, sha, path)
             helper = Helper(
                 project, self.repository_rpc, self.parser_rpc, self.redis
             )
-            functionchurn = helper.collect(changes)
-        return FunctionChurnSchema(many=True).dump(functionchurn)
+            for functionchurn in helper.collect(changes):
+                return FunctionChurnSchema().dump(functionchurn)
+        return None
 
     def _get_changes(self, project, sha, path):
         changes = self.repository_rpc.get_changes(project.name, sha, path)
