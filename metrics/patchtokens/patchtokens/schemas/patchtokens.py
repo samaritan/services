@@ -1,21 +1,12 @@
 from marshmallow import Schema, fields, post_load
 
 from .repository import CommitSchema
-from ..models import PatchTokenIndices, PatchTokens
-
-
-class PatchTokenIndicesSchema(Schema):
-    commit = fields.Nested(CommitSchema)
-    patchtokenindices = fields.List(fields.Integer())
-
-    @post_load
-    def make_patchtokenindices(self, data, **kwargs):
-        return PatchTokenIndices(**data)
+from ..models import PatchTokens
 
 
 class PatchTokensSchema(Schema):
+    commit = fields.Nested(CommitSchema)
     tokens = fields.List(fields.String())
-    patchtokenindices = fields.Nested(PatchTokenIndicesSchema, many=True)
 
     @post_load
     def make_patchtokens(self, data, **kwargs):

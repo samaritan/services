@@ -2,23 +2,13 @@ import logging
 
 from sklearn.feature_extraction.text import CountVectorizer
 
-from .models import PatchTokens, PatchTokenIndices
+from .models import PatchTokens
 
 logger = logging.getLogger(__name__)
 
 
-def _get_patchtokenindices(matrix, index, patch):
-    commit = patch.commit
-    tokenindices = matrix.getrow(index).nonzero()[1].tolist()
-    return PatchTokenIndices(commit=commit, patchtokenindices=tokenindices)
-
-
-def get_patchtokens(patches):
+def get_patchtokens(patch):
     vectorizer = CountVectorizer(binary=True)
-    matrix = vectorizer.fit_transform(p.patch for p in patches)
+    vectorizer.fit([patch.patch])
     tokens = vectorizer.get_feature_names()
-
-    patchtokenindices = list()
-    for (index, patch) in enumerate(patches):
-        patchtokenindices.append(_get_patchtokenindices(matrix, index, patch))
-    return PatchTokens(tokens=tokens, patchtokenindices=patchtokenindices)
+    return PatchTokens(commit=patch.commit, tokens=tokens)
