@@ -48,11 +48,13 @@ def _get_changes(lines, commit):
     return Changes(commit=commit, changes=changes)
 
 
-def _get_deltas(lines, commit):
+def _get_deltas(lines, commit, path):
     deltas = dict()
     for line in lines:
         match = _DELTA_RE.match(line.strip('\n'))
-        insertions, deletions, path = match.groups()
+        insertions, deletions, _path = match.groups()
+        if path != _path:
+            continue
         insertions = None if insertions == '-' else insertions
         deletions = None if deletions == '-' else deletions
         deltas[path] = Delta(insertions=insertions, deletions=deletions)
@@ -362,12 +364,12 @@ class Repository:
     def _get_deltas_for_sha_to_path(self, sha, path):
         commit = self.get_commit(sha)
 
-        command = COMMANDS['deltas']['commitpath'].format(sha=sha, path=path)
+        command = COMMANDS['deltas']['commit'].format(sha=sha, path=path)
         ostream, ethread = self._runner.run(command)
 
         deltas = None
         for _, lines in parsers.GitLogParser.parse(ostream):
-            deltas = _get_deltas(lines, commit)
+            deltas = _get_deltas(lines, commit, path)
         _handle_exit(ethread)
 
         return deltas
