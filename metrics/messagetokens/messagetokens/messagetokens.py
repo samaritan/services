@@ -2,27 +2,13 @@ import logging
 
 from sklearn.feature_extraction.text import CountVectorizer
 
-from .models import MessageTokens, MessageTokenIndices
+from .models import MessageTokens
 
 logger = logging.getLogger(__name__)
 
 
-def _get_messagetokenindices(matrix, index, message):
-    commit = message.commit
-    tokenindices = matrix.getrow(index).nonzero()[1].tolist()
-    return MessageTokenIndices(commit=commit, messagetokenindices=tokenindices)
-
-
-def get_messagetokens(messages):
+def get_messagetokens(message):
     vectorizer = CountVectorizer(binary=True)
-    matrix = vectorizer.fit_transform(m.message for m in messages)
+    vectorizer.fit([message.message])
     tokens = vectorizer.get_feature_names()
-
-    messagetokenindices = list()
-    for (index, message) in enumerate(messages):
-        _messagetokenindices = _get_messagetokenindices(matrix, index, message)
-        messagetokenindices.append(_messagetokenindices)
-
-    return MessageTokens(
-        tokens=tokens, messagetokenindices=messagetokenindices
-    )
+    return MessageTokens(commit=message.commit, tokens=tokens)

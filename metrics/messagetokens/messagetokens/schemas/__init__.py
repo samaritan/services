@@ -1,4 +1,4 @@
-from .messagetokens import MessageTokenIndicesSchema, MessageTokensSchema
+from .messagetokens import MessageTokensSchema
 from .repository import ChangeSchema, ChangesSchema, CommitSchema,            \
                         DeltaSchema, DeltasSchema, DeveloperSchema,           \
                         FileSchema, LastModifierSchema, LineChangesSchema,    \
