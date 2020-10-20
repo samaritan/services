@@ -171,23 +171,6 @@ services:
       placement:
         constraints:
           - node.hostname == ${HOSTNAME}
-  flow:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-flow:0.2.0-alpha
-    depends_on:
-      - "project"
-      - "rabbit"
-      - "understand"
-    environment:
-      RABBIT_HOST: "rabbit"
-      RABBIT_PORT: ${RABBIT_PORT}
-      RABBIT_USER: "${RABBIT_USER}"
-      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
-      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
-    deploy:
-      mode: global
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
   functionchurn:
     image: docker.pkg.github.com/samaritan/services/samaritan-metrics-functionchurn:0.3.0-alpha
     depends_on:
@@ -245,23 +228,6 @@ services:
     depends_on:
       - "project"
       - "rabbit"
-    environment:
-      RABBIT_HOST: "rabbit"
-      RABBIT_PORT: ${RABBIT_PORT}
-      RABBIT_USER: "${RABBIT_USER}"
-      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
-      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
-    deploy:
-      mode: global
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
-  loc:
-    image: docker.pkg.github.com/samaritan/services/samaritan-metrics-loc:0.2.0-alpha
-    depends_on:
-      - "rabbit"
-      - "repository"
-      - "understand"
     environment:
       RABBIT_HOST: "rabbit"
       RABBIT_PORT: ${RABBIT_PORT}
