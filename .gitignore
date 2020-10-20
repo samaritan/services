@@ -151,4 +151,7 @@ rabbitmq.conf
 ## Convenience Makefile used during development
 Makefile
 
+## docker-compose.yml used during developement
+docker-compose.development.yml
+
 # End of Custom Ignores
