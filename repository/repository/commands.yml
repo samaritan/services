@@ -1,13 +1,13 @@
 ---
 changes:
-  commit: git log --pretty=%H,%P -1 {sha} | awk -F",| " '{{ print $1 " " $2 }}' | git diff-tree -r -m --no-renames --root --always --stdin --pretty=*%n%H
-  commitpath: git log --pretty=%H,%P -1 {sha} -- {path} | awk -F",| " '{{ print $1 " " $2 }}' | git diff-tree -r -m --no-renames --root --always --stdin --pretty=*%n%H -- {path}
+  commit: git log --pretty=%H,%P --no-walk {sha} | awk -F",| " '{{ print $1 " " $2 }}' | git diff-tree -r -m --no-renames --root --always --stdin --pretty=*%n%H
+  commitpath: git log --pretty=%H,%P --no-walk {sha} -- {path} | awk -F",| " '{{ print $1 " " $2 }}' | git diff-tree -r -m --no-renames --root --always --stdin --pretty=*%n%H -- {path}
 commits:
   all: git log --pretty='"%H","%ct","%aN","%aE"'
   allpath: git log --pretty='"%H","%ct","%aN","%aE"' -- {path}
   limit: git log --pretty='"%H","%ct","%aN","%aE"' {sha}
   limitpath: git log --pretty='"%H","%ct","%aN","%aE"' {sha} -- {path}
-  commit: git log --pretty='"%H","%ct","%aN","%aE"' -1 {sha}
+  commit: git log --pretty='"%H","%ct","%aN","%aE"' --no-walk {sha}
 content: git show {oid}
 deltas:
   commit: git show -c --no-renames --numstat --pretty=*%n%H {sha}
@@ -21,4 +21,4 @@ messages:
 moves: git log -M{similarity}% --diff-filter=R --summary --pretty=*%n%H
 patches:
   commit: git show --patch --pretty=*%n%H {sha}
-version: git log -1 --pretty=%h
+version: git log --no-walk --pretty=%h HEAD
