@@ -2,7 +2,6 @@ import logging
 
 import eventlet
 
-from . import utilities
 from .models import FunctionChurn
 from .models.enumerations import ChangeType, LineType
 from .schemas import CommitSchema, FunctionSchema, LineChangesSchema
@@ -36,11 +35,10 @@ def _translate(components):
 
 
 class Helper:
-    def __init__(self, project, repository, parser, redis):
+    def __init__(self, project, repository, parser):
         self._project = project.name
         self._repository = repository
         self._parser = parser
-        self._redis = redis
 
     def collect(self, changes):
         changes = (
@@ -51,11 +49,6 @@ class Helper:
             yield item
 
     def _get_functionchurn(self, commit, path, change):
-        key = f'{self._project}_{commit.sha}_{utilities.hashit(path)}'
-        if self._redis.exists(key):
-            components = tuple(int(i) for i in self._redis.lrange(key, 0, 2))
-            return FunctionChurn(*_translate(components))
-
         before = self._get_functions(path, change.oids.before)
         after = self._get_functions(path, change.oids.after)
         lines = None
@@ -68,7 +61,6 @@ class Helper:
         components = (-1, -1, -1)
         if before is not None or after is not None:
             components = _get_functionchurn(before, after, lines)
-        self._redis.rpush(key, *components)
         return FunctionChurn(*_translate(components))
 
     def _get_functions(self, path, oid):
