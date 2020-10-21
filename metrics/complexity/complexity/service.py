@@ -1,26 +1,28 @@
 import logging
 
-from eventlet.greenpool import GreenPool
 from lizard import get_extensions, FileAnalyzer
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
-from .models import Complexity
-from .schemas import ChangesSchema, ComplexitySchema
+from .schemas import ChangesSchema
 
 logger = logging.getLogger(__name__)
 analyzer = FileAnalyzer(get_extensions([]))  # pylint: disable=invalid-name
 
 
 def _get_complexities(project, path, change, repository_rpc):
-    complexities = list()
+    complexities = dict()
 
     content = repository_rpc.get_content(project, change.oids.after)
     if content is not None:
         for function in _get_functions(path, content):
-            complexity = function.cyclomatic_complexity
-            complexity = Complexity(function.long_name, path, complexity)
-            complexities.append(complexity)
+            if function.long_name in complexities:
+                logger.warning(
+                    'Duplicate function %s in %s with complexity %f and %f',
+                    function.long_name, path, complexities[function.long_name],
+                    function.cyclomatic_complexity
+                )
+            complexities[function.long_name] = function.cyclomatic_complexity
 
     return complexities
 
@@ -41,11 +43,9 @@ class ComplexityService:
 
         changes = self.repository_rpc.get_changes(project, sha, path)
         changes = ChangesSchema(many=True).load(changes)
-        changes = ((p, cc) for c in changes for p, cc in c.changes.items())
+        change = changes[0].changes[path]
 
-        pool = GreenPool()
-        arguments = ((project, p, c, self.repository_rpc) for p, c in changes)
-        complexities = list()
-        for item in pool.starmap(_get_complexities, arguments):
-            complexities.extend(item)
-        return ComplexitySchema(many=True).dump(complexities)
+        complexities = _get_complexities(
+            project, path, change, self.repository_rpc
+        )
+        return complexities if complexities else None

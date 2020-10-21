@@ -7,18 +7,14 @@ import graph_tool
 from graph_tool.centrality import betweenness
 
 from .library import pathwhitelister
-from .models import Collaboration
 
 logger = logging.getLogger(__name__)
 
 
 def _aggregate_centrality(centralities):
-    _centralities = list()
+    _centralities = dict()
     for (file, centrality) in centralities.items():
-        _centralities.append(Collaboration(
-            path=file,
-            collaboration=max(centrality) if centrality else 0.0
-        ))
+        _centralities[file] = max(centrality) if centrality else 0.0
     return _centralities
 
 

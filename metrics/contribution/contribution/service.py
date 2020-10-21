@@ -5,7 +5,7 @@ from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
 from .contribution import get_contribution
-from .schemas import ChangesSchema, CommitSchema, ContributionSchema
+from .schemas import ChangesSchema, CommitSchema
 
 logger = logging.getLogger(__name__)
 
@@ -31,9 +31,7 @@ class ContributionService:
         changes = self._get_changes(project, commits)
 
         contribution = get_contribution(changes, **options)
-        for contribution in filter(lambda i: i.path == path, contribution):
-            return ContributionSchema().dump(contribution)
-        return None
+        return contribution.get(path, None)
 
     def _get_changes(self, project, commits):
         pool = GreenPool()

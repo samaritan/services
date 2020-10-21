@@ -3,8 +3,7 @@ import logging
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
-from .models import PastAuthors
-from .schemas import CommitSchema, PastAuthorsSchema
+from .schemas import CommitSchema
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +24,4 @@ class PastAuthorsService:
         commit = self.repository_rpc.get_commit(project, sha)
         commit = CommitSchema().load(commit)
 
-        pastauthors = len({c.author for c in commits} - {commit.author})
-        pastauthors = PastAuthors(
-            commit=commit, path=path, pastauthors=pastauthors
-        )
-        return PastAuthorsSchema().dump(pastauthors)
+        return len({c.author for c in commits} - {commit.author})

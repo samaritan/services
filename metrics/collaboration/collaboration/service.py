@@ -5,7 +5,7 @@ from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
 from .collaboration import get_collaboration
-from .schemas import ChangesSchema, CollaborationSchema, CommitSchema
+from .schemas import ChangesSchema, CommitSchema
 
 logger = logging.getLogger(__name__)
 
@@ -31,9 +31,7 @@ class CollaborationService:
         changes = self._get_changes(project, commits)
 
         collaboration = get_collaboration(changes, **options)
-        for collaboration in filter(lambda i: i.path == path, collaboration):
-            return CollaborationSchema().dump(collaboration)
-        return None
+        return collaboration.get(path, None)
 
     def _get_changes(self, project, commits):
         pool = GreenPool()

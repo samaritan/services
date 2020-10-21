@@ -3,8 +3,7 @@ import logging
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
-from .models import PastChanges
-from .schemas import CommitSchema, PastChangesSchema
+from .schemas import CommitSchema
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +23,4 @@ class PastChangesService:
         commit = self.repository_rpc.get_commit(project, sha)
         commit = CommitSchema().load(commit)
 
-        pastchanges = len(commits) - 1 if commits else 0
-        pastchanges = PastChanges(
-            commit=commit, path=path, pastchanges=pastchanges
-        )
-        return PastChangesSchema().dump(pastchanges)
+        return len(commits) - 1 if commits else 0

@@ -38,5 +38,6 @@ class OffenderService:
         offenders = OffenderSchema(many=True).load(get_offenders(project))
         offenders = filter(_get_filter(commit), offenders)
         offenders = filter(_get_path_filter(path), offenders)
+        offenders = list(offenders)
 
-        return OffenderSchema(many=True).dump(offenders)
+        return len(offenders) > 0

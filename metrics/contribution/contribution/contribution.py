@@ -5,7 +5,6 @@ import graph_tool
 from graph_tool.centrality import betweenness
 
 from .library import pathwhitelister
-from .models import Contribution
 
 logger = logging.getLogger(__name__)
 
@@ -89,11 +88,7 @@ def get_contribution(changes, **options):
 
     # Filter developer vertices from the graph
     graph.set_vertex_filter(graph.vp.bipartite)
-
-    contribution = [
-        Contribution(path=graph.vp.label[v], contribution=centrality[v])
-	for v in graph.vertices()
-    ]
+    contribution = {graph.vp.label[v]: centrality[v] for v in graph.vertices()}
     graph.clear_filters()
 
     return contribution

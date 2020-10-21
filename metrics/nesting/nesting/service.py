@@ -1,12 +1,10 @@
 import logging
 
-from eventlet.greenpool import GreenPool
 from lizard import get_extensions, FileAnalyzer
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
-from .models import Nesting
-from .schemas import ChangesSchema, NestingSchema
+from .schemas import ChangesSchema
 
 logger = logging.getLogger(__name__)
 analyzer = FileAnalyzer(get_extensions(['nd']))  # pylint: disable=invalid-name
@@ -17,13 +15,18 @@ def _get_functions(path, content):
 
 
 def _get_nestings(project, path, change, repository_rpc):
-    nestings = list()
+    nestings = dict()
 
     content = repository_rpc.get_content(project, change.oids.after)
     if content is not None:
         for function in _get_functions(path, content):
-            nesting = function.max_nesting_depth
-            nestings.append(Nesting(function.long_name, path, nesting))
+            if function.long_name in nestings:
+                logger.warning(
+                    'Duplicate function %s in %s with nesting %f and %f',
+                    function.long_name, path, nestings[function.long_name],
+                    function.cyclomatic_complexity
+                )
+            nestings[function.long_name] = function.max_nesting_depth
 
     return nestings
 
@@ -40,11 +43,7 @@ class NestingService:
 
         changes = self.repository_rpc.get_changes(project, sha, path)
         changes = ChangesSchema(many=True).load(changes)
-        changes = ((p, cc) for c in changes for p, cc in c.changes.items())
+        change = changes[0].changes[path]
 
-        pool = GreenPool()
-        arguments = ((project, p, c, self.repository_rpc) for p, c in changes)
-        nestings = list()
-        for item in pool.starmap(_get_nestings, arguments):
-            nestings.extend(item)
-        return NestingSchema(many=True).dump(nestings)
+        nestings = _get_nestings(project, path, change, self.repository_rpc)
+        return nestings if nestings else None

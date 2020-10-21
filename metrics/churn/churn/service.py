@@ -10,10 +10,9 @@ logger = logging.getLogger(__name__)
 
 
 def _get_churn(deltas):
-    churn = None
-    for path, delta in deltas.deltas.items():
-        churn = Churn(deltas.commit, path, delta.insertions, delta.deletions)
-    return churn
+    for delta in deltas.deltas.values():
+        return Churn(delta.insertions, delta.deletions)
+    return None
 
 
 class ChurnService:

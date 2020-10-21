@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 
 def _get_relativechurn(project, churn, change, repository_rpc):
-    commit, path = churn.commit, churn.path
     insertions, deletions = churn.insertions, churn.deletions
 
     if change.type == ChangeType.ADDED:
@@ -22,7 +21,7 @@ def _get_relativechurn(project, churn, change, repository_rpc):
         if size is not None:
             insertions = insertions / size if insertions is not None else None
             deletions = deletions / size if deletions is not None else None
-    return RelativeChurn(commit, path, insertions, deletions)
+    return RelativeChurn(insertions, deletions)
 
 
 class RelativeChurnService:

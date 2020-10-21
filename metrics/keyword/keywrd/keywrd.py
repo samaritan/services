@@ -1,7 +1,6 @@
 import logging
 
 from sklearn.feature_extraction.text import CountVectorizer
-from .models import Keyword
 
 logger = logging.getLogger(__name__)
 
@@ -13,14 +12,5 @@ class Keywrd:
     def get(self, patch):
         features = self._vectorizer.get_feature_names()
         vectors = self._vectorizer.transform([patch.patch])
-
-        commit = patch.commit
         vector = vectors.getrow(0).tocoo()
-        keyword = Keyword(
-            commit=commit,
-            keyword={
-                features[c]: d.item()
-                for c, d in zip(vector.col, vector.data)
-            }
-        )
-        return keyword
+        return {features[c]: d.item() for c, d in zip(vector.col, vector.data)}

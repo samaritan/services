@@ -3,15 +3,14 @@ import logging
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
-from .ownership import get_ownership
-from .schemas import CommitSchema, OwnershipSchema
+from .schemas import CommitSchema
 
 logger = logging.getLogger(__name__)
 
 
 def _get_filter(name, email):
     def _filter(item):
-        return item.developer.name == name and item.developer.email == email
+        return item.author.name == name and item.author.email == email
     return _filter
 
 
@@ -27,7 +26,6 @@ class OwnershipService:
 
         commits = self.repository_rpc.get_commits(project, sha)
         commits = CommitSchema(many=True).load(commits)
-        ownerships = get_ownership(commits)
-        for ownership in filter(_get_filter(name, email), ownerships):
-            return OwnershipSchema().dump(ownership)
-        return None
+        ownership = len(list(filter(_get_filter(name, email), commits))) / \
+            len(commits)
+        return ownership

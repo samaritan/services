@@ -54,7 +54,7 @@ class Helper:
         key = f'{self._project}_{commit.sha}_{utilities.hashit(path)}'
         if self._redis.exists(key):
             components = tuple(int(i) for i in self._redis.lrange(key, 0, 2))
-            return FunctionChurn(commit, path, *_translate(components))
+            return FunctionChurn(*_translate(components))
 
         before = self._get_functions(path, change.oids.before)
         after = self._get_functions(path, change.oids.after)
@@ -69,7 +69,7 @@ class Helper:
         if before is not None or after is not None:
             components = _get_functionchurn(before, after, lines)
         self._redis.rpush(key, *components)
-        return FunctionChurn(commit, path, *_translate(components))
+        return FunctionChurn(*_translate(components))
 
     def _get_functions(self, path, oid):
         functions = None

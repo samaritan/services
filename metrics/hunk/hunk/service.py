@@ -1,11 +1,12 @@
 import logging
+import re
 
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
-from .hunk import get_hunk
-from .schemas import CommitSchema, HunkSchema, PatchSchema
+from .schemas import PatchSchema
 
+HUNKHEADER_RE = re.compile(r'(?:\n@@)')
 logger = logging.getLogger(__name__)
 
 
@@ -21,6 +22,5 @@ class HunkService:
 
         patch = self.repository_rpc.get_patch(project, sha)
         patch = PatchSchema().load(patch)
-        hunk = get_hunk(patch)
 
-        return HunkSchema().dump(hunk)
+        return len(HUNKHEADER_RE.findall(patch.patch))

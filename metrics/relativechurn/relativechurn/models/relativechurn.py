@@ -1,13 +1,9 @@
 import dataclasses
 
-from .repository import Commit
-
 
 @dataclasses.dataclass(frozen=True)
 class RelativeChurn:
-    __slots__ = ['commit', 'path', 'insertions', 'deletions']
+    __slots__ = ['insertions', 'deletions']
 
-    commit: Commit
-    path: str
     insertions: float
     deletions: float

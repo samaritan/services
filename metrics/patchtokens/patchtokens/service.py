@@ -2,9 +2,9 @@ import logging
 
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
+from sklearn.feature_extraction.text import CountVectorizer
 
-from .patchtokens import get_patchtokens
-from .schemas import PatchSchema, PatchTokensSchema
+from .schemas import PatchSchema
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +21,7 @@ class PatchTokensService:
 
         patch = self.repository_rpc.get_patch(project, sha)
         patch = PatchSchema().load(patch)
-        patchtokens = get_patchtokens(patch)
 
-        return PatchTokensSchema().dump(patchtokens)
+        vectorizer = CountVectorizer(binary=True)
+        vectorizer.fit([patch.patch])
+        return vectorizer.get_feature_names()
