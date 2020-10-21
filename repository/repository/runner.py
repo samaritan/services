@@ -20,10 +20,7 @@ class Runner:
     def __init__(self, work_dir):
         self._work_dir = work_dir
 
-    def run(self, command, key=None):
-        return self._run(command, key)
-
-    def _run(self, command, key):
+    def run(self, command):
         process = utilities.run(command, work_dir=self._work_dir)
 
         ostream = io.TextIOWrapper(process.stdout, errors='replace')

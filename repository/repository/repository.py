@@ -2,7 +2,6 @@ import csv
 import logging
 import os
 import re
-import tempfile
 
 import pygit2
 
@@ -187,8 +186,8 @@ class Repository:
         return self._get_deltas_for_sha_to_path(sha, path)
 
     def get_developers(self):
-        key, command = self._get_key('developers'), COMMANDS['developers']
-        ostream, ethread = self._runner.run(command, key=key)
+        command = COMMANDS['developers']
+        ostream, ethread = self._runner.run(command)
         # TODO: See https://github.com/samaritan/services/issues/3 for context
         #       on the use of temporary set to deduplicate developers.
         developers = set()
@@ -204,8 +203,8 @@ class Repository:
     def get_files(self):
         active_files = self._get_active_files()
 
-        key, command = self._get_key('files_all'), COMMANDS['files']['all']
-        ostream, ethread = self._runner.run(command, key=key)
+        command = COMMANDS['files']['all']
+        ostream, ethread = self._runner.run(command)
         paths = set()
         for _, lines in parsers.GitLogParser.parse(ostream):
             paths |= set(lines)
@@ -305,9 +304,8 @@ class Repository:
     def _get_active_files(self):
         files = None
 
-        key = self._get_key('files_active')
         command = COMMANDS['files']['active']
-        ostream, ethread = self._runner.run(command, key=key)
+        ostream, ethread = self._runner.run(command)
         files = {path.strip('\n') for path in ostream}
         _handle_exit(ethread)
 
@@ -334,8 +332,8 @@ class Repository:
         _handle_exit(ethread)
 
     def _get_commits(self):
-        key, command = self._get_key('commits'), COMMANDS['commits']['all']
-        ostream, ethread = self._runner.run(command, key=key)
+        command = COMMANDS['commits']['all']
+        ostream, ethread = self._runner.run(command)
         for row in csv.reader(ostream):
             yield Commit(*row[:2], Developer(*row[2:4]))
         _handle_exit(ethread)
@@ -373,6 +371,3 @@ class Repository:
         _handle_exit(ethread)
 
         return deltas
-
-    def _get_key(self, item):
-        return f'{self._project.name}_{self.get_version()}_{item}'
