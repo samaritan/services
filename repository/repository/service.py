@@ -4,7 +4,6 @@ import os
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
-from .cache import Cache
 from .exceptions import NotCloned
 from .redis import Redis
 from .repository import Repository
@@ -21,7 +20,6 @@ logger = logging.getLogger(__name__)
 class RepositoryService:
     name = 'repository'
 
-    cache = Cache()
     config = Config()
     redis = Redis()
     project_rpc = RpcProxy('project')
@@ -154,6 +152,6 @@ class RepositoryService:
         path = self._get_path(project)
         if not os.path.exists(path):
             raise NotCloned('{} has not been cloned yet'.format(project.name))
-        runner = Runner(path, self.cache)
+        runner = Runner(path)
         repository = Repository(path, project, runner)
         return repository
