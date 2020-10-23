@@ -22,6 +22,7 @@ _DELTA_RE = re.compile(
     r'^(?P<insertions>(?:\d+|\-))\s+(?P<deletions>(?:\d+|\-))\s+(?P<path>.+)'
 )
 _MOVESPECIFICATION_RE = re.compile(r'^ rename (?P<specification>.*) \(\d+%\)$')
+_NUMPARENTS_RE = re.compile(r'^:+')
 _SPACE_RE = re.compile(r'\s+')
 
 logger = logging.getLogger(__name__)
@@ -41,8 +42,12 @@ def _get_changes(lines, commit):
     changes = dict()
     for line in lines:
         components = _SPACE_RE.split(line)
-        path, type_ = components[-1], _CHANGETYPE_MAP[components[4]].value
-        oids = Oids(before=components[2], after=components[3])
+        nparents = len(_NUMPARENTS_RE.search(components[0]).group())
+        path, type_ = components[-1], _CHANGETYPE_MAP[components[-2][0]].value
+        oids = Oids(
+            before=components[nparents + 1],
+            after=components[nparents + 1 + 1]
+        )
         changes[path] = Change(type=type_, oids=oids)
     return Changes(commit=commit, changes=changes)
 

@@ -1,7 +1,7 @@
 ---
 changes:
-  commit: git log --pretty=%H,%P --no-walk {sha} | awk -F",| " '{{ print $1 " " $2 }}' | git diff-tree -r -m --no-renames --root --always --stdin --pretty=*%n%H
-  commitpath: git log --pretty=%H,%P --no-walk {sha} -- {path} | awk -F",| " '{{ print $1 " " $2 }}' | git diff-tree -r -m --no-renames --root --always --stdin --pretty=*%n%H -- {path}
+  commit: git diff-tree -r -c --no-renames --root --always --pretty=*%n%H {sha}
+  commitpath: git diff-tree -r -c --no-renames --root --always --pretty=*%n%H {sha} -- {path}
 commits:
   all: git log --pretty='"%H","%ct","%aN","%aE"'
   allpath: git log --pretty='"%H","%ct","%aN","%aE"' -- {path}
