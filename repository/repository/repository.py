@@ -57,8 +57,6 @@ def _get_deltas(lines, commit, path):
     for line in lines:
         match = _DELTA_RE.match(line.strip('\n'))
         insertions, deletions, _path = match.groups()
-        if path != _path:
-            continue
         insertions = None if insertions == '-' else insertions
         deletions = None if deletions == '-' else deletions
         deltas[path] = Delta(insertions=insertions, deletions=deletions)
