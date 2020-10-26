@@ -4,7 +4,7 @@ import eventlet
 
 from .models import FunctionChurn
 from .models.enumerations import ChangeType, LineType
-from .schemas import CommitSchema, FunctionSchema, LineChangesSchema
+from .schemas import FunctionSchema, LineChangesSchema
 
 logger = logging.getLogger(__name__)
 
@@ -72,8 +72,9 @@ class Helper:
         return FunctionSchema(many=True).load(functions) if functions else None
 
     def _get_lineschanged(self, commit, path):
-        commit = CommitSchema().dump(commit)
-        linechanges = self._repository.get_linechanges(self._project, commit)
+        linechanges = self._repository.get_linechanges(
+            self._project, commit.sha
+        )
         linechanges = LineChangesSchema().load(linechanges)
 
         inserted = linechanges.linechanges[path][LineType.INSERTED.value]

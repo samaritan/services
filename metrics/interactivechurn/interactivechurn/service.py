@@ -31,8 +31,7 @@ def _get_lastmodifiers(project, commit, path, lines, repository_rpc):
 
 
 def _get_linechanges(project, commit, path, repository_rpc):
-    commit = CommitSchema().dump(commit)
-    linechanges = repository_rpc.get_linechanges(project, commit, path)
+    linechanges = repository_rpc.get_linechanges(project, commit.sha, path)
     return LineChangesSchema().load(linechanges)
 
 
