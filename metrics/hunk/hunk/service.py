@@ -17,10 +17,10 @@ class HunkService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha, **options):
+    def collect(self, project, sha, path, **options):
         logger.debug(project)
 
-        patch = self.repository_rpc.get_patch(project, sha)
+        patch = self.repository_rpc.get_patch(project, sha, path)
         patch = PatchSchema().load(patch)
 
         return len(HUNKHEADER_RE.findall(patch.patch))

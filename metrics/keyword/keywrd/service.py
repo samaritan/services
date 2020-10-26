@@ -18,7 +18,7 @@ class KeywordService:
     repository_rpc = RpcProxy('repository')
 
     @rpc
-    def collect(self, project, sha, **options):
+    def collect(self, project, sha, path, **options):
         logger.debug(project)
 
         project = ProjectSchema().load(self.project_rpc.get(project))
@@ -27,6 +27,6 @@ class KeywordService:
         keywords = self.config['KEYWORDS'].get(project.language.lower())
         keywrd = Keywrd(keywords=keywords)
 
-        patch = self.repository_rpc.get_patch(project.name, sha)
+        patch = self.repository_rpc.get_patch(project.name, sha, path)
         patch = PatchSchema().load(patch)
         return keywrd.get(patch)
