@@ -22,6 +22,8 @@ class PatchTokensService:
         patch = self.repository_rpc.get_patch(project, sha)
         patch = PatchSchema().load(patch)
 
-        vectorizer = CountVectorizer(binary=True)
-        vectorizer.fit([patch.patch])
-        return vectorizer.get_feature_names()
+        if patch.patch:
+            vectorizer = CountVectorizer(binary=True)
+            vectorizer.fit([patch.patch])
+            return vectorizer.get_feature_names()
+        return None if patch.patch is None else list()
