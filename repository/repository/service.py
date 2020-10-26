@@ -90,7 +90,7 @@ class RepositoryService:
         return LastModifierSchema(many=True).dump(lastmodifiers)
 
     @rpc
-    def get_linechanges(self, project, sha, path=None):
+    def get_linechanges(self, project, sha, path):
         project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project)
         linechanges = repository.get_linechanges(sha, path)

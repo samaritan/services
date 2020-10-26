@@ -248,7 +248,7 @@ class Repository:
                 logger.warning('%d in %s at %s', line, path, commit.sha)
         _handle_exit(ethread)
 
-    def get_linechanges(self, sha, path=None):
+    def get_linechanges(self, sha, path):
         linechanges = dict()
 
         commit = self.get_commit(sha)
