@@ -73,7 +73,7 @@ class Helper:
 
     def _get_lineschanged(self, commit, path):
         linechanges = self._repository.get_linechanges(
-            self._project, commit.sha
+            self._project, commit.sha, path
         )
         linechanges = LineChangesSchema().load(linechanges)
 
