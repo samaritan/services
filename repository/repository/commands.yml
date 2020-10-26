@@ -10,7 +10,7 @@ commits:
   commit: git log --pretty='"%H","%ct","%aN","%aE"' --no-walk {sha}
 content: git show {oid}
 deltas:
-  commit: git show -c --no-renames --numstat --pretty=*%n%H {sha}
+  commitpath: git show -c --no-renames --numstat --pretty=*%n%H {sha} -- {path}
 developers: git log --pretty='"%aN","%aE"'| sort -u
 files:
   all: git log --pretty=%H | git show --name-only --no-renames --stdin --pretty=*%n%H

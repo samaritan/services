@@ -188,7 +188,17 @@ class Repository:
         return None
 
     def get_deltas(self, sha, path):
-        return self._get_deltas_for_sha_to_path(sha, path)
+        commit = self.get_commit(sha)
+
+        command = COMMANDS['deltas']['commitpath'].format(sha=sha, path=path)
+        ostream, ethread = self._runner.run(command)
+
+        deltas = None
+        for _, lines in parsers.GitLogParser.parse(ostream):
+            deltas = _get_deltas(lines, commit, path)
+        _handle_exit(ethread)
+
+        return deltas
 
     def get_developers(self):
         command = COMMANDS['developers']
@@ -363,16 +373,3 @@ class Repository:
         for row in csv.reader(ostream):
             yield Commit(*row[:2], Developer(*row[2:4]))
         _handle_exit(ethread)
-
-    def _get_deltas_for_sha_to_path(self, sha, path):
-        commit = self.get_commit(sha)
-
-        command = COMMANDS['deltas']['commit'].format(sha=sha, path=path)
-        ostream, ethread = self._runner.run(command)
-
-        deltas = None
-        for _, lines in parsers.GitLogParser.parse(ostream):
-            deltas = _get_deltas(lines, commit, path)
-        _handle_exit(ethread)
-
-        return deltas
