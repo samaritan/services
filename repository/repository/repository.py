@@ -280,18 +280,10 @@ class Repository:
 
         _handle_exit(ethread)
 
-    def get_patch(self, sha):
-        patch = None
-
-        commit = self.get_commit(sha)
-
-        command = COMMANDS['patches']['commit'].format(sha=sha)
-        ostream, ethread = self._runner.run(command)
-        for _, lines in parsers.GitLogParser.parse(ostream):
-            patch = Patch(commit=commit, patch='\n'.join(lines))
-        _handle_exit(ethread)
-
-        return patch
+    def get_patch(self, sha, path=None):
+        if path is None:
+            return self._get_patch_for_sha(sha)
+        return self._get_patch_for_sha_to_path(sha, path)
 
     def get_path(self):
         return self._path
@@ -376,3 +368,29 @@ class Repository:
         _handle_exit(ethread)
 
         return deltas
+
+    def _get_patch_for_sha(self, sha):
+        patch = None
+
+        commit = self.get_commit(sha)
+
+        command = COMMANDS['patches']['commit'].format(sha=sha)
+        ostream, ethread = self._runner.run(command)
+        for _, lines in parsers.GitLogParser.parse(ostream):
+            patch = Patch(commit=commit, patch='\n'.join(lines))
+        _handle_exit(ethread)
+
+        return patch
+
+    def _get_patch_for_sha_to_path(self, sha, path):
+        patch = None
+
+        commit = self.get_commit(sha)
+
+        command = COMMANDS['patches']['commitpath'].format(sha=sha, path=path)
+        ostream, ethread = self._runner.run(command)
+        for _, lines in parsers.GitLogParser.parse(ostream):
+            patch = Patch(commit=commit, patch='\n'.join(lines))
+        _handle_exit(ethread)
+
+        return patch

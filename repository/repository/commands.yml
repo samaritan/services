@@ -21,4 +21,5 @@ messages:
 moves: git log -M{similarity}% --diff-filter=R --summary --pretty=*%n%H
 patches:
   commit: git show --patch --pretty=*%n%H {sha}
+  commitpath: git show --patch --pretty=*%n%H {sha} -- {path}
 version: git log --no-walk --pretty=%h HEAD
