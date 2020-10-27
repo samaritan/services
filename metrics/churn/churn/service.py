@@ -13,7 +13,6 @@ class ChurnService:
     name = 'churn'
 
     config = Config()
-    parser_rpc = RpcProxy('parser')
     repository_rpc = RpcProxy('repository')
 
     @rpc
