@@ -5,7 +5,7 @@ from nameko.rpc import rpc, RpcProxy
 
 from .exceptions import LanguageNotSupported
 from .keywrd import Keywrd
-from .schemas import PatchSchema, ProjectSchema
+from .schemas import ProjectSchema
 
 logger = logging.getLogger(__name__)
 
@@ -28,5 +28,4 @@ class KeywordService:
         keywrd = Keywrd(keywords=keywords)
 
         patch = self.repository_rpc.get_patch(project.name, sha, path)
-        patch = PatchSchema().load(patch)
         return keywrd.get(patch)

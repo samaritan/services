@@ -29,8 +29,9 @@ class Oids:
 
 @dataclasses.dataclass(frozen=True)
 class Change:
-    __slots__ = ['type', 'oids']
+    __slots__ = ['path', 'type', 'oids']
 
+    path: str
     type: int
     oids: Oids
 
@@ -44,22 +45,6 @@ class Commit:
     author: Developer
 
 
-@dataclasses.dataclass
-class Changes:
-    __slots__ = ['commit', 'changes']
-
-    commit: Commit
-    changes: Dict[str, Change]
-
-
-@dataclasses.dataclass
-class Deltas:
-    __slots__ = ['commit', 'deltas']
-
-    commit: Commit
-    deltas: Dict[str, Delta]
-
-
 @dataclasses.dataclass(frozen=True)
 class LastModifier:
     __slots__ = ['line', 'commit']
@@ -70,18 +55,9 @@ class LastModifier:
 
 @dataclasses.dataclass
 class LineChanges:
-    __slots__ = ['commit', 'linechanges']
+    __slots__ = ['linechanges']
 
-    commit: Commit
     linechanges: Dict[str, Dict[str, List]]
-
-
-@dataclasses.dataclass
-class Message:
-    __slots__ = ['commit', 'message']
-
-    commit: Commit
-    message: str
 
 
 @dataclasses.dataclass(frozen=True)
@@ -114,11 +90,3 @@ class File:
     path: str
     is_active: bool
     module: Module
-
-
-@dataclasses.dataclass
-class Patch:
-    __slots__ = ['commit', 'patch']
-
-    commit: Commit
-    patch: str

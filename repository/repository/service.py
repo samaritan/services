@@ -8,11 +8,10 @@ from .exceptions import NotCloned
 from .redis import Redis
 from .repository import Repository
 from .runner import Runner
-from .schemas import ChangeSchema, ChangesSchema, CommitSchema,            \
-                     DeltaSchema, DeltasSchema, DeveloperSchema,           \
-                     FileSchema, LastModifierSchema, LineChangesSchema,    \
-                     MessageSchema, ModuleSchema, MoveSchema, MovesSchema, \
-                     PatchSchema, ProjectSchema
+from .schemas import ChangeSchema, CommitSchema, DeltaSchema,                 \
+                     DeveloperSchema, FileSchema, LastModifierSchema,         \
+                     LineChangesSchema, ModuleSchema, MovesSchema,            \
+                     ProjectSchema
 
 logger = logging.getLogger(__name__)
 
@@ -25,11 +24,18 @@ class RepositoryService:
     project_rpc = RpcProxy('project')
 
     @rpc
-    def get_changes(self, project, sha, path=None):
+    def get_change(self, project, sha, path):
         project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project)
-        changes = list(repository.get_changes(sha, path))
-        return ChangesSchema(many=True).dump(changes)
+        change = repository.get_change(sha, path)
+        return ChangeSchema().dump(change) if change is not None else None
+
+    @rpc
+    def get_changes(self, project, sha):
+        project = ProjectSchema().load(self.project_rpc.get(project))
+        repository = self._get_repository(project)
+        changes = repository.get_changes(sha)
+        return ChangeSchema(many=True).dump(changes)
 
     @rpc
     def get_commit(self, project, sha):
@@ -61,11 +67,11 @@ class RepositoryService:
         return content
 
     @rpc
-    def get_deltas(self, project, sha, path):
+    def get_delta(self, project, sha, path):
         project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project)
-        deltas = repository.get_deltas(sha, path)
-        return DeltasSchema().dump(deltas)
+        delta = repository.get_delta(sha, path)
+        return DeltaSchema().dump(delta) if delta is not None else None
 
     @rpc
     def get_developers(self, project):
@@ -101,7 +107,7 @@ class RepositoryService:
         project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project)
         message = repository.get_message(sha)
-        return MessageSchema().dump(message)
+        return message
 
     @rpc
     def get_modules(self, project):
@@ -122,7 +128,7 @@ class RepositoryService:
         project = ProjectSchema().load(self.project_rpc.get(project))
         repository = self._get_repository(project)
         patch = repository.get_patch(sha, path)
-        return PatchSchema().dump(patch)
+        return patch
 
     @rpc
     def get_path(self, project):

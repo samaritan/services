@@ -50,23 +50,23 @@ def get_contribution(changes, **options):
     graph.ep.weight = graph.new_edge_property('int')
 
     nodes, edges = dict(), dict()
-    for change in changes:
-        developer = nodes.get(change.commit.author, None)
+    for (commit, _changes) in changes:
+        developer = nodes.get(commit.author, None)
         if developer is None:
             developer = graph.add_vertex()
-            nodes[change.commit.author] = developer
+            nodes[commit.author] = developer
 
             graph.vp.bipartite[developer] = False
-            graph.vp.label[developer] = change.commit.author
+            graph.vp.label[developer] = commit.author
 
-        for _path in change.changes:
-            path = nodes.get(_path, None)
+        for change in _changes:
+            path = nodes.get(change.path, None)
             if path is None:
                 path = graph.add_vertex()
-                nodes[_path] = path
+                nodes[change.path] = path
 
                 graph.vp.bipartite[path] = True
-                graph.vp.label[path] = _path
+                graph.vp.label[path] = change.path
 
             edge = edges.get((developer, path), None)
             if edge is None:

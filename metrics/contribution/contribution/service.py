@@ -5,14 +5,14 @@ from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
 from .contribution import get_contribution
-from .schemas import ChangesSchema, CommitSchema
+from .schemas import ChangeSchema, CommitSchema
 
 logger = logging.getLogger(__name__)
 
 
 def _get_changes(project, commit, repository_rpc):
     changes = repository_rpc.get_changes(project, commit.sha)
-    return ChangesSchema(many=True).load(changes)
+    return (commit, ChangeSchema(many=True).load(changes))
 
 
 class ContributionService:
@@ -38,5 +38,5 @@ class ContributionService:
         arguments = [(project, c, self.repository_rpc) for c in commits]
         changes = list()
         for item in pool.starmap(_get_changes, arguments):
-            changes.extend(item)
+            changes.append(item)
         return changes

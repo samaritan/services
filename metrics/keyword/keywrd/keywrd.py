@@ -11,6 +11,6 @@ class Keywrd:
 
     def get(self, patch):
         features = self._vectorizer.get_feature_names()
-        vectors = self._vectorizer.transform([patch.patch])
+        vectors = self._vectorizer.transform([patch])
         vector = vectors.getrow(0).tocoo()
         return {features[c]: d.item() for c, d in zip(vector.col, vector.data)}

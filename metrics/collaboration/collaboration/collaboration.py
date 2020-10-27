@@ -53,12 +53,11 @@ def get_collaboration(changes, **options):
     collaboration = None
 
     files = dict()
-    for change in changes:
-        for path in change.changes:
-            if whitelister.is_valid(path):
-                if path not in files:
-                    files[path] = set()
-                files[path].add(change.commit.author)
+    for (commit, change) in ((cm, ch) for (cm, chs) in changes for ch in chs):
+        if whitelister.is_valid(change.path):
+            if change.path not in files:
+                files[change.path] = set()
+            files[change.path].add(commit.author)
 
     graph = graph_tool.Graph(directed=False)
 

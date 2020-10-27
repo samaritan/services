@@ -4,7 +4,7 @@ from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
 from .models import ChangeType, RelativeChurn
-from .schemas import ChangesSchema, ChurnSchema, RelativeChurnSchema
+from .schemas import ChangeSchema, ChurnSchema, RelativeChurnSchema
 
 logger = logging.getLogger(__name__)
 
@@ -44,11 +44,8 @@ class RelativeChurnService:
         return RelativeChurnSchema().dump(relativechurn)
 
     def _get_change(self, project, sha, path):
-        changes = self.repository_rpc.get_changes(project, sha, path)
-        changes = ChangesSchema(many=True).load(changes)
-        for change in changes:
-            return change.changes[path]
-        return None
+        change = self.repository_rpc.get_change(project, sha, path)
+        return ChangeSchema().load(change)
 
     def _get_churn(self, project, sha, path):
         churn = self.churn_rpc.collect(project, sha, path)

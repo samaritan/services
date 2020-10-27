@@ -1,7 +1,5 @@
 import logging
 
-import eventlet
-
 from .models import FunctionChurn
 from .models.enumerations import ChangeType, LineType
 from .schemas import FunctionSchema, LineChangesSchema
@@ -40,20 +38,15 @@ class Helper:
         self._repository = repository
         self._parser = parser
 
-    def collect(self, changes):
-        changes = (
-            (c.commit, p, cc) for c in changes for p, cc in c.changes.items()
-        )
-        pool = eventlet.GreenPool()
-        for item in pool.starmap(self._get_functionchurn, changes):
-            yield item
+    def collect(self, sha, change):
+        return self._get_functionchurn(sha, change)
 
-    def _get_functionchurn(self, commit, path, change):
-        before = self._get_functions(path, change.oids.before)
-        after = self._get_functions(path, change.oids.after)
+    def _get_functionchurn(self, sha, change):
+        before = self._get_functions(change.path, change.oids.before)
+        after = self._get_functions(change.path, change.oids.after)
         lines = None
         if change.type == ChangeType.MODIFIED:
-            lines = self._get_lineschanged(commit, path)
+            lines = self._get_lineschanged(sha, change.path)
 
         # `before` and `after` are None iff `path` is not parsed (either
         #   because there is no parser to parse language that `path` is
@@ -71,9 +64,9 @@ class Helper:
                 functions = self._parser.get_functions(path, contents)
         return FunctionSchema(many=True).load(functions) if functions else None
 
-    def _get_lineschanged(self, commit, path):
+    def _get_lineschanged(self, sha, path):
         linechanges = self._repository.get_linechanges(
-            self._project, commit.sha, path
+            self._project, sha, path
         )
         linechanges = LineChangesSchema().load(linechanges)
 

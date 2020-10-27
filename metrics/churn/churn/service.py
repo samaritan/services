@@ -4,15 +4,9 @@ from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
 from .models import Churn
-from .schemas import DeltasSchema, ChurnSchema
+from .schemas import DeltaSchema, ChurnSchema
 
 logger = logging.getLogger(__name__)
-
-
-def _get_churn(deltas):
-    for delta in deltas.deltas.values():
-        return Churn(delta.insertions, delta.deletions)
-    return None
 
 
 class ChurnService:
@@ -26,9 +20,10 @@ class ChurnService:
     def collect(self, project, sha, path, **options):
         logger.debug(project)
 
-        deltas = self._get_deltas(project, sha, path)
-        return ChurnSchema().dump(_get_churn(deltas))
+        delta = self._get_delta(project, sha, path)
+        churn = Churn(delta.insertions, delta.deletions)
+        return ChurnSchema().dump(churn)
 
-    def _get_deltas(self, project, sha, path):
-        deltas = self.repository_rpc.get_deltas(project, sha, path)
-        return DeltasSchema().load(deltas)
+    def _get_delta(self, project, sha, path):
+        delta = self.repository_rpc.get_delta(project, sha, path)
+        return DeltaSchema().load(delta)

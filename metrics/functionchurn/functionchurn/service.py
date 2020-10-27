@@ -4,7 +4,7 @@ from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
 from .helper import Helper
-from .schemas import ChangesSchema, FunctionChurnSchema, ProjectSchema
+from .schemas import ChangeSchema, FunctionChurnSchema, ProjectSchema
 
 logger = logging.getLogger(__name__)
 
@@ -24,12 +24,12 @@ class FunctionChurnService:
 
         project = ProjectSchema().load(self.project_rpc.get(project))
         if self.parser_rpc.is_supported(project.language):
-            changes = self._get_changes(project, sha, path)
+            change = self._get_change(project, sha, path)
             helper = Helper(project, self.repository_rpc, self.parser_rpc)
-            for functionchurn in helper.collect(changes):
-                return FunctionChurnSchema().dump(functionchurn)
+            functionchurn = helper.collect(sha, change)
+            return FunctionChurnSchema().dump(functionchurn)
         return None
 
-    def _get_changes(self, project, sha, path):
-        changes = self.repository_rpc.get_changes(project.name, sha, path)
-        return ChangesSchema(many=True).load(changes)
+    def _get_change(self, project, sha, path):
+        change = self.repository_rpc.get_change(project.name, sha, path)
+        return ChangeSchema().load(change)

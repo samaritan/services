@@ -4,8 +4,6 @@ from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 from sklearn.feature_extraction.text import CountVectorizer
 
-from .schemas import MessageSchema
-
 logger = logging.getLogger(__name__)
 
 
@@ -20,8 +18,7 @@ class MessageTokensService:
         logger.debug(project)
 
         message = self.repository_rpc.get_message(project, sha)
-        message = MessageSchema().load(message)
 
         vectorizer = CountVectorizer(binary=True)
-        vectorizer.fit([message.message])
+        vectorizer.fit([message])
         return vectorizer.get_feature_names()

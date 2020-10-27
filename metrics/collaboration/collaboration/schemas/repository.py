@@ -1,8 +1,7 @@
 from marshmallow import Schema, fields, post_load
 
-from ..models import Change, Changes, Commit, Delta, Deltas, Developer, File, \
-                     LastModifier, LineChanges, Message, Module, Move, Moves, \
-                     Oids, Patch
+from ..models import Change, Commit, Delta, Developer, File, LastModifier,    \
+                     LineChanges, Module, Move, Moves, Oids
 
 class OidsSchema(Schema):
     before = fields.String()
@@ -14,6 +13,7 @@ class OidsSchema(Schema):
 
 
 class ChangeSchema(Schema):
+    path = fields.String()
     type = fields.Integer()
     oids = fields.Nested(OidsSchema)
 
@@ -50,24 +50,6 @@ class CommitSchema(Schema):
         return Commit(**data)
 
 
-class DeltasSchema(Schema):
-    commit = fields.Nested(CommitSchema)
-    deltas = fields.Dict(fields.String(), fields.Nested(DeltaSchema))
-
-    @post_load
-    def make_deltas(self, data, **kwargs):
-        return Deltas(**data)
-
-
-class ChangesSchema(Schema):
-    commit = fields.Nested(CommitSchema)
-    changes = fields.Dict(fields.String(), fields.Nested(ChangeSchema))
-
-    @post_load
-    def make_changes(self, data, **kwargs):
-        return Changes(**data)
-
-
 class LastModifierSchema(Schema):
     line = fields.Integer()
     commit = fields.Nested(CommitSchema)
@@ -78,7 +60,6 @@ class LastModifierSchema(Schema):
 
 
 class LineChangesSchema(Schema):
-    commit = fields.Nested(CommitSchema)
     linechanges = fields.Dict(
         fields.String(),
         fields.Dict(fields.String(), fields.List(fields.Integer()))
@@ -87,15 +68,6 @@ class LineChangesSchema(Schema):
     @post_load
     def make_linechanges(self, data, **kwargs):
         return LineChanges(**data)
-
-
-class MessageSchema(Schema):
-    commit = fields.Nested(CommitSchema)
-    message = fields.String()
-
-    @post_load
-    def make_message(self, data, **kwargs):
-        return Message(**data)
 
 
 class ModuleSchema(Schema):
@@ -132,12 +104,3 @@ class FileSchema(Schema):
     @post_load
     def make_file(self, data, **kwargs):
         return File(**data)
-
-
-class PatchSchema(Schema):
-    commit = fields.Nested(CommitSchema)
-    patch = fields.String()
-
-    @post_load
-    def make_patch(self, data, **kwargs):
-        return Patch(**data)

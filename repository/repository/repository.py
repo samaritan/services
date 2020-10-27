@@ -8,9 +8,8 @@ import pygit2
 from . import parsers
 from .exceptions import CommitNotFound
 from .commands import COMMANDS
-from .models import Change, Changes, Commit, Delta, Deltas, Developer, File, \
-                    LastModifier, LineChanges, Message, Module, Move, Moves, \
-                    Oids, Patch
+from .models import Change, Commit, Delta, Developer, File, LastModifier,     \
+                    LineChanges, Module, Move, Moves, Oids
 from .models.enumerations import ChangeType, LineType
 
 _CHANGETYPE_MAP = {
@@ -38,29 +37,25 @@ def _collapse(data):
         i = j
 
 
-def _get_changes(lines, commit):
-    changes = dict()
+def _get_changes(lines):
+    changes = list()
     for line in lines:
         components = _SPACE_RE.split(line)
         nparents = len(_NUMPARENTS_RE.search(components[0]).group())
         path, type_ = components[-1], _CHANGETYPE_MAP[components[-2][0]].value
-        oids = Oids(
-            before=components[nparents + 1],
-            after=components[nparents + 1 + 1]
-        )
-        changes[path] = Change(type=type_, oids=oids)
-    return Changes(commit=commit, changes=changes)
+        before, after = components[nparents + 1], components[nparents + 1 + 1]
+        oids = Oids(before=before, after=after)
+        changes.append(Change(path=path, type=type_, oids=oids))
+    return changes
 
 
-def _get_deltas(lines, commit, path):
-    deltas = dict()
+def _get_delta(lines):
     for line in lines:
         match = _DELTA_RE.match(line.strip('\n'))
         insertions, deletions, _path = match.groups()
         insertions = None if insertions == '-' else insertions
         deletions = None if deletions == '-' else deletions
-        deltas[path] = Delta(insertions=insertions, deletions=deletions)
-    return Deltas(commit=commit, deltas=deltas)
+        return Delta(insertions=insertions, deletions=deletions)
 
 
 def _get_diff(commit):
@@ -145,11 +140,26 @@ class Repository:
         self._runner = runner
         self._pygit_repository = pygit2.Repository(path)
 
-    def get_changes(self, sha, path=None):
-        if path is None:
-            yield from self._get_changes_for_sha(sha)
-        else:
-            yield from self._get_changes_for_sha_to_path(sha, path)
+    def get_change(self, sha, path):
+        command = COMMANDS['changes']['commitpath'].format(sha=sha, path=path)
+        ostream, ethread = self._runner.run(command)
+
+        change = None
+        for _, lines in parsers.GitLogParser.parse(ostream):
+            for change in _get_changes(lines):
+                break
+        _handle_exit(ethread)
+        return change
+
+    def get_changes(self, sha):
+        command = COMMANDS['changes']['commit'].format(sha=sha)
+        ostream, ethread = self._runner.run(command)
+
+        changes = None
+        for _, lines in parsers.GitLogParser.parse(ostream):
+            changes = _get_changes(lines)
+        _handle_exit(ethread)
+        return changes
 
     def get_commit(self, sha):
         if sha not in self._pygit_repository:
@@ -185,18 +195,16 @@ class Repository:
                 return blob.data.decode(errors='replace')
         return None
 
-    def get_deltas(self, sha, path):
-        commit = self.get_commit(sha)
-
+    def get_delta(self, sha, path):
         command = COMMANDS['deltas']['commitpath'].format(sha=sha, path=path)
         ostream, ethread = self._runner.run(command)
 
-        deltas = None
+        delta = None
         for _, lines in parsers.GitLogParser.parse(ostream):
-            deltas = _get_deltas(lines, commit, path)
+            delta = _get_delta(lines)
         _handle_exit(ethread)
 
-        return deltas
+        return delta
 
     def get_developers(self):
         command = COMMANDS['developers']
@@ -251,22 +259,19 @@ class Repository:
     def get_linechanges(self, sha, path):
         linechanges = dict()
 
-        commit = self.get_commit(sha)
         for patch in _get_diff(self._pygit_repository.get(sha)):
             linechanges[patch.delta.new_file.path] = _get_linechanges(patch)
         linechanges = {path: linechanges[path]} if path else linechanges
 
-        return LineChanges(commit=commit, linechanges=linechanges)
+        return LineChanges(linechanges=linechanges)
 
     def get_message(self, sha):
         message = None
 
-        commit = self.get_commit(sha)
-
         command = COMMANDS['messages']['commit'].format(sha=sha)
         ostream, ethread = self._runner.run(command)
         for _, lines in parsers.GitLogParser.parse(ostream):
-            message = Message(commit=commit, message='\n'.join(lines))
+            message = '\n'.join(lines)
         _handle_exit(ethread)
 
         return message
@@ -292,12 +297,10 @@ class Repository:
     def get_patch(self, sha, path):
         patch = None
 
-        commit = self.get_commit(sha)
-
         command = COMMANDS['patches']['commitpath'].format(sha=sha, path=path)
         ostream, ethread = self._runner.run(command)
         for _, lines in parsers.GitLogParser.parse(ostream):
-            patch = Patch(commit=commit, patch='\n'.join(lines))
+            patch = '\n'.join(lines)
         _handle_exit(ethread)
 
         return patch
@@ -324,26 +327,6 @@ class Repository:
         _handle_exit(ethread)
 
         return files
-
-    def _get_changes_for_sha(self, sha):
-        commit = self.get_commit(sha)
-
-        command = COMMANDS['changes']['commit'].format(sha=sha)
-        ostream, ethread = self._runner.run(command)
-
-        for _, lines in parsers.GitLogParser.parse(ostream):
-            yield _get_changes(lines, commit)
-        _handle_exit(ethread)
-
-    def _get_changes_for_sha_to_path(self, sha, path):
-        commit = self.get_commit(sha)
-
-        command = COMMANDS['changes']['commitpath'].format(sha=sha, path=path)
-        ostream, ethread = self._runner.run(command)
-
-        for _, lines in parsers.GitLogParser.parse(ostream):
-            yield _get_changes(lines, commit)
-        _handle_exit(ethread)
 
     def _get_commits(self):
         command = COMMANDS['commits']['all']

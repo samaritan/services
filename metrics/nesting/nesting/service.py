@@ -4,7 +4,7 @@ from lizard import get_extensions, FileAnalyzer
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
-from .schemas import ChangesSchema
+from .schemas import ChangeSchema
 
 logger = logging.getLogger(__name__)
 analyzer = FileAnalyzer(get_extensions(['nd']))  # pylint: disable=invalid-name
@@ -21,14 +21,17 @@ def _get_nestings(project, path, change, repository_rpc):
     if content is not None:
         for function in _get_functions(path, content):
             if function.long_name in nestings:
-                logger.warning(
-                    'Duplicate function %s in %s with nesting %f and %f',
-                    function.long_name, path, nestings[function.long_name],
-                    function.cyclomatic_complexity
-                )
+                _warn(change.path, function, nestings)
             nestings[function.long_name] = function.max_nesting_depth
 
     return nestings
+
+
+def _warn(path, function, nestings):
+    msg = '%s in %s repeated with nesting %f and %f'
+    name = function.long_name
+    nne, one = function.max_nesting_depth, nestings[name]
+    logger.warning(msg, name, path, one, nne)
 
 
 class NestingService:
@@ -41,9 +44,8 @@ class NestingService:
     def collect(self, project, sha, path, **options):
         logger.debug(project)
 
-        changes = self.repository_rpc.get_changes(project, sha, path)
-        changes = ChangesSchema(many=True).load(changes)
-        change = changes[0].changes[path]
+        change = self.repository_rpc.get_change(project, sha, path)
+        change = ChangeSchema().load(change)
 
         nestings = _get_nestings(project, path, change, self.repository_rpc)
         return nestings if nestings else None
