@@ -5,6 +5,7 @@ from .models import Project
 
 class ProjectSchema(Schema):
     id = fields.Integer()
+    owner = fields.String()
     name = fields.String()
     description = fields.String()
     domain = fields.String()

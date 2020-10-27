@@ -8,6 +8,7 @@ class Project(DeclarativeBase):
     __tablename__ = 'project'
 
     id = Column(Integer, primary_key=True)
+    owner = Column(Text, nullable=False)
     name = Column(Text, nullable=False)
     description = Column(Text, nullable=False)
     domain = Column(Text, nullable=False)
