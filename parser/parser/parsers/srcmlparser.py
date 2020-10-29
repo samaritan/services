@@ -3,13 +3,22 @@ import subprocess
 
 from xml.etree import ElementTree
 
-from ..models import Function
+from ..enumerations import CommentType
+from ..models import Comment, Function
 
 logger = logging.getLogger(__name__)
 
+COMMENT_TYPE = {'line': CommentType.LINE, 'block': CommentType.BLOCK}
 SRC_NS = 'http://www.srcML.org/srcML/src'
 POS_NS = 'http://www.srcML.org/srcML/position'
 NS = {'src': SRC_NS, 'pos': POS_NS}
+
+
+def _get_comments(srcml):
+    for comment in srcml.iter(f'{{{SRC_NS}}}comment'):
+        begin, end = _get_linerange(comment)
+        type_ = COMMENT_TYPE[comment.get('type')]
+        yield Comment(type=type_, lines=(begin, end))
 
 
 def _get_declarations(srcml):
@@ -67,6 +76,18 @@ def _get_srcml(contents, language):
 class SrcMLParser:
     def __init__(self, language):
         self._language = language
+
+    def get_comments(self, name, contents):
+        comments = None
+
+        srcml = _get_srcml(contents, self._language)
+        if srcml is None:
+            logger.error('SrcML failed to parse %s', name)
+        else:
+            srcml = ElementTree.fromstring(srcml)
+            comments = list(_get_comments(srcml))
+
+        return comments
 
     def get_functions(self, name, contents):
         functions = None
