@@ -10,10 +10,7 @@ class Project(DeclarativeBase):
     id = Column(Integer, primary_key=True)
     owner = Column(Text, nullable=False)
     name = Column(Text, nullable=False)
-    description = Column(Text, nullable=False)
-    domain = Column(Text, nullable=False)
     language = Column(Text, nullable=False)
-    project_url = Column(Text, nullable=False)
     repository_url = Column(Text, nullable=False)
 
     def __str__(self):

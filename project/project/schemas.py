@@ -7,10 +7,7 @@ class ProjectSchema(Schema):
     id = fields.Integer()
     owner = fields.String()
     name = fields.String()
-    description = fields.String()
-    domain = fields.String()
     language = fields.String()
-    project_url = fields.String()
     repository_url = fields.String()
 
     @post_load
