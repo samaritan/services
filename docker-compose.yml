@@ -84,27 +84,6 @@ services:
       placement:
         constraints:
           - node.hostname == ${HOSTNAME}
-  understand:
-    image: docker.pkg.github.com/samaritan/services/samaritan-understand:0.1.0-alpha
-    volumes:
-      - ${REPOSITORIES_ROOT}:/samaritan/repositories
-      - ${UNDERSTAND_ROOT}:/samaritan/understand
-    depends_on:
-      - "rabbit"
-      - "project"
-    environment:
-      UNDERSTAND_ROOT: "/samaritan/understand"
-      UNDERSTAND_LICENSE: "${UNDERSTAND_LICENSE}"
-      RABBIT_HOST: "rabbit"
-      RABBIT_PORT: ${RABBIT_PORT}
-      RABBIT_USER: "${RABBIT_USER}"
-      RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
-      RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
-    deploy:
-      mode: global
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
   # Metric Services
   churn:
     image: docker.pkg.github.com/samaritan/services/samaritan-metrics-churn:0.3.0-alpha
@@ -159,7 +138,6 @@ services:
     depends_on:
       - "project"
       - "rabbit"
-      - "understand"
     environment:
       RABBIT_HOST: "rabbit"
       RABBIT_PORT: ${RABBIT_PORT}
@@ -260,7 +238,6 @@ services:
     depends_on:
       - "project"
       - "rabbit"
-      - "understand"
     environment:
       RABBIT_HOST: "rabbit"
       RABBIT_PORT: ${RABBIT_PORT}
