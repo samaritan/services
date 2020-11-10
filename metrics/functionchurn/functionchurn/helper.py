@@ -19,9 +19,8 @@ def _get_functionchurn(before, after, lines):
 
     modifications = 0
     for function in (f for f in after if f.name in bnames & anames):
-        begin, end = function.lines
         for line in lines:
-            if begin <= line <= end:
+            if function.span.begin.line <= line <= function.span.end.line:
                 modifications += 1
                 break
 
