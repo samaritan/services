@@ -28,19 +28,19 @@ def _get_comments(srcml):
 
 def _get_declarations(srcml):
     for function in srcml.iter(f'{{{SRC_NS}}}function_decl'):
-        name = _get_name(function)
+        signature = _get_signature(function)
         (begin, _), (end, _) = _get_span(function)
         # TODO: Use `end` from `src:function_decl` after Issue #20 is resolved
         parameter_list = function.find('src:parameter_list', NS)
         if parameter_list is not None:
             _, (end, _) = _get_span(parameter_list)
         begin, end = _create_position(begin, None), _create_position(end, None)
-        yield Function(name=name, span=Span(begin=begin, end=end))
+        yield Function(signature=signature, span=Span(begin=begin, end=end))
 
 
 def _get_definitions(srcml):
     for function in srcml.iter(f'{{{SRC_NS}}}function'):
-        name = _get_name(function)
+        signature = _get_signature(function)
         (begin, _), (end, _) = _get_span(function)
         # TODO: Use `end` from `src:function` after Issue #20 is resolved
         block = function.find('.//src:block', NS)
@@ -50,7 +50,7 @@ def _get_definitions(srcml):
                 _, (end, _) = _get_span(block_content)
                 end += 1
         begin, end = _create_position(begin, None), _create_position(end, None)
-        yield Function(name=name, span=Span(begin=begin, end=end))
+        yield Function(signature=signature, span=Span(begin=begin, end=end))
 
 
 def _get_name(element):
@@ -66,6 +66,28 @@ def _get_span(element):
     position = element.attrib[f'{{{POS_NS}}}end']
     end = (int(i) for i in position.split(':'))
     return begin, end
+
+
+def _get_signature(element):
+    def _join(values, delimiter=' '):
+        return delimiter.join(i.strip() for i in values if i.strip())
+
+    components = list()
+    type_ = element.find('src:type', NS)
+    components.append(_join(type_.itertext()))
+    components.append(' ')
+    components.append(_get_name(element))
+    parameters = element.find('src:parameter_list', NS)
+    if parameters:
+        components.append('(')
+        parameters = list(parameters.iterfind('src:parameter', NS))
+        for index, parameter in enumerate(parameters):
+            components.append(_join(parameter.itertext()))
+            if index < len(parameters) - 1:
+                components.append(', ')
+        components.append(')')
+
+    return ''.join(components) if components else None
 
 
 def _get_srcml(contents, language):

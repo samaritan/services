@@ -31,7 +31,7 @@ class CommentSchema(Schema):
 
 
 class FunctionSchema(Schema):
-    name = fields.String()
+    signature = fields.String()
     span = fields.Nested(SpanSchema)
 
     @post_load

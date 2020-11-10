@@ -27,7 +27,7 @@ class Comment:
 
 @dataclasses.dataclass(frozen=True)
 class Function:
-    __slots__ = ['name', 'span']
+    __slots__ = ['signature', 'span']
 
-    name: str
+    signature: str
     span: Span
