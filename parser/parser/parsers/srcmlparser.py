@@ -1,4 +1,5 @@
 import logging
+import re
 import subprocess
 
 from xml.etree import ElementTree
@@ -9,6 +10,7 @@ from ..models import Comment, Function, Position, Span
 logger = logging.getLogger(__name__)
 
 COMMENT_TYPE = {'line': CommentType.LINE, 'block': CommentType.BLOCK}
+NEWLINE_RE = re.compile(r'\r\n?|\n')
 SRC_NS = 'http://www.srcML.org/srcML/src'
 POS_NS = 'http://www.srcML.org/srcML/position'
 NS = {'src': SRC_NS, 'pos': POS_NS}
@@ -38,7 +40,7 @@ def _get_declarations(srcml):
         yield Function(signature=signature, span=Span(begin=begin, end=end))
 
 
-def _get_definitions(srcml):
+def _get_definitions(srcml, nlines):
     for function in srcml.iter(f'{{{SRC_NS}}}function'):
         signature = _get_signature(function)
         (begin, _), (end, _) = _get_span(function)
@@ -49,6 +51,7 @@ def _get_definitions(srcml):
             if block_content.attrib:
                 _, (end, _) = _get_span(block_content)
                 end += 1
+        end = min(end, nlines)  # TODO: Revisit after Issue #20 is resolved
         begin, end = _create_position(begin, None), _create_position(end, None)
         yield Function(signature=signature, span=Span(begin=begin, end=end))
 
@@ -121,6 +124,8 @@ class SrcMLParser:
     def get_functions(self, name, contents):
         functions = None
 
+        lines = NEWLINE_RE.split(contents)
+        nlines = len(lines[:-1] if lines[-1] == '' else lines)
         srcml = _get_srcml(contents, self._language)
         if srcml is None:
             logger.error('SrcML failed to parse %s', name)
@@ -128,6 +133,6 @@ class SrcMLParser:
             functions = list()
             srcml = ElementTree.fromstring(srcml)
             functions.extend(_get_declarations(srcml))
-            functions.extend(_get_definitions(srcml))
+            functions.extend(_get_definitions(srcml, nlines))
 
         return functions
