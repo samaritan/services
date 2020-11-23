@@ -10,9 +10,6 @@ services:
       - ./configuration/enabled_plugins:/etc/rabbitmq/enabled_plugins
     deploy:
       mode: global
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
   redis:
     image: redis
     ports:
@@ -24,9 +21,6 @@ services:
     command: redis-server /run/secrets/redis.conf
     deploy:
       mode: global
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
   # Primitive Services
   parser:
     image: docker.pkg.github.com/samaritan/services/samaritan-parser:0.3.1-alpha
@@ -42,9 +36,6 @@ services:
     deploy:
       mode: replicated
       replicas: 2
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
   project:
     image: docker.pkg.github.com/samaritan/services/samaritan-project:0.3.0-alpha
     depends_on:
@@ -58,9 +49,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
   repository:
     image: docker.pkg.github.com/samaritan/services/samaritan-repository:0.3.0-alpha
     volumes:
@@ -82,9 +70,6 @@ services:
     deploy:
       mode: replicated
       replicas: 2
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
   # Metric Services
   churn:
     image: docker.pkg.github.com/samaritan/services/samaritan-metrics-churn:0.3.0-alpha
@@ -100,9 +85,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
   collaboration:
     image: docker.pkg.github.com/samaritan/services/samaritan-metrics-collaboration:0.2.0-alpha
     depends_on:
@@ -117,9 +99,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
   contribution:
     image: docker.pkg.github.com/samaritan/services/samaritan-metrics-contribution:0.2.0-alpha
     depends_on:
@@ -134,9 +113,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
   complexity:
     image: docker.pkg.github.com/samaritan/services/samaritan-metrics-complexity:0.2.0-alpha
     depends_on:
@@ -151,9 +127,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
   functionchurn:
     image: docker.pkg.github.com/samaritan/services/samaritan-metrics-functionchurn:0.3.0-alpha
     depends_on:
@@ -172,9 +145,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
   hunk:
     image: docker.pkg.github.com/samaritan/services/samaritan-metrics-hunk:0.2.0-alpha
     depends_on:
@@ -189,9 +159,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
   interactivechurn:
     image: docker.pkg.github.com/samaritan/services/samaritan-metrics-interactivechurn:0.3.0-alpha
     depends_on:
@@ -206,9 +173,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
   keyword:
     image: docker.pkg.github.com/samaritan/services/samaritan-metrics-keyword:0.3.0-alpha
     depends_on:
@@ -223,9 +187,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
   messagetokens:
     image: docker.pkg.github.com/samaritan/services/samaritan-metrics-messagetokens:0.2.0-alpha
     depends_on:
@@ -240,9 +201,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
   nesting:
     image: docker.pkg.github.com/samaritan/services/samaritan-metrics-nesting:0.2.0-alpha
     depends_on:
@@ -257,9 +215,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
   offender:
     image: docker.pkg.github.com/samaritan/services/samaritan-metrics-offender:0.2.0-alpha
     depends_on:
@@ -274,9 +229,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
   ownership:
     image: docker.pkg.github.com/samaritan/services/samaritan-metrics-ownership:0.2.0-alpha
     depends_on:
@@ -291,9 +243,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
   pastauthors:
     image: docker.pkg.github.com/samaritan/services/samaritan-metrics-pastauthors:0.2.0-alpha
     depends_on:
@@ -308,9 +257,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
   pastchanges:
     image: docker.pkg.github.com/samaritan/services/samaritan-metrics-pastchanges:0.2.0-alpha
     depends_on:
@@ -325,9 +271,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
   patchtokens:
     image: docker.pkg.github.com/samaritan/services/samaritan-metrics-patchtokens:0.2.0-alpha
     depends_on:
@@ -342,9 +285,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
   relativechurn:
     image: docker.pkg.github.com/samaritan/services/samaritan-metrics-relativechurn:0.3.0-alpha
     depends_on:
@@ -360,9 +300,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ${HOSTNAME}
 secrets:
   redis.conf:
     external: true
