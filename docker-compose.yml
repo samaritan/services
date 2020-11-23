@@ -56,7 +56,8 @@ services:
       RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
       RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
           - node.hostname == ${HOSTNAME}
@@ -97,7 +98,8 @@ services:
       RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
       RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
           - node.hostname == ${HOSTNAME}
@@ -113,7 +115,8 @@ services:
       RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
       RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
           - node.hostname == ${HOSTNAME}
@@ -129,7 +132,8 @@ services:
       RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
       RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
           - node.hostname == ${HOSTNAME}
@@ -145,7 +149,8 @@ services:
       RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
       RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
           - node.hostname == ${HOSTNAME}
@@ -165,7 +170,8 @@ services:
       REDIS_HOST: "redis"
       REDIS_PASSWORD: "${REDIS_PASSWORD}"
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
           - node.hostname == ${HOSTNAME}
@@ -181,7 +187,8 @@ services:
       RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
       RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
           - node.hostname == ${HOSTNAME}
@@ -197,7 +204,8 @@ services:
       RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
       RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
           - node.hostname == ${HOSTNAME}
@@ -213,7 +221,8 @@ services:
       RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
       RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
           - node.hostname == ${HOSTNAME}
@@ -229,7 +238,8 @@ services:
       RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
       RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
           - node.hostname == ${HOSTNAME}
@@ -245,7 +255,8 @@ services:
       RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
       RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
           - node.hostname == ${HOSTNAME}
@@ -261,7 +272,8 @@ services:
       RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
       RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
           - node.hostname == ${HOSTNAME}
@@ -277,7 +289,8 @@ services:
       RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
       RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
           - node.hostname == ${HOSTNAME}
@@ -293,7 +306,8 @@ services:
       RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
       RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
           - node.hostname == ${HOSTNAME}
@@ -309,7 +323,8 @@ services:
       RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
       RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
           - node.hostname == ${HOSTNAME}
@@ -325,7 +340,8 @@ services:
       RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
       RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
           - node.hostname == ${HOSTNAME}
@@ -342,7 +358,8 @@ services:
       RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
       RABBIT_HEARTBEAT: ${RABBIT_HEARTBEAT}
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
           - node.hostname == ${HOSTNAME}
