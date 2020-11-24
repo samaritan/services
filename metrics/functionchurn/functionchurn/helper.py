@@ -11,14 +11,15 @@ def _get_functionchurn(before, after, lines):
     before = list() if before is None else before  # File could have been added
     after = list() if after is None else after  # File could have been deleted
 
-    bnames = {f.name for f in before}
-    anames = {f.name for f in after}
+    bsignatures = {f.signature for f in before}
+    asignatures = {f.signature for f in after}
+    csignatures = bsignatures & asignatures
 
-    insertions = len(anames - bnames)
-    deletions = len(bnames - anames)
+    insertions = len(asignatures - bsignatures)
+    deletions = len(bsignatures - asignatures)
 
     modifications = 0
-    for function in (f for f in after if f.name in bnames & anames):
+    for function in (f for f in after if f.signature in csignatures):
         for line in lines:
             if function.span.begin.line <= line <= function.span.end.line:
                 modifications += 1
