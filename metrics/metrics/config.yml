@@ -1,0 +1,23 @@
+AMQP_URI: amqp://${RABBIT_USER:guest}:${RABBIT_PASSWORD:guest}@${RABBIT_HOST:localhost}:${RABBIT_PORT:5672}/
+HEARTBEAT: ${RABBIT_HEARTBEAT:60}
+DB_URIS:
+  'metrics:Base': mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:${MYSQL_PORT:3306}/metrics
+LOGGING:
+  version: 1
+  disable_existing_loggers: False
+  formatters:
+    simple:
+      format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  handlers:
+    console:
+      class: logging.StreamHandler
+      level: DEBUG
+      formatter: simple
+  loggers:
+    metrics:
+      level: DEBUG
+      handlers: [console]
+      propagate: false
+  root:
+    level: ERROR
+    handlers: [console]
