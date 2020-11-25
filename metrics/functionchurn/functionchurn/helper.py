@@ -24,8 +24,9 @@ def _get_functionchurn(before, after, lines):
             if function.span.begin.line <= line <= function.span.end.line:
                 modifications += 1
                 break
+    aggregate = insertions + deletions + modifications
 
-    return (insertions, deletions, modifications)
+    return (insertions, deletions, modifications, aggregate)
 
 
 class Helper:
@@ -47,7 +48,7 @@ class Helper:
         # `before` and `after` are None iff `path` is not parsed (either
         #   because there is no parser to parse language that `path` is
         #   written in (or) there was an error when parsing `path`.
-        components = (None, None, None)
+        components = (None, None, None, None)
         if before is not None or after is not None:
             components = _get_functionchurn(before, after, lines)
         return FunctionChurn(*components)
