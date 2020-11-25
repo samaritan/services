@@ -6,6 +6,7 @@ from ..models import Churn
 class ChurnSchema(Schema):
     insertions = fields.Integer(allow_none=True)
     deletions = fields.Integer(allow_none=True)
+    aggregate = fields.Integer(allow_none=True)
 
     @post_load
     def make_churn(self, data, **kwargs):

@@ -9,21 +9,6 @@ from .schemas import ChangeSchema, ChurnSchema, RelativeChurnSchema
 logger = logging.getLogger(__name__)
 
 
-def _get_relativechurn(project, churn, change, repository_rpc):
-    insertions, deletions = churn.insertions, churn.deletions
-
-    if change.type == ChangeType.ADDED:
-        insertions, deletions = 1.0, 0.0
-    elif change.type == ChangeType.DELETED:
-        insertions, deletions = None, None
-    else:
-        size = repository_rpc.get_size(project, change.oids.after)
-        if size is not None:
-            insertions = insertions / size if insertions is not None else None
-            deletions = deletions / size if deletions is not None else None
-    return RelativeChurn(insertions, deletions)
-
-
 class RelativeChurnService:
     name = 'relativechurn'
 
@@ -38,10 +23,10 @@ class RelativeChurnService:
         change = self._get_change(project, sha, path)
         churn = self._get_churn(project, sha, path)
 
-        relativechurn = _get_relativechurn(
-            project, churn, change, self.repository_rpc
-        )
-        return RelativeChurnSchema().dump(relativechurn)
+        if churn is not None:
+            relativechurn = self._get_relativechurn(project, churn, change)
+            return RelativeChurnSchema().dump(relativechurn)
+        return None
 
     def _get_change(self, project, sha, path):
         change = self.repository_rpc.get_change(project, sha, path)
@@ -49,4 +34,18 @@ class RelativeChurnService:
 
     def _get_churn(self, project, sha, path):
         churn = self.churn_rpc.collect(project, sha, path)
-        return ChurnSchema().load(churn)
+        return ChurnSchema().load(churn) if churn is not None else None
+
+    def _get_relativechurn(self, project, churn, change):
+        if change.type == ChangeType.ADDED:
+            return RelativeChurn(1.0, 0.0, 1.0)
+
+        if change.type == ChangeType.DELETED:
+            insertions, deletions, aggregate = None, None, None
+            return RelativeChurn(None, None, None)
+
+        size = self.repository_rpc.get_size(project, change.oids.after)
+        insertions = churn.insertions / size
+        deletions = churn.deletions / size
+        aggregate = churn.aggregate / size
+        return RelativeChurn(insertions, deletions, aggregate)
