@@ -47,14 +47,14 @@ def _get_flags(lines, comments):
 
 
 def _get_functionloc(function, flags):
-    loc, bloc, cloc = 0, 0, 0
+    lines, blank, comment = 0, 0, 0
     begin, end = function.span.begin, function.span.end
     for index in range(begin.line - 1, end.line):
-        loc += 1
-        bloc += 1 if flags[index] == Flag.BLANK else 0
-        cloc += 1 if Flag.COMMENT in flags[index] else 0
-    sloc = loc - (bloc + cloc)
-    return LocSchema().dump(Loc(bloc=bloc, cloc=cloc, sloc=sloc))
+        lines += 1
+        blank += 1 if flags[index] == Flag.BLANK else 0
+        comment += 1 if Flag.COMMENT in flags[index] else 0
+    source = lines - (blank + comment)
+    return LocSchema().dump(Loc(blank=blank, comment=comment, source=source))
 
 
 def _get_functionsloc(functions, flags):
@@ -67,12 +67,12 @@ def _get_functionsloc(functions, flags):
 
 
 def _get_fileloc(lines, flags):
-    bloc, cloc = 0, 0
+    blank, comment = 0, 0
     for flag in flags:
-        bloc += 1 if flag == Flag.BLANK else 0
-        cloc += 1 if Flag.COMMENT in flag else 0
-    sloc = len(lines) - (bloc + cloc)
-    return LocSchema().dump(Loc(bloc=bloc, cloc=cloc, sloc=sloc))
+        blank += 1 if flag == Flag.BLANK else 0
+        comment += 1 if Flag.COMMENT in flag else 0
+    source = len(lines) - (blank + comment)
+    return LocSchema().dump(Loc(blank=blank, comment=comment, source=source))
 
 
 class LocService:

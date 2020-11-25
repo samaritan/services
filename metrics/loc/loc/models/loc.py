@@ -3,8 +3,8 @@ import dataclasses
 
 @dataclasses.dataclass(frozen=True)
 class Loc:
-    __slots__ = ['bloc', 'cloc', 'sloc']
+    __slots__ = ['blank', 'comment', 'source']
 
-    bloc: int
-    cloc: int
-    sloc: int
+    blank: int
+    comment: int
+    source: int

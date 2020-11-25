@@ -4,9 +4,9 @@ from ..models import Loc
 
 
 class LocSchema(Schema):
-    bloc = fields.Integer()
-    cloc = fields.Integer()
-    sloc = fields.Integer()
+    blank = fields.Integer()
+    comment = fields.Integer()
+    source = fields.Integer()
 
     @post_load
     def make_loc(self, data, **kwargs):
