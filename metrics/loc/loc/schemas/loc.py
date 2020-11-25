@@ -7,6 +7,7 @@ class LocSchema(Schema):
     blank = fields.Integer()
     comment = fields.Integer()
     source = fields.Integer()
+    aggregate = fields.Integer()
 
     @post_load
     def make_loc(self, data, **kwargs):
