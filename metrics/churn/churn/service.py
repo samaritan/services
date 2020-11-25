@@ -20,8 +20,12 @@ class ChurnService:
         logger.debug(project)
 
         delta = self._get_delta(project, sha, path)
-        churn = Churn(delta.insertions, delta.deletions)
-        return ChurnSchema().dump(churn)
+        insertions, deletions = delta.insertions, delta.deletions
+
+        churn = None
+        if insertions is not None and deletions is not None:
+            churn = Churn(insertions, deletions, insertions + deletions)
+        return ChurnSchema().dump(churn) if churn is not None else None
 
     def _get_delta(self, project, sha, path):
         delta = self.repository_rpc.get_delta(project, sha, path)
