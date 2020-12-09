@@ -1,4 +1,7 @@
+alembic~=1.4
+cryptography~=3.1
 marshmallow~=3.0
 nameko~=2.11
-nameko_sqlalchemy~=1.4
-sqlalchemy~=1.2
+nameko-sqlalchemy~=1.5
+pymysql~=0.10
+sqlalchemy~=1.3

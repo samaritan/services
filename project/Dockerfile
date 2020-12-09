@@ -14,7 +14,6 @@ RUN pip install --no-cache-dir --quiet --trusted-host pypi.python.org \
 
 # Copy and Run Service
 COPY config.yml .
-COPY projects.sqlite3 .
 COPY project project/
 COPY run.sh .
 ENTRYPOINT ["/samaritan/services/project/run.sh"]

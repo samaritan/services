@@ -1,10 +1,12 @@
+import os
+
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from sqlalchemy import create_engine
 
-from project.models import DeclarativeBase
+from project.models import Base
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -14,16 +16,19 @@ config = context.config
 # This line sets up loggers basically.
 fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-target_metadata = DeclarativeBase.metadata
+target_metadata = Base.metadata  # pylint: disable=invalid-name
 
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
+
+def get_url():
+    def _get_value(name):
+        if name not in os.environ:
+            raise Exception(f'Environment variable {name} not set')
+        return os.environ[name]
+
+    url = 'mysql+pymysql://{}:{}@{}:{}/project'
+    suffixes = ('USER', 'PASSWORD', 'HOST', 'PORT')
+    values = [_get_value(f'MYSQL_{i}') for i in suffixes]
+    return url.format(*values)
 
 
 def run_migrations_offline():
@@ -38,7 +43,7 @@ def run_migrations_offline():
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = get_url()
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -57,12 +62,9 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
 
+    url = get_url()
+    connectable = create_engine(url)
     with connectable.connect() as connection:
         context.configure(
             connection=connection, target_metadata=target_metadata

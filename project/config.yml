@@ -1,7 +1,7 @@
 AMQP_URI: amqp://${RABBIT_USER:guest}:${RABBIT_PASSWORD:guest}@${RABBIT_HOST:localhost}:${RABBIT_PORT:5672}/
 HEARTBEAT: ${RABBIT_HEARTBEAT:60}
 DB_URIS:
-  "project:Base": sqlite:///projects.sqlite3
+  'project:Base': mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:${MYSQL_PORT:3306}/project
 LOGGING:
   version: 1
   disable_existing_loggers: False
