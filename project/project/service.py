@@ -5,7 +5,7 @@ from nameko.dependency_providers import Config
 from nameko.rpc import rpc
 
 from .exceptions import NotFound
-from .models import DeclarativeBase, Project
+from .models import Base, Project
 from .schemas import ProjectSchema
 
 logger = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ class ProjectService:
     name = 'project'
 
     config = Config()
-    database = Database(DeclarativeBase)
+    database = Database(Base)
 
     @rpc
     def get(self, project):
