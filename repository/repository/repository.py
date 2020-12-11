@@ -163,7 +163,7 @@ class Repository:
 
     def get_commit(self, sha):
         if sha not in self._pygit_repository:
-            msg = f'No commit identified by `{sha}` in `{self._project.name}`'
+            msg = f'No `{sha}` in `{self._project.repository}`'
             raise CommitNotFound(msg)
 
         commit = None

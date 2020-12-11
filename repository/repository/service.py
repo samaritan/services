@@ -55,7 +55,7 @@ class RepositoryService:
         project = ProjectSchema().load(project)
         repository = self._get_repository(project)
 
-        key = f'{project.name}_{oid}'
+        key = f'{project.owner}_{project.repository}_{oid}'
         content = self.redis.get(key)
         if content is None:
             content = repository.get_content(oid)
@@ -150,12 +150,14 @@ class RepositoryService:
         return repository.get_version()
 
     def _get_path(self, project):
-        return os.path.join(self.config['REPOSITORIES_ROOT'], project.name)
+        return os.path.join(
+            self.config['REPOSITORIES_ROOT'], project.repository
+        )
 
     def _get_repository(self, project):
         path = self._get_path(project)
         if not os.path.exists(path):
-            raise NotCloned('{} has not been cloned yet'.format(project.name))
+            raise NotCloned('{} not cloned yet'.format(project.repository))
         runner = Runner(path)
         repository = Repository(path, project, runner)
         return repository

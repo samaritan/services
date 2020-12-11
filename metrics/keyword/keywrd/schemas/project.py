@@ -6,7 +6,7 @@ from ..models import Project
 class ProjectSchema(Schema):
     id = fields.Integer()
     owner = fields.String()
-    name = fields.String()
+    repository = fields.String()
     language = fields.String()
     repository_url = fields.String()
 

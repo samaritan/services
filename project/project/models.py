@@ -9,7 +9,7 @@ class Project(Base):
 
     id = Column(Integer, primary_key=True)
     owner = Column(Text, nullable=False)
-    name = Column(Text, nullable=False)
+    repository = Column(Text, nullable=False)
     language = Column(Text, nullable=False)
     repository_url = Column(Text, nullable=False)
 

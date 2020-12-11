@@ -22,7 +22,7 @@ class ProjectService:
         logger.debug(project)
 
         _project = self.database.query(Project) \
-            .filter_by(name=project) \
+            .filter_by(repository=project) \
             .one_or_none()
         if _project is None:
             raise NotFound('{} not found'.format(project))
