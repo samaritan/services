@@ -31,7 +31,7 @@ def _get_functionchurn(before, after, lines):
 
 class Helper:
     def __init__(self, project, repository, parser):
-        self._project = project.name
+        self._project = project
         self._repository = repository
         self._parser = parser
 

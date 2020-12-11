@@ -14,18 +14,18 @@ class KeywordService:
     name = 'keyword'
 
     config = Config()
-    project_rpc = RpcProxy('project')
     repository_rpc = RpcProxy('repository')
 
     @rpc
     def collect(self, project, sha, path, **options):
         logger.debug(project)
 
-        project = ProjectSchema().load(self.project_rpc.get(project))
+        project = ProjectSchema().load(project)
         if project.language.lower() not in self.config['KEYWORDS']:
             raise LanguageNotSupported(f'{project.language} not supported')
         keywords = self.config['KEYWORDS'].get(project.language.lower())
         keywrd = Keywrd(keywords=keywords)
 
-        patch = self.repository_rpc.get_patch(project.name, sha, path)
+        project = ProjectSchema().dump(project)
+        patch = self.repository_rpc.get_patch(project, sha, path)
         return keywrd.get(patch)

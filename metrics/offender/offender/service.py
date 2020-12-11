@@ -3,7 +3,7 @@ import logging
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc, RpcProxy
 
-from .schemas import CommitSchema, OffenderSchema
+from .schemas import CommitSchema, OffenderSchema, ProjectSchema
 from .offenders import get_offenders
 
 logger = logging.getLogger(__name__)
@@ -34,6 +34,8 @@ class OffenderService:
 
         commit = self.repository_rpc.get_commit(project, sha)
         commit = CommitSchema().load(commit)
+
+        project = ProjectSchema().load(project)
 
         offenders = OffenderSchema(many=True).load(get_offenders(project))
         offenders = filter(_get_filter(commit), offenders)

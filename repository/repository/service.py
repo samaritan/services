@@ -2,7 +2,7 @@ import logging
 import os
 
 from nameko.dependency_providers import Config
-from nameko.rpc import rpc, RpcProxy
+from nameko.rpc import rpc
 
 from .exceptions import NotCloned
 from .redis import Redis
@@ -21,39 +21,38 @@ class RepositoryService:
 
     config = Config()
     redis = Redis()
-    project_rpc = RpcProxy('project')
 
     @rpc
     def get_change(self, project, sha, path):
-        project = ProjectSchema().load(self.project_rpc.get(project))
+        project = ProjectSchema().load(project)
         repository = self._get_repository(project)
         change = repository.get_change(sha, path)
         return ChangeSchema().dump(change) if change is not None else None
 
     @rpc
     def get_changes(self, project, sha):
-        project = ProjectSchema().load(self.project_rpc.get(project))
+        project = ProjectSchema().load(project)
         repository = self._get_repository(project)
         changes = repository.get_changes(sha)
         return ChangeSchema(many=True).dump(changes)
 
     @rpc
     def get_commit(self, project, sha):
-        project = ProjectSchema().load(self.project_rpc.get(project))
+        project = ProjectSchema().load(project)
         repository = self._get_repository(project)
         commit = repository.get_commit(sha)
         return CommitSchema().dump(commit)
 
     @rpc
     def get_commits(self, project, sha=None, path=None):
-        project = ProjectSchema().load(self.project_rpc.get(project))
+        project = ProjectSchema().load(project)
         repository = self._get_repository(project)
         commits = list(repository.get_commits(sha, path))
         return CommitSchema(many=True).dump(commits)
 
     @rpc
     def get_content(self, project, oid):
-        project = ProjectSchema().load(self.project_rpc.get(project))
+        project = ProjectSchema().load(project)
         repository = self._get_repository(project)
 
         key = f'{project.name}_{oid}'
@@ -68,28 +67,28 @@ class RepositoryService:
 
     @rpc
     def get_delta(self, project, sha, path):
-        project = ProjectSchema().load(self.project_rpc.get(project))
+        project = ProjectSchema().load(project)
         repository = self._get_repository(project)
         delta = repository.get_delta(sha, path)
         return DeltaSchema().dump(delta) if delta is not None else None
 
     @rpc
     def get_developers(self, project):
-        project = ProjectSchema().load(self.project_rpc.get(project))
+        project = ProjectSchema().load(project)
         repository = self._get_repository(project)
         developers = list(repository.get_developers())
         return DeveloperSchema(many=True).dump(developers)
 
     @rpc
     def get_files(self, project):
-        project = ProjectSchema().load(self.project_rpc.get(project))
+        project = ProjectSchema().load(project)
         repository = self._get_repository(project)
         files = list(repository.get_files())
         return FileSchema(many=True).dump(files)
 
     @rpc
     def get_lastmodifiers(self, project, commit, path, lines):
-        project = ProjectSchema().load(self.project_rpc.get(project))
+        project = ProjectSchema().load(project)
         commit = CommitSchema().load(commit)
         repository = self._get_repository(project)
         lastmodifiers = list(repository.get_lastmodifiers(commit, path, lines))
@@ -97,42 +96,42 @@ class RepositoryService:
 
     @rpc
     def get_linechanges(self, project, sha, path):
-        project = ProjectSchema().load(self.project_rpc.get(project))
+        project = ProjectSchema().load(project)
         repository = self._get_repository(project)
         linechanges = repository.get_linechanges(sha, path)
         return LineChangesSchema().dump(linechanges)
 
     @rpc
     def get_message(self, project, sha):
-        project = ProjectSchema().load(self.project_rpc.get(project))
+        project = ProjectSchema().load(project)
         repository = self._get_repository(project)
         message = repository.get_message(sha)
         return message
 
     @rpc
     def get_modules(self, project):
-        project = ProjectSchema().load(self.project_rpc.get(project))
+        project = ProjectSchema().load(project)
         repository = self._get_repository(project)
         modules = list(repository.get_modules())
         return ModuleSchema(many=True).dump(modules)
 
     @rpc
     def get_moves(self, project, similarity=100):
-        project = ProjectSchema().load(self.project_rpc.get(project))
+        project = ProjectSchema().load(project)
         repository = self._get_repository(project)
         moves = list(repository.get_moves(similarity))
         return MovesSchema(many=True).dump(moves)
 
     @rpc
     def get_patch(self, project, sha, path):
-        project = ProjectSchema().load(self.project_rpc.get(project))
+        project = ProjectSchema().load(project)
         repository = self._get_repository(project)
         patch = repository.get_patch(sha, path)
         return patch
 
     @rpc
     def get_path(self, project):
-        project = ProjectSchema().load(self.project_rpc.get(project))
+        project = ProjectSchema().load(project)
         repository = self._get_repository(project)
         return repository.get_path()
 
@@ -146,7 +145,7 @@ class RepositoryService:
 
     @rpc
     def get_version(self, project):
-        project = ProjectSchema().load(self.project_rpc.get(project))
+        project = ProjectSchema().load(project)
         repository = self._get_repository(project)
         return repository.get_version()
 

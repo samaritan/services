@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields, post_load
 
-from .models import Metric, ProjectMetric
+from ..models import Metric, ProjectMetric
 
 
 class MetricSchema(Schema):

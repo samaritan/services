@@ -1,4 +1,5 @@
 from .offender import OffenderSchema
+from .project import ProjectSchema
 from .repository import ChangeSchema, CommitSchema, DeltaSchema,              \
                         DeveloperSchema, FileSchema, LastModifierSchema,      \
                         LineChangesSchema, ModuleSchema, MoveSchema,          \

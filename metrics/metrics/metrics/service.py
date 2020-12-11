@@ -6,7 +6,7 @@ from nameko.rpc import rpc
 from nameko_sqlalchemy import DatabaseSession
 
 from .models import Base, Metric, ProjectMetric
-from .schemas import MetricSchema
+from .schemas import MetricSchema, ProjectSchema
 
 logger = logging.getLogger(__name__)
 
@@ -19,11 +19,12 @@ class MetricsService:
     dispatch = EventDispatcher()
 
     @rpc
-    def get(self, project_id, granularity):
+    def get(self, project, granularity):
+        project = ProjectSchema().load(project)
         metrics = self.database.query(Metric) \
                                .filter_by(granularity=granularity) \
                                .join(ProjectMetric) \
-                               .filter_by(project_id=project_id) \
+                               .filter_by(project_id=project.id) \
                                .filter_by(enabled=True) \
                                .all()
         return MetricSchema(many=True).dump(metrics)
