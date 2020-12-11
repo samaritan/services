@@ -1,6 +1,6 @@
 import logging
 
-from nameko_sqlalchemy import Database
+from nameko_sqlalchemy import DatabaseSession
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc
 
@@ -15,18 +15,16 @@ class ProjectService:
     name = 'project'
 
     config = Config()
-    database = Database(Base)
+    database = DatabaseSession(Base)
 
     @rpc
     def get(self, project):
         logger.debug(project)
 
-        _project = None
-        with self.database.get_session() as session:
-            _project = session.query(Project) \
-                              .filter_by(name=project) \
-                              .one_or_none()
-            if _project is None:
-                raise NotFound('{} not found'.format(project))
+        _project = self.database.query(Project) \
+            .filter_by(name=project) \
+            .one_or_none()
+        if _project is None:
+            raise NotFound('{} not found'.format(project))
 
         return ProjectSchema().dump(_project)
