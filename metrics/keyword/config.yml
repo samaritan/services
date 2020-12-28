@@ -1,4 +1,4 @@
-AMQP_URI: amqp://${RABBIT_USER:guest}:${RABBIT_PASSWORD:guest}@${RABBIT_HOST:localhost}:${RABBIT_PORT:5672}/
+AMQP_URI: ${RABBIT_PROTOCOL:amqp}://${RABBIT_USER:guest}:${RABBIT_PASSWORD:guest}@${RABBIT_HOST:localhost}:${RABBIT_PORT:5672}/
 HEARTBEAT: ${RABBIT_HEARTBEAT:60}
 KEYWORDS:
   c: ["bool", "char", "const", "extern", "false", "float", "for", "if", "int", "long", "namespace", "new", "operator", "private", "protected", "sizeof", "static", "struct", "switch", "template", "throw", "typedef", "typename", "union", "unsigned", "virtual", "volatile"]
