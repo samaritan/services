@@ -42,8 +42,9 @@ def _get_changes(lines):
     for line in lines:
         components = _SPACE_RE.split(line)
         nparents = len(_NUMPARENTS_RE.search(components[0]).group())
-        path, type_ = components[-1], _CHANGETYPE_MAP[components[-2][0]].value
         before, after = components[nparents + 1], components[nparents * 2 + 1]
+        type_ = _CHANGETYPE_MAP[components[nparents * 2 + 2][0]].value
+        path = ' '.join(components[nparents * 2 + 3:])
         oids = Oids(before=before, after=after)
         changes.append(Change(path=path, type=type_, oids=oids))
     return changes
