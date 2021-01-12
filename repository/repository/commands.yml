@@ -1,24 +1,24 @@
 ---
 changes:
   commit: git diff-tree -r -c --no-renames --root --always --pretty=*%n%H {sha}
-  commitpath: git diff-tree -r -c --no-renames --root --always --pretty=*%n%H {sha} -- {path}
+  commitpath: git diff-tree -r -c --no-renames --root --always --pretty=*%n%H {sha} -- "{path}"
 commits:
   all: git log --pretty='"%H","%ct","%aN","%aE"'
-  allpath: git log --pretty='"%H","%ct","%aN","%aE"' -- {path}
+  allpath: git log --pretty='"%H","%ct","%aN","%aE"' -- "{path}"
   limit: git log --pretty='"%H","%ct","%aN","%aE"' {sha}
-  limitpath: git log --pretty='"%H","%ct","%aN","%aE"' {sha} -- {path}
+  limitpath: git log --pretty='"%H","%ct","%aN","%aE"' {sha} -- "{path}"
   commit: git log --pretty='"%H","%ct","%aN","%aE"' --no-walk {sha}
 content: git show {oid}
 deltas:
-  commitpath: git show -c --no-renames --numstat --pretty=*%n%H {sha} -- {path}
+  commitpath: git show -c --no-renames --numstat --pretty=*%n%H {sha} -- "{path}"
 developers: git log --pretty='"%aN","%aE"'| sort -u
 files:
   all: git log --pretty=%H | git show --name-only --no-renames --stdin --pretty=*%n%H
   active: git ls-files
-lastmodifiers: git blame --root -leftw {lines} {sha}^ -- {path}
+lastmodifiers: git blame --root -leftw {lines} {sha}^ -- "{path}"
 messages:
   commit: git show --no-patch --pretty=*%n%H%n%n%B {sha}
 moves: git log -M{similarity}% --diff-filter=R --summary --pretty=*%n%H
 patches:
-  commitpath: git show --patch --pretty=*%n%H {sha} -- {path}
+  commitpath: git show --patch --pretty=*%n%H {sha} -- "{path}"
 version: git log --no-walk --pretty=%h HEAD
