@@ -5,6 +5,8 @@ import re
 
 import pygit2
 
+from pygit2 import clone_repository
+
 from . import parsers
 from .exceptions import CommitNotFound
 from .commands import COMMANDS
@@ -140,6 +142,11 @@ class Repository:
         self._project = project
         self._runner = runner
         self._pygit_repository = pygit2.Repository(path)
+
+    @staticmethod
+    def clone(url, path):
+        repository = clone_repository(url, path)
+        return repository.path
 
     def get_change(self, sha, path):
         command = COMMANDS['changes']['commitpath'].format(sha=sha, path=path)
