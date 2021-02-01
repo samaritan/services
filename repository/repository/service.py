@@ -2,6 +2,7 @@ import logging
 import os
 
 from nameko.dependency_providers import Config
+from nameko.events import EventDispatcher, event_handler
 from nameko.rpc import rpc
 
 from .exceptions import NotCloned
@@ -20,6 +21,7 @@ class RepositoryService:
     name = 'repository'
 
     config = Config()
+    dispatch = EventDispatcher()
     redis = Redis()
 
     @rpc
@@ -148,6 +150,14 @@ class RepositoryService:
         project = ProjectSchema().load(project)
         repository = self._get_repository(project)
         return repository.get_version()
+
+    @event_handler('project', 'project_created')
+    def handle_project_created(self, payload):
+        logger.debug('handle_project_created')
+        project = ProjectSchema().load(payload.get('project'))
+        Repository.clone(project.repository_url, self._get_path(project))
+        project = ProjectSchema().dump(project)
+        self.dispatch('repository_cloned', {'project': project})
 
     def _get_path(self, project):
         return os.path.join(
