@@ -3,6 +3,7 @@ import math
 
 from nameko_sqlalchemy import DatabaseSession
 from nameko.dependency_providers import Config
+from nameko.events import EventDispatcher
 from nameko.rpc import rpc
 
 from .exceptions import NotFound
@@ -18,6 +19,7 @@ class ProjectService:
 
     config = Config()
     database = DatabaseSession(Base)
+    dispatch = EventDispatcher()
 
     @rpc
     def get(self, owner=None, repository=None, page=1,
@@ -33,6 +35,15 @@ class ProjectService:
         if owner is not None:
             projects = projects.filter_by(owner=owner)
         return ProjectSchema(many=True).dump(projects)
+
+    @rpc
+    def create(self, project):
+        project = Project(**project)
+        self.database.add(project)
+        self.database.commit()
+        project = ProjectSchema().dump(project)
+        self.dispatch('project_created', {'project': project})
+        return project
 
     def _paginate(self, query, page, per_page):
         count = query.count()
