@@ -25,7 +25,7 @@ class ProjectMetric(Base):
 
     id = Column(Integer, primary_key=True)
     project_id = NNColumn(Integer, index=True)
-    enabled = Column(Boolean, default=False)
+    enabled = Column(Boolean, default=False, server_default='0')
 
     # Foreign Key(s)
     metric_id = NNColumn(Integer, ForeignKey('metric.id'))
