@@ -15,6 +15,7 @@ class Metric(Base):
     name = NNColumn(String(125))
     granularity = NNColumn(String(125))
     service = NNColumn(String(125))
+    enabled = Column(Boolean, default=False, server_default='0')
 
     # Constraints
     __table_args__ = (UniqueConstraint('name', 'granularity'),)
