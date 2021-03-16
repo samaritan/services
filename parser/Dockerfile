@@ -21,6 +21,7 @@ RUN pip install --no-cache-dir --quiet --trusted-host pypi.python.org \
   -r requirements.txt
 
 # Copy and Run Service
+COPY LICENSE .
 COPY config.yml .
 COPY parser parser/
 COPY run.sh .
