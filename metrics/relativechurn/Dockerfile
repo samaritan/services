@@ -14,6 +14,7 @@ RUN pip install --no-cache-dir --quiet --trusted-host pypi.python.org \
 
 # Copy and Run Service
 COPY LICENSE .
+copy VERSION .
 COPY config.yml .
 COPY relativechurn relativechurn/
 COPY run.sh .
