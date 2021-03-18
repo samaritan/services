@@ -6,7 +6,7 @@ WORKDIR /samaritan/services/metrics/contribution
 RUN apt-get update && apt-get install -qq --no-install-recommends \
       gnupg=2.2.* \
       netcat=1.10-* && \
-    apt-key adv --batch --keyserver keyserver.ubuntu.com \
+    apt-key adv --batch --keyserver keys.gnupg.net \
       --recv-key 612DEFB798507F25 && \
     echo "deb http://downloads.skewed.de/apt buster main" \
       >> /etc/apt/sources.list && \
