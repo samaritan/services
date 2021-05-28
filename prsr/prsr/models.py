@@ -1,6 +1,5 @@
 import dataclasses
 
-
 @dataclasses.dataclass(frozen=True)
 class Position:
     __slots__ = ['line', 'column']

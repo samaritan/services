@@ -6,4 +6,4 @@ until nc -z ${RABBIT_HOST} ${RABBIT_PORT}; do
 done
 
 # Run Service
-nameko run --config config.yml parser.service
+nameko run --config config.yml prsr.service

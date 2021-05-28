@@ -12,7 +12,7 @@ LOGGING:
       level: DEBUG
       formatter: simple
   loggers:
-    parser:
+    prsr:
       level: DEBUG
       handlers: [console]
       propagate: false
