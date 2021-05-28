@@ -153,5 +153,9 @@ Makefile
 
 ## docker-compose.yml used during developement
 docker-compose.development.yml
+docker-compose.yml
+
+# docker redis conf folder
+redis/
 
 # End of Custom Ignores

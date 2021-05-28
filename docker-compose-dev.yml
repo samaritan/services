@@ -1,0 +1,55 @@
+version: "3.7"
+services:
+    rabbitmq:
+        image: rabbitmq:latest
+        ports: 
+            - "5672:5672"
+    rabbitmq-management:
+        image: rabbitmq:3-management
+        ports: 
+            - "15672:15672"
+    redis:
+        image: redis:latest
+        ports: 
+            - "6379:6379"
+        # volumes:
+        #     - ./redis/redis.conf:/usr/local/etc/redis/redis.conf     
+        command: redis-server --requirepass ${REDIS_PASSWORD}
+        environment: 
+            RABBIT_PROTOCOL: "${RABBIT_PROTOCOL}"
+            RABBIT_USER: "${RABBIT_USER}"
+            RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+            RABBIT_HOST: "${RABBIT_HOST}"
+            RABBIT_PORT: "${RABBIT_PORT}"
+            REDIS_PASSWORD: "${REDIS_PASSWORD}"
+    repository:
+        image: repository-service:latest
+        build:
+            context: ./repository
+            dockerfile: ./Dockerfile
+        depends_on: 
+                - rabbitmq
+                - redis
+        network_mode: host
+        environment: 
+            RABBIT_PROTOCOL: "${RABBIT_PROTOCOL}"
+            RABBIT_USER: "${RABBIT_USER}"
+            RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+            RABBIT_HOST: "${RABBIT_HOST}"
+            RABBIT_PORT: "${RABBIT_PORT}"
+            REDIS_URL: "${REDIS_URL}"
+    parser:
+        image: prsr-service:latest
+        build: 
+            context: ./prsr
+            dockerfile: ./Dockerfile
+        depends_on: 
+            - rabbitmq
+            - redis
+        network_mode: host
+        environment: 
+            RABBIT_PROTOCOL: "${RABBIT_PROTOCOL}"
+            RABBIT_USER: "${RABBIT_USER}"
+            RABBIT_PASSWORD: "${RABBIT_PASSWORD}"
+            RABBIT_HOST: "${RABBIT_HOST}"
+            RABBIT_PORT: "${RABBIT_PORT}"
