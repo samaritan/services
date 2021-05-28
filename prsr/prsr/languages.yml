@@ -21,3 +21,11 @@ C++:
     - hxx
     - ii
     - tcc
+Java:
+  names:
+  extensions:
+    - java
+C#:
+  names:
+  extensions:
+    - cs

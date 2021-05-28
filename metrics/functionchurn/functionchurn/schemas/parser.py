@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields, post_load
+from marshmallow import Schema, fields, post_load, EXCLUDE
 
 from ..models import Comment, Function, Position, Span
 
@@ -33,6 +33,9 @@ class CommentSchema(Schema):
 class FunctionSchema(Schema):
     signature = fields.String()
     span = fields.Nested(SpanSchema)
+
+    class Meta:
+        unknown = EXCLUDE
 
     @post_load
     def make_function(self, data, **kwargs):
