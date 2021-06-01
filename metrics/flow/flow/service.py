@@ -13,17 +13,6 @@ logger = logging.getLogger(__name__)
 METRICS = ['CountInput', 'CountOutput', 'CountPath']
 SRC_NS = 'http://www.srcML.org/srcML/src'
 
-def _transform(metrics):
-    flows = list()
-    itemgetter = operator.itemgetter(*METRICS)
-    for item in metrics:
-        entity = item.entity
-        (ninput, noutput, npath) = itemgetter(item.metrics)
-        if ninput is not None or noutput is not None or npath is not None:
-            flows.append(Flow(
-                entity=entity, ninput=ninput, noutput=noutput, npath=npath
-            ))
-    return flows
 
 def _count_fan_in(global_variable_reads):
     return len(global_variable_reads)
@@ -75,7 +64,6 @@ def _count_npath_from_acyc_paths(acyc_paths, depth = 0):
 
             p_children = path["children"] if "children" in path.keys() else []
             p_type = path["type"] if "type" in path.keys() else ""
-            p_element = path["element"] if "element" in path.keys() else []
 
             npath_child = _count_npath_from_acyc_paths(acyc_paths = p_children, depth = depth + 1)
 
@@ -87,7 +75,7 @@ def _count_npath_from_acyc_paths(acyc_paths, depth = 0):
                     if (next_if_type == 'elseif' or 
                         re.fullmatch(rf'{{{SRC_NS}}}else', next_path_type)):
                             npath += 1 + npath_child
-                    elif re.fullmatch(r'^if|switch|loop$', previous_path_type):                    
+                    elif re.fullmatch(rf'{{{SRC_NS}}}if|switch|loop', previous_path_type):                    
                         if npath_child == 0:
                             npath = npath + 2 if npath == 0 else npath * 2
                         else:
@@ -117,85 +105,6 @@ def _count_npath_from_acyc_paths(acyc_paths, depth = 0):
 
     if npath == 0 and depth == 0:
         npath = 1
-
-    return npath
-
-def _count_npath_from_reformatted_acyclical_paths_tree(formatted_acyc_paths, current_depth = 0):
-    npath = 0
-    local_npath = 0
-    pos = 0
-
-    while pos < len(formatted_acyc_paths):
-        prev = formatted_acyc_paths[pos - 1] if pos > 0 else 'break'
-        current = formatted_acyc_paths[pos]
-
-        next_el = formatted_acyc_paths[pos + 1] if pos + 1 < len(formatted_acyc_paths) else []
-        next_el_over = formatted_acyc_paths[pos + 2] if pos + 2 < len(formatted_acyc_paths) else 'break'
-        # next_el_over = formatted_acyc_paths[pos + 2] if pos + 2 < len(formatted_acyc_paths) else 'break'
-
-        npath_child = _count_npath_from_reformatted_acyclical_paths_tree(next_el, current_depth = current_depth + 1) if isinstance(next_el, list) else 1
-        #npath_child = 1 if npath_child == 0 else npath_child
-
-        if isinstance(current, str):
-            previous_is_valid = False
-
-            if pos > 0:
-                for el in reversed(formatted_acyc_paths[:pos]):
-                    if isinstance(el, str):
-                        if re.fullmatch(r'^if|elseif|else|loop|switch$', el):
-                            previous_is_valid = True
-                            break
-                        elif el == 'break':
-                            previous_is_valid = False
-                            break
-
-            if current == 'if':
-                next_el_over = formatted_acyc_paths[pos + 2] if pos + 2 < len(formatted_acyc_paths) else 'break'
-                previous_over = formatted_acyc_paths[pos - 2] if pos - 2 >= 0 else 'break'
-
-                proceded_by_else = True if isinstance(next_el_over, str) and re.fullmatch(r'$(else|elseif)^', next_el_over) else False
-                preceded_by_else = False                
-                
-                if next_el_over == 'elseif' or next_el_over == 'else':
-                    npath += 1 + npath_child
-                elif (isinstance(previous_over, str) and re.fullmatch(r'^if|switch|loop$', previous_over)):                    
-                    if npath_child == 0:
-                        npath = npath + 2 if npath == 0 else npath * 2
-                    else:
-                        npath = npath + (2 * npath_child) if npath == 0 else npath * 2 * npath_child
-                else:# isinstance(next_el_over, str) and next_el_over == 'break':
-                    npath = npath + 2 * npath_child if npath_child > 0 else npath + 2 
-
-            elif current == 'elseif':
-                npath += 1 + npath_child               
-            elif current == 'else':
-                preceded_by_if_else = False
-                npath += 1 + npath_child
-  
-            elif current == 'loop':
-                previous_over = formatted_acyc_paths[pos - 2] if pos - 2 >= 0 else 'break'
-                # print('loop')
-                # print(npath_child)
-                if isinstance(previous_over, str) and re.fullmatch(r'^if|elseif|else|loop|switch$', previous_over):
-                    npath = npath * (1 + npath_child) if npath_child > 0 else npath * 2
-                else:
-                    npath = npath + 1 + npath_child if npath_child > 0 else npath + 2                             
-
-            elif current == 'switch':
-                npath += 1 + npath_child
-            elif current == 'case':
-                npath += 1 + npath_child
-            elif current == 'default':
-                npath += npath_child
-
-        pos += 1
-        
-        # print(('-'*current_depth) + "  current inst: " + str(current))
-        # print(('-'*current_depth) + " current npath: " + str(npath))
-        # print('\n')
-
-    if current_depth == 0 and npath == 0:
-        npath += 1
 
     return npath
 
