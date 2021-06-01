@@ -21,13 +21,18 @@ def _count_fan_out(variable_writes):
     fan_out = 0
 
     print_data = False
-    for key in list(variable_writes):        
+    for key in list(variable_writes):
         if len(variable_writes[key]['expressions']) > 0:
             fan_out += 1
 
         var_expressions = [e for e in variable_writes[key]['expressions'] if e.rstrip() != '']
-        members_modded = list(set([m for m in variable_writes[key]['members_modified'] if m.rstrip() != '']))
-        indicies_modded = list(set([i for i in variable_writes[key]['indices_modified'] if i.rstrip() != '']))
+        members_modded = list(
+            set(
+                [m for m in variable_writes[key]['members_modified'] if m.rstrip() != '']))
+
+        indicies_modded = list(
+            set(
+                [i for i in variable_writes[key]['indices_modified'] if i.rstrip() != '']))
 
         fan_out += len(members_modded) + len(indicies_modded)
 
@@ -44,23 +49,23 @@ def _count_fan_out(variable_writes):
 
             print("\nmodified indices:")
             for indx in indicies_modded:
-                print('   ' + indx)       
+                print('   ' + indx)
 
     return fan_out
 
 def _count_npath_from_acyc_paths(acyc_paths, depth = 0):
-    npath = 0    
+    npath = 0
     pos = 0
 
     while pos < len(acyc_paths):
-        path = acyc_paths[pos]        
+        path = acyc_paths[pos]
 
         if isinstance(path, dict):
             next_path = acyc_paths[pos + 1] if pos + 1 < len(acyc_paths) else {}
             next_path_type = next_path["type"] if "type" in next_path.keys() else ""
 
             previous_path = acyc_paths[pos - 1] if pos - 1 > 0 else {}
-            previous_path_type = previous_path["type"] if "type" in previous_path.keys() else ""            
+            previous_path_type = previous_path["type"] if "type" in previous_path.keys() else ""
 
             p_children = path["children"] if "children" in path.keys() else []
             p_type = path["type"] if "type" in path.keys() else ""
@@ -72,26 +77,29 @@ def _count_npath_from_acyc_paths(acyc_paths, depth = 0):
                 next_if_type = next_path["if_type"] if "if_type" in next_path.keys() else ""
 
                 if p_if_type != 'elseif':
-                    if (next_if_type == 'elseif' or 
+                    if (next_if_type == 'elseif' or
                         re.fullmatch(rf'{{{SRC_NS}}}else', next_path_type)):
                             npath += 1 + npath_child
-                    elif re.fullmatch(rf'{{{SRC_NS}}}if|switch|loop', previous_path_type):                    
+                    elif re.fullmatch(rf'{{{SRC_NS}}}if|switch|loop', previous_path_type):
                         if npath_child == 0:
                             npath = npath + 2 if npath == 0 else npath * 2
                         else:
-                            npath = npath + (2 * npath_child) if npath == 0 else npath * 2 * npath_child
-                    else:# isinstance(next_el_over, str) and next_el_over == 'break':
-                        npath = npath + 2 * npath_child if npath_child > 0 else npath + 2 
+                            npath = (
+                                npath + (2 * npath_child)
+                                if npath == 0
+                                else npath * 2 * npath_child)
+                    else:
+                        npath = npath + 2 * npath_child if npath_child > 0 else npath + 2
                 else:
                     npath += 1 + npath_child
-               
+
             elif re.fullmatch(rf"{{{SRC_NS}}}(for|while|do)", p_type):
                 if re.fullmatch(
-                    r'^if|elseif|else|loop|switch$', 
+                    r'^if|elseif|else|loop|switch$',
                     previous_path_type):
                     npath = npath * (1 + npath_child) if npath_child > 0 else npath * 2
                 else:
-                    npath = npath + 1 + npath_child if npath_child > 0 else npath + 2                             
+                    npath = npath + 1 + npath_child if npath_child > 0 else npath + 2
 
             elif re.fullmatch(rf"{{{SRC_NS}}}else", p_type):
                 npath += 1 + npath_child
@@ -115,10 +123,10 @@ class FlowService:
     parser_rpc = RpcProxy('parser')
     repo_rpc = RpcProxy('repository')
 
-    @rpc 
+    @rpc
     def metrics_from_contents(self, file_name, contents):
         functions = self.parser_rpc.get_functions_with_properties(file_name, contents)
- 
+
         ninput = 0
         noutput = 0
         npath = 0
@@ -130,12 +138,12 @@ class FlowService:
                 func_npath = 0
 
                 func_npath = _count_npath_from_acyc_paths(
-                    function["acyclical_paths_tree"], 
+                    function["acyclical_paths_tree"],
                     depth = 0
                 )
 
                 func_ninput = (
-                    func_ninput + 
+                    func_ninput +
                     _count_fan_in(function["global_variable_reads"]) +
                     len(function["functions_called_by"])
                 )
@@ -154,13 +162,13 @@ class FlowService:
             'ninput': ninput,
             'noutput': noutput,
             'npath': npath
-        }     
+        }
 
     @rpc
     def collect(self, project, sha, **options):
         flow_metrics = []
-        changes = self.repo_rpc.get_changes(project = project, sha = sha)        
-        
+        changes = self.repo_rpc.get_changes(project = project, sha = sha)
+
         logger.debug("Displaying contents")
         for change in changes:
             file_name = change["path"].split('/')[-1]
@@ -183,7 +191,7 @@ class FlowService:
                 'change': change_obj,
                 **metrics
             })
-            
+
         if len(flow_metrics) > 0:
             return FlowSchema(many=True).dump(flow_metrics)
 

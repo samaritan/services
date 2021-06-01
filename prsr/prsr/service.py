@@ -58,7 +58,7 @@ class ParserService:
 
         return functions
 
-    @rpc 
+    @rpc
     def get_language(self, name):
         return self.inferer.infer(name)
 
@@ -82,8 +82,6 @@ class ParserService:
                     )
 
                 functions = function_list
-            
+
 
         return functions
-
-        
