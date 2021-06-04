@@ -291,7 +291,6 @@ def _parse_declaration(
         if re.search(rf"{{{SRC_NS}}}control", element.tag):
             control_init = element.find(rf"{{{SRC_NS}}}init")
             control_init_decls = control_init.findall(rf"{{{SRC_NS}}}decl")
-            #print (control_init_decls)
             decls = [*decls, *control_init_decls]
 
         if re.search(rf"{{{SRC_NS}}}struct", element.tag):
