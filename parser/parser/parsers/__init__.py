@@ -1,7 +1,7 @@
 from .srcmlparser import SrcMLParser
 from ..exceptions import NoParser
 
-PARSERS = {'C': SrcMLParser, 'C++': SrcMLParser}
+PARSERS = {'C': SrcMLParser, 'C++': SrcMLParser, 'Java': SrcMLParser}
 
 
 def get_parser(language):
