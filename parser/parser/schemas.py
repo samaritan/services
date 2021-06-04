@@ -37,19 +37,19 @@ class FunctionSchema(Schema):
         unknown = EXCLUDE
 
     param_count = fields.Integer(
-        default = 0, 
+        default = 0,
         allow_none = True
     )
 
     calls = fields.List(
-        fields.String(), 
-        default = [], 
+        fields.String(),
+        default = [],
         allow_none=True
     )
 
     functions_called_by = fields.List(
-        fields.String(), 
-        default = [], 
+        fields.String(),
+        default = [],
         allow_none=True
     )
 
@@ -59,7 +59,7 @@ class FunctionSchema(Schema):
     )
 
     has_return = fields.Boolean(
-        default = False, 
+        default = False,
         allow_none=True
     )
 
@@ -68,7 +68,7 @@ class FunctionSchema(Schema):
     file_name = fields.String(allow_none=True)
 
     global_variable_writes = fields.Dict(
-        keys = fields.String(), 
+        keys = fields.String(),
         values = fields.Dict(
             keys = fields.String(),
             values = fields.List(
@@ -81,10 +81,10 @@ class FunctionSchema(Schema):
     )
 
     global_variable_reads = fields.List(
-        fields.String(), 
+        fields.String(),
         allow_none=True
     )
-    
+
 
     @post_load
     def make_function(self, data, **kwargs):

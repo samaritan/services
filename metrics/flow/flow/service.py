@@ -20,12 +20,10 @@ def _count_fan_in(global_variable_reads):
 def _count_fan_out(variable_writes):
     fan_out = 0
 
-    print_data = False
     for key in list(variable_writes):
         if len(variable_writes[key]['expressions']) > 0:
             fan_out += 1
 
-        var_expressions = [e for e in variable_writes[key]['expressions'] if e.rstrip() != '']
         members_modded = list(
             set(
                 [m for m in variable_writes[key]['members_modified'] if m.rstrip() != '']))
@@ -35,21 +33,6 @@ def _count_fan_out(variable_writes):
                 [i for i in variable_writes[key]['indices_modified'] if i.rstrip() != '']))
 
         fan_out += len(members_modded) + len(indicies_modded)
-
-        if print_data:
-            print("variable: " + key)
-            print("expressions: ")
-            for expr in var_expressions:
-                print("    " + expr)
-
-
-            print("\nmodified members:")
-            for mem in members_modded:
-                print('    ' + mem)
-
-            print("\nmodified indices:")
-            for indx in indicies_modded:
-                print('   ' + indx)
 
     return fan_out
 
@@ -151,6 +134,13 @@ class FlowService:
                 func_noutput += _count_fan_out(
                     function["global_variable_writes"]
                 )
+
+                logger.debug(function["file_name"])
+                logger.debug(function["signature"])
+                logger.debug(" fanin: " + str(func_ninput))
+                logger.debug("fanout: " + str(func_noutput))
+                logger.debug(" npath: " + str(func_npath))
+                logger.debug('-'*30)
 
                 func_noutput += 1 if function["has_return"] else 0
 
