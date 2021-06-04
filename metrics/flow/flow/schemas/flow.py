@@ -1,11 +1,11 @@
 from marshmallow import Schema, fields, post_load
 
-from .understand import EntitySchema
+from .change import ChangeSchema
 from ..models import Flow
 
 
 class FlowSchema(Schema):
-    entity = fields.Nested(EntitySchema)
+    change = fields.Nested(ChangeSchema)
     ninput = fields.Integer()
     noutput = fields.Integer()
     npath = fields.Integer()
