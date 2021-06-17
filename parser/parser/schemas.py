@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields, post_load, EXCLUDE
+from marshmallow import Schema, fields, post_load, INCLUDE
 
 from .models import Comment, Function, Position, Span
 
@@ -34,7 +34,7 @@ class FunctionSchema(Schema):
     span = fields.Nested(SpanSchema)
 
     class Meta:
-        unknown = EXCLUDE
+        unknown = INCLUDE
 
     param_count = fields.Integer(
         default = 0,
@@ -65,7 +65,6 @@ class FunctionSchema(Schema):
 
     parent_structure_name = fields.String(allow_none=True)
     parent_structure_type = fields.String(allow_none=True)
-    file_name = fields.String(allow_none=True)
 
     global_variable_writes = fields.Dict(
         keys = fields.String(),

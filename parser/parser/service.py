@@ -2,7 +2,6 @@ import logging
 
 from nameko.dependency_providers import Config
 from nameko.rpc import rpc
-from nameko.testing.services import worker_factory
 
 from . import utilities
 from .languages import get_languages
@@ -82,6 +81,5 @@ class ParserService:
                     )
 
                 functions = function_list
-
 
         return functions
