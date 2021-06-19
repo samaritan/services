@@ -6,7 +6,7 @@ from nameko.rpc import rpc
 from . import utilities
 from .languages import get_languages
 from .parsers import get_parser
-from .schemas import CommentSchema, FunctionSchema
+from .schemas import CommentSchema, FunctionSchema, FunctionPropertiesSchema
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +76,7 @@ class ParserService:
             if functions is not None and functions != {}:
                 for key in functions.keys():
                     function_list.append(
-                        FunctionSchema(many=False)
+                        FunctionPropertiesSchema(many=False)
                         .dump(functions[key])
                     )
 

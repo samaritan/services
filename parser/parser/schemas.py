@@ -1,7 +1,8 @@
-from marshmallow import Schema, fields, post_load, INCLUDE
+from marshmallow import Schema, fields, post_load
+from marshmallow.utils import INCLUDE
 
-from .models import Comment, Function, Position, Span
-
+from .models import Comment, Function, FunctionProperties, \
+     Position, Span, AcyclicalPath
 
 class PositionSchema(Schema):
     line = fields.Integer()
@@ -29,17 +30,39 @@ class CommentSchema(Schema):
     def make_comment(self, data, **kwargs):
         return Comment(**data)
 
+class AcyclicalPathSchema(Schema):
+    type = fields.String()
+    if_type = fields.String(allow_none=True)
+    children = fields.List(
+        fields.Nested(
+            lambda: AcyclicalPathSchema()
+        )
+    )
+
+    @post_load
+    def make_acyclical_path(self, data, **kwargs):
+        return AcyclicalPath(**data)
+
+class GlobalVariableWrite(Schema):
+    expressions = fields.List(fields.String)
+    members_modified = fields.List(fields.String)
+    indices_modified = fields.List(fields.String)
+
+    @post_load
+    def make_global_variable_write(self, data, **kwargs):
+        return GlobalVariableWrite(**data)
+
 class FunctionSchema(Schema):
     signature = fields.String()
     span = fields.Nested(SpanSchema)
 
+    @post_load
+    def make_function(self, data, **kwargs):
+        return Function(**data)
+
+class FunctionPropertiesSchema(FunctionSchema):
     class Meta:
         unknown = INCLUDE
-
-    param_count = fields.Integer(
-        default = 0,
-        allow_none = True
-    )
 
     calls = fields.List(
         fields.String(),
@@ -47,14 +70,14 @@ class FunctionSchema(Schema):
         allow_none=True
     )
 
-    functions_called_by = fields.List(
+    callers = fields.List(
         fields.String(),
         default = [],
         allow_none=True
     )
 
     acyclical_paths_tree = fields.List(
-        fields.Dict(),
+        fields.Nested(AcyclicalPathSchema),
         allow_none=True
     )
 
@@ -68,14 +91,7 @@ class FunctionSchema(Schema):
 
     global_variable_writes = fields.Dict(
         keys = fields.String(),
-        values = fields.Dict(
-            keys = fields.String(),
-            values = fields.List(
-                fields.String,
-                default = [],
-                allow_none = True
-            )
-        ),
+        values = fields.Nested(GlobalVariableWrite),
         allow_none = True
     )
 
@@ -84,7 +100,6 @@ class FunctionSchema(Schema):
         allow_none=True
     )
 
-
     @post_load
     def make_function(self, data, **kwargs):
-        return Function(**data)
+        return FunctionProperties(**data)

@@ -5,7 +5,8 @@ import subprocess
 from xml.etree import ElementTree
 
 from ..enumerations import CommentType
-from ..models import Comment, Function, Position, Span
+from ..models import Comment, Function, Position, Span, \
+     AcyclicalPath, GlobalVariableWrite, FunctionProperties
 from ..constants import _get_constants_from_language
 
 logger = logging.getLogger(__name__)
@@ -83,14 +84,12 @@ def _get_name(element):
     return name
 
 def _get_span(element):
-    if element is not None:
-        position = element.attrib[f'{{{POS_NS}}}start']
-        begin = (int(i) for i in position.split(':'))
-        position = element.attrib[f'{{{POS_NS}}}end']
-        end = (int(i) for i in position.split(':'))
+    position = element.attrib[f'{{{POS_NS}}}start']
+    begin = (int(i) for i in position.split(':'))
+    position = element.attrib[f'{{{POS_NS}}}end']
+    end = (int(i) for i in position.split(':'))
 
-        return begin, end
-    return (-1, -1), (-1, -1)
+    return begin, end
 
 def _get_signature(element):
     def _join(values, delimiter=' '):
@@ -258,37 +257,6 @@ def _parse_function_call(element):
 
     return None
 
-def _parse_macro_call(element, language):
-    macro_calls = {}
-    if element.tag == f'{{{SRC_NS}}}macro':
-        macro_arg_list = element.find(f'{{{SRC_NS}}}argument_list')
-        macro_args = (macro_arg_list.findall(f'{{{SRC_NS}}}argument')
-        if macro_arg_list is not None
-        else None)
-
-        if macro_args is not None:
-            for arg in macro_args:
-                arg_text = (arg.text
-                if arg is not None and arg.text is not None else '')
-
-                if arg_text != '':
-                    srcml = _get_srcml(arg_text, language)
-                    rootet = ElementTree.fromstring(srcml)
-
-                    if re.search(r'{(.)+}',
-                        arg_text,
-                        flags=re.MULTILINE|re.DOTALL):
-                        for child in rootet.iter():
-                            call = _parse_function_call(child)
-
-                            if call is not None:
-                                macro_calls = {**macro_calls, **call}
-
-    if macro_calls != {}:
-        return macro_calls
-
-    return None
-
 def _parse_declaration(
     element,
     parent_struct_name = '',
@@ -402,6 +370,42 @@ class FunctionCollector:
         self.RESERVED_STREAMS,
         self.RESERVED_KEYWORDS) = _get_constants_from_language(language)
 
+
+class SrcMLParser:
+    def __init__(self, language):
+        self._language = language
+        (self.RESERVED_FUNCTIONS,
+        self.RESERVED_STREAMS,
+        self.RESERVED_KEYWORDS) = _get_constants_from_language(language)
+
+    def get_comments(self, name, contents):
+        comments = None
+
+        srcml = _get_srcml(contents, self._language)
+        if srcml is None:
+            logger.error('SrcML failed to parse %s', name)
+        else:
+            srcml = ElementTree.fromstring(srcml)
+            comments = list(_get_comments(srcml))
+
+        return comments
+
+    def get_functions(self, name, contents):
+        functions = None
+
+        lines = NEWLINE_RE.split(contents)
+        nlines = len(lines[:-1] if lines[-1] == '' else lines)
+        srcml = _get_srcml(contents, self._language)
+        if srcml is None:
+            logger.error('SrcML failed to parse %s', name)
+        else:
+            functions = list()
+            srcml = ElementTree.fromstring(srcml)
+            functions.extend(_get_declarations(srcml))
+            functions.extend(_get_definitions(srcml, nlines))
+
+        return functions
+
     def _parse_el_for_global_variable_write(
         self,
         element,
@@ -433,7 +437,11 @@ class FunctionCollector:
         if incr_decr_op is not None and incr_decr_op.text is not None
         else '')
 
-        incr_decr_op_pos = tuple(_get_span(incr_decr_op)[0])
+        incr_decr_op_pos = (-1, -1)
+
+        if incr_decr_op is not None:
+            incr_decr_op_pos = tuple(_get_span(incr_decr_op)[0])
+
         incr_decr_op_row = int(incr_decr_op_pos[0])
         incr_decr_op_col = int(incr_decr_op_pos[1])
 
@@ -448,19 +456,19 @@ class FunctionCollector:
             '\\='
         }]
 
-        last_equals_op_row = last_equals_op_col = first_equals_op_col = -1
         last_equals_op_txt = ''
-
+        last_equals_op_pos = first_equals_op_pos = (-1, -1)
         if len(equals_ops) > 0:
             last_equals_op_txt = (equals_ops[-1].text
             if equals_ops[-1].text is not None else '')
 
             last_equals_op_pos = tuple(_get_span(equals_ops[-1])[0])
-            last_equals_op_row = int(last_equals_op_pos[0])
-            last_equals_op_col = int(last_equals_op_pos[1])
-
             first_equals_op_pos = tuple(_get_span(equals_ops[0])[0])
-            first_equals_op_col = int(first_equals_op_pos[1])
+
+        last_equals_op_row = int(last_equals_op_pos[0])
+        last_equals_op_col = int(last_equals_op_pos[1])
+
+        first_equals_op_col = int(first_equals_op_pos[1])
 
         if last_equals_op_txt != '' or incr_decr_op_txt != '':
             if len(expr_names) > 0:
@@ -476,18 +484,23 @@ class FunctionCollector:
 
                     expr_sub_name = (_get_name_from_nested_name(
                         expr_sub_names[0])
-
                     if len(expr_sub_names) > 1
                     else name)
 
-                    expr_sub_name_pos = tuple(_get_span(expr_sub_name)[0])
+                    expr_sub_name_pos = (-1, -1)
+
+                    if expr_sub_name is not None:
+                        expr_sub_name_pos = tuple(_get_span(expr_sub_name)[0])
 
                     expr_sub_name_pos_row = int(expr_sub_name_pos[0])
                     expr_sub_name_pos_col = int(expr_sub_name_pos[1])
 
                     expr_index = name.find(f'{{{SRC_NS}}}index')
+                    expr_index_pos = (-1 ,-1)
 
-                    expr_index_pos = tuple(_get_span(expr_index)[0])
+                    if expr_index is not None:
+                        expr_index_pos = tuple(_get_span(expr_index)[0])
+
                     expr_index_pos_row = int(expr_index_pos[0])
                     expr_index_pos_col = int(expr_index_pos[1])
 
@@ -507,8 +520,12 @@ class FunctionCollector:
                         if op is not None and op.text is not None
                         and (op.text == '->' or op.text == '.')), None)
 
-                    access_op_pos = tuple(
-                        _get_span(access_op)[0])
+                    access_op_pos = (-1, -1)
+
+                    if access_op is not None:
+                        access_op_pos = tuple(
+                            _get_span(access_op)[0])
+
                     access_op_pos_row = int(access_op_pos[0])
                     access_op_pos_col = int(access_op_pos[1])
 
@@ -529,7 +546,11 @@ class FunctionCollector:
                         member_accessed_str = ''
 
                         for child in expr_children:
-                            child_pos = tuple(_get_span(child)[0])
+                            child_pos = (-1, -1)
+
+                            if child_pos is not None:
+                                child_pos = tuple(_get_span(child)[0])
+
                             child_pos_row = int(child_pos[0])
                             child_pos_col = int(child_pos[1])
 
@@ -579,48 +600,44 @@ class FunctionCollector:
                         })
 
             for cand in fan_out_var_candidates:
-                if (
-                    last_equals_op_txt != '' and
-                    last_equals_op_col > cand['col_pos'] and
-                    last_equals_op_row == cand['row_pos']):
+                if ((
+                        last_equals_op_txt != '' and
+                        last_equals_op_col > cand['col_pos'] and
+                        last_equals_op_row == cand['row_pos']
+                    ) or (
+                        incr_decr_op_txt and
+                        incr_decr_op_row == cand['row_pos']
+                    )):
                     if cand['name'] not in variable_writes.keys():
-                        variable_writes[cand['name']] = {
-                            'expressions': cand['expr_mod_statements'],
-                            'members_modified': cand['members_accessed'],
-                            'indices_modified': cand['indices']
-                        }
+                        variable_writes[cand['name']] = GlobalVariableWrite(
+                            expressions = cand['expr_mod_statements'],
+                            members_modified = cand['members_accessed'],
+                            indices_modified = cand['indices']
+                        )
                     else:
-                        variable_writes[cand['name']]['expressions'] = [
-                            *variable_writes[cand['name']]['expressions'],
-                            *cand['expr_mod_statements']]
+                        object.__setattr__(
+                            variable_writes[cand['name']],
+                            'expressions',
+                            [
+                            *variable_writes[cand['name']].expressions,
+                            *cand['expr_mod_statements']
+                            ])
 
-                        variable_writes[cand['name']]['members_modified'] = [
-                            *variable_writes[cand['name']]['members_modified'],
-                            *cand['members_accessed']]
+                        object.__setattr__(
+                            variable_writes[cand['name']],
+                            'members_modified',
+                            [
+                            *variable_writes[cand['name']].members_modified,
+                            *cand['members_accessed']
+                            ])
 
-                        variable_writes[cand['name']]['indices_modified'] = [
-                            *variable_writes[cand['name']]['indices_modified'],
-                            *cand['indices']]
-
-                elif incr_decr_op_txt and incr_decr_op_row == cand['row_pos']:
-                    if cand['name'] not in variable_writes.keys():
-                        variable_writes[cand['name']] = {
-                            'expressions': cand['expr_mod_statements'],
-                            'members_modified': cand['members_accessed'],
-                            'indices_modified': cand['indices']
-                        }
-                    else:
-                        variable_writes[cand['name']]['expressions'] = [
-                            *variable_writes[cand['name']]['expressions'],
-                            *cand['expr_mod_statements']]
-
-                        variable_writes[cand['name']]['members_modified'] = [
-                            *variable_writes[cand['name']]['members_modified'],
-                            *cand['members_accessed']]
-
-                        variable_writes[cand['name']]['indices_modified'] = [
-                            *variable_writes[cand['name']]['indices_modified'],
-                            *cand['indices']]
+                        object.__setattr__(
+                            variable_writes[cand['name']],
+                            'indices_modified',
+                            [
+                            *variable_writes[cand['name']].indices_modified,
+                            *cand['indices']
+                            ])
 
     def _parse_el_for_global_variable_read(
         self,
@@ -661,10 +678,17 @@ class FunctionCollector:
             op.text is not None and
             op.text in {'++', '--'}), None)
 
-        incr_decr_op_pos = tuple(_get_span(incr_decr_op)[0])
+        incr_decr_op_pos = (-1, -1)
+        if incr_decr_op is not None:
+            incr_decr_op_pos = tuple(_get_span(incr_decr_op)[0])
+
         incr_decr_op_col = int(incr_decr_op_pos[1])
 
-        equal_op_pos = tuple(_get_span(last_op)[0])
+        equal_op_pos = (-1, -1)
+
+        if last_op is not None:
+            equal_op_pos = tuple(_get_span(last_op)[0])
+
         equal_op_pos_col = int(equal_op_pos[1])
 
         for arg in call_arg_names:
@@ -695,8 +719,11 @@ class FunctionCollector:
 
         for name in expr_names:
             name_txt = _get_full_name_text_from_name(name)
+            name_pos = (-1, -1)
 
-            name_pos = tuple(_get_span(name)[0])
+            if name is not None:
+                name_pos = tuple(_get_span(name)[0])
+
             name_pos_col = int(name_pos[1])
 
             name_accessed_txt = re.split(r'\-\>|\[|\.', name_txt, 1)[0]
@@ -754,43 +781,38 @@ class FunctionCollector:
                 if_type = (child.attrib['type']
                 if 'type' in child.attrib.keys() else '')
 
-                root_paths.append({
-                    'type': child.tag,
-                    'if_type': if_type,
-                    'children': self._compile_acyclical_paths_tree(child)
-                })
+                root_paths.append(AcyclicalPath(
+                    type = child.tag,
+                    if_type = if_type,
+                    children = self._compile_acyclical_paths_tree(child)))
             elif child.tag in {
                 f'{{{SRC_NS}}}for',
                 f'{{{SRC_NS}}}while',
                 f'{{{SRC_NS}}}do'
             }:
-                root_paths.append({
-                    'type': child.tag,
-                    'children': self._compile_acyclical_paths_tree(child)
-                })
+                root_paths.append(AcyclicalPath(
+                    type = child.tag,
+                    if_type = None,
+                    children = self._compile_acyclical_paths_tree(child)))
             elif child.tag == f'{{{SRC_NS}}}switch':
-                root_paths.append({
-                    'type': child.tag,
-                    'children': self._compile_acyclical_paths_tree(child)
-                })
+                root_paths.append(AcyclicalPath(
+                    type = child.tag,
+                    children = self._compile_acyclical_paths_tree(child)))
             elif child.tag in {
                 f'{{{SRC_NS}}}case',
                 f'{{{SRC_NS}}}default'
             }:
-                root_paths.append({
-                    'type': child.tag,
-                    'children': self._compile_acyclical_paths_tree(child)
-                })
+                root_paths.append(AcyclicalPath(
+                    type = child.tag,
+                    children = self._compile_acyclical_paths_tree(child)))
             elif child.tag == f'{{{SRC_NS}}}ternary':
-                root_paths.append({
-                    'type': child.tag,
-                    'children': self._compile_acyclical_paths_tree(child)
-                })
+                root_paths.append(AcyclicalPath(
+                    type = child.tag,
+                    children = self._compile_acyclical_paths_tree(child)))
             elif child.tag == f'{{{SRC_NS}}}then':
-                root_paths.append({
-                    'type': child.tag,
-                    'children': []
-                })
+                root_paths.append(AcyclicalPath(
+                    type = child.tag,
+                    children = []))
 
         return root_paths
 
@@ -804,8 +826,8 @@ class FunctionCollector:
         parent_declarations,
         file_name,
         enums,
-        local_function_names,
-        language):
+        local_function_names
+        ):
 
         if function_element.tag in {
             f'{{{SRC_NS}}}function',
@@ -813,6 +835,7 @@ class FunctionCollector:
         }:
             func_sig =_get_signature(function_element)
             func_name = _get_name(function_element)
+            func_span = _get_span(function_element)
             block = function_element.find(f'{{{SRC_NS}}}block')
 
             has_return_value = False
@@ -824,14 +847,12 @@ class FunctionCollector:
             pointer_decls = []
 
             calls = {}
-            macro_calls = {}
 
             global_variable_writes = {}
             global_variable_reads = []
 
             if block is not None:
                 param_data = _get_param_data(function_element)
-                param_count = len(param_data['parameters'])
 
                 for func_child in function_element.iter():
                     decl = _parse_declaration(
@@ -841,7 +862,6 @@ class FunctionCollector:
                         belongs_to_file=file_name)
 
                     call = _parse_function_call(func_child)
-                    macros = _parse_macro_call(func_child, language)
                     throws = _get_throws_expression_names(func_child)
 
                     if throws != []:
@@ -860,9 +880,6 @@ class FunctionCollector:
                         all_local_call_names = [
                             *all_local_call_names,
                             *call.keys()]
-
-                    if macros is not None:
-                        macro_calls = {**macro_calls, **macros}
 
                     if f'{{{SRC_NS}}}return' and has_return_value is False:
                         return_expr = func_child.find(f'{{{SRC_NS}}}expr')
@@ -896,20 +913,20 @@ class FunctionCollector:
 
                 if func_sig not in function_dict.keys():
                     local_function_names.append(func_name)
-                    function_dict[func_sig] = {
-                        'signature': func_sig,
-                        'function_name': func_name,
-                        'param_count': param_count,
-                        'calls': calls,
-                        'functions_called_by': [],
-                        'acyclical_paths_tree': acyc_paths,
-                        'has_return': has_return_value,
-                        'parent_structure_name': parent_struct_name,
-                        'parent_structure_type': parent_struct_type,
-                        'global_variable_writes': global_variable_writes,
-                        'global_variable_reads': list(
+                    function_dict[func_sig] = FunctionProperties(
+                        signature = func_sig,
+                        span = func_span,
+                        function_name = func_name,
+                        calls = calls,
+                        callers = [],
+                        acyclical_paths_tree = acyc_paths,
+                        has_return = has_return_value,
+                        parent_structure_name = parent_struct_name,
+                        parent_structure_type = parent_struct_type,
+                        global_variable_writes = global_variable_writes,
+                        global_variable_reads = list(
                             set(global_variable_reads))
-                    }
+                    )
 
         return function_dict
 
@@ -921,8 +938,7 @@ class FunctionCollector:
         parent_declarations,
         file_name,
         enums,
-        all_local_call_names,
-        language
+        all_local_call_names
         ):
         parent_name_txt = parent_struct_name
         local_declarations = parent_declarations
@@ -989,8 +1005,7 @@ class FunctionCollector:
                 parent_struct_type = new_parent_struct_type,
                 parent_declarations = local_declarations,
                 file_name = file_name,
-                enums = enums,
-                language = language)}
+                enums = enums)}
 
             if child.tag in {
                 f'{{{SRC_NS}}}block',
@@ -1004,8 +1019,7 @@ class FunctionCollector:
                 parent_struct_type = parent_struct_type,
                 parent_declarations = local_declarations,
                 file_name = file_name,
-                enums = enums,
-                language = language)}
+                enums = enums)}
 
             if child.tag in {
                 f'{{{SRC_NS}}}function',
@@ -1020,55 +1034,19 @@ class FunctionCollector:
                     parent_declarations = parent_declarations,
                     file_name = file_name,
                     local_function_names=[
-                        f['function_name']
+                        f.function_name
                         for f in function_dict.values()],
-                    enums = enums,
-                    language = language)
+                    enums = enums)
 
                 function_dict = {**function_dict, **updated_function_dict}
 
         return function_dict
 
-class SrcMLParser:
-    def __init__(self, language):
-        self._language = language
-
-    def get_comments(self, name, contents):
-        comments = None
-
-        srcml = _get_srcml(contents, self._language)
-        if srcml is None:
-            logger.error('SrcML failed to parse %s', name)
-        else:
-            srcml = ElementTree.fromstring(srcml)
-            comments = list(_get_comments(srcml))
-
-        return comments
-
-    def get_functions(self, name, contents):
-        functions = None
-
-        lines = NEWLINE_RE.split(contents)
-        nlines = len(lines[:-1] if lines[-1] == '' else lines)
-        srcml = _get_srcml(contents, self._language)
-        if srcml is None:
-            logger.error('SrcML failed to parse %s', name)
-        else:
-            functions = list()
-            srcml = ElementTree.fromstring(srcml)
-            functions.extend(_get_declarations(srcml))
-            functions.extend(_get_definitions(srcml, nlines))
-
-        return functions
-
     def get_functions_with_properties(self, file_name, contents):
         srcml = _get_srcml(contents, self._language)
 
         if srcml is None:
-            logger.debug('Srcml parser is none')
             return None
-        else:
-            logger.debug('Successfully retrieved srcml parser')
 
         root = ElementTree.fromstring(srcml)
 
@@ -1085,15 +1063,12 @@ class SrcMLParser:
             for el in root.findall(f'{{{SRC_NS}}}enum')
         ]
 
-        func_collect = FunctionCollector(language=self._language)
-
-        func_dict = func_collect.get_functions_with_metric_properties(
+        func_dict = self.get_functions_with_metric_properties(
             root_element = root,
             parent_struct_name = file_name,
             parent_struct_type= 'file',
             parent_declarations=root_declarations,
             all_local_call_names=[],
-            language=self._language,
             enums = root_enums,
             file_name = file_name
             )
