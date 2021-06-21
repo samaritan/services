@@ -6,7 +6,7 @@ from nameko.rpc import rpc
 from . import utilities
 from .languages import get_languages
 from .parsers import get_parser
-from .schemas import CommentSchema, FunctionSchema
+from .schemas import CommentSchema, FunctionSchema, FunctionPropertiesSchema
 
 logger = logging.getLogger(__name__)
 
@@ -54,5 +54,32 @@ class ParserService:
             functions = parser.get_functions(name, contents)
             if functions is not None:
                 functions = FunctionSchema(many=True).dump(functions)
+
+        return functions
+
+    @rpc
+    def get_language(self, name):
+        return self.inferer.infer(name)
+
+    @rpc
+    def get_functions_with_properties(self, name, contents):
+        functions = None
+        function_list = []
+
+        language = self.inferer.infer(name)
+        if language is None:
+            logger.debug('%s is an unsupported language', name)
+        else:
+            parser = get_parser(language)
+            functions = parser.get_functions_with_properties(name, contents)
+
+            if functions is not None and functions != {}:
+                for key in functions.keys():
+                    function_list.append(
+                        FunctionPropertiesSchema(many=False)
+                        .dump(functions[key])
+                    )
+
+                functions = function_list
 
         return functions
