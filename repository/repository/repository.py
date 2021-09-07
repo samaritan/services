@@ -246,7 +246,7 @@ class Repository:
 
     def get_lastmodifiers(self, commit, path, lines):
         command = COMMANDS['lastmodifiers']
-        lines = ' '.join(f'-L {a},{b}' for a, b in _collapse(lines))
+        lines = ' '.join(f'-L {a},{b}' for a, b in lines)
         command = command.format(sha=commit.sha, lines=lines, path=path)
         ostream, ethread = self._runner.run(command)
 
