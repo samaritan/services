@@ -249,11 +249,15 @@ class Repository:
         lines = ' '.join(f'-L {a},{b}' for a, b in _collapse(lines))
         command = command.format(sha=commit.sha, lines=lines, path=path)
         ostream, ethread = self._runner.run(command)
+
+        commits = dict()
         for line in ostream:
             components = line.split()
             line = line[line[:line.find(')')].rfind(' ') + 1:line.find(')')]
-            commit = self.get_commit(components[0])
-            yield LastModifier(line=int(line), commit=commit)
+            sha = components[0]
+            if sha not in commits:
+                commits[sha] = self.get_commit(sha)
+            yield LastModifier(line=int(line), commit=commits[sha])
         _handle_exit(ethread)
 
     def get_linechanges(self, sha, path):
