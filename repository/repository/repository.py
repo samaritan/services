@@ -244,11 +244,7 @@ class Repository:
             yield File(path, path in active_files, Module(mpath))
         _handle_exit(ethread)
 
-    # TODO: Fix the off-by-one bug in the line number. See
-    #       https://github.com/samaritan/services/issues/10 for more
-    #       information.
     def get_lastmodifiers(self, commit, path, lines):
-        _lines = set(lines)
         command = COMMANDS['lastmodifiers']
         lines = ' '.join(f'-L {a},{b}' for a, b in _collapse(lines))
         command = command.format(sha=commit.sha, lines=lines, path=path)
@@ -256,12 +252,8 @@ class Repository:
         for line in ostream:
             components = line.split()
             line = line[line[:line.find(')')].rfind(' ') + 1:line.find(')')]
-            line = int(line)
             commit = self.get_commit(components[0])
-            if line in _lines:
-                yield LastModifier(line=int(line), commit=commit)
-            else:
-                logger.warning('%d in %s at %s', line, path, commit.sha)
+            yield LastModifier(line=int(line), commit=commit)
         _handle_exit(ethread)
 
     def get_linechanges(self, sha, path):

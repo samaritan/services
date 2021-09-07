@@ -1,10 +1,10 @@
-FROM python:3.7-slim-buster
+FROM python:3.7-slim-bullseye
 
 WORKDIR /samaritan/services/repository
 
 # Install Dependencies
 RUN apt-get update && apt-get install -qq --no-install-recommends \
-      git=1:2.20.* \
+      git=1:2.30.* \
       netcat=1.10-* && \
     rm -rf /var/lib/apt/lists/* && \
     git config --global diff.renameLimit 10000
