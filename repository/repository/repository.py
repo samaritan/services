@@ -100,13 +100,13 @@ def _get_components(specification):
 
 
 def _get_linechanges(patch):
-    linechanges = {'+': list(), '-': list()}
+    insertions, deletions = list(), list()
     for line in (l for h in patch.hunks for l in h.lines):
         if line.origin == LineType.INSERTED.value:
-            linechanges[line.origin].append(line.new_lineno)
+            insertions.append(line.new_lineno)
         if line.origin == LineType.DELETED.value:
-            linechanges[line.origin].append(line.old_lineno)
-    return linechanges
+            deletions.append(line.old_lineno)
+    return {'+': _collapse(insertions), '-': _collapse(deletions)}
 
 
 def _get_move(line):
