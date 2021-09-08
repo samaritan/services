@@ -18,8 +18,11 @@ def _get_interactivechurn(project, commit, path, repository_rpc):
     lastmodifiers = _get_lastmodifiers(
         project, commit, path, deletions, repository_rpc
     )
-    authors = (i.commit.author for i in lastmodifiers)
-    return sum(i != commit.author for i in authors) / len(deletions)
+    nlines = (
+        len(i.lines)
+        for i in lastmodifiers if i.commit.author != commit.author
+    )
+    return sum(nlines) / len(deletions)
 
 
 def _get_lastmodifiers(project, commit, path, lines, repository_rpc):
