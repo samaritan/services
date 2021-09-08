@@ -20,7 +20,7 @@ def _get_functionchurn(before, after, lines):
 
     modifications = 0
     for function in (f for f in after if f.signature in csignatures):
-        for line in lines:
+        for line in (l for b, e in lines for l in range(b, e + 1)):
             if function.span.begin.line <= line <= function.span.end.line:
                 modifications += 1
                 break

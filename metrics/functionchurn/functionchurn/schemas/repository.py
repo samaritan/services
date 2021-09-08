@@ -62,7 +62,10 @@ class LastModifierSchema(Schema):
 class LineChangesSchema(Schema):
     linechanges = fields.Dict(
         fields.String(),
-        fields.Dict(fields.String(), fields.List(fields.Integer()))
+        fields.Dict(
+            fields.String(),
+            fields.List(fields.Tuple((fields.Integer(), fields.Integer())))
+        )
     )
 
     @post_load
