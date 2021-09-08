@@ -250,14 +250,20 @@ class Repository:
         command = command.format(sha=commit.sha, lines=lines, path=path)
         ostream, ethread = self._runner.run(command)
 
-        commits = dict()
+        commits, lastmodifiers = dict(), dict()
         for line in ostream:
-            components = line.split()
+            sha = line.split()[0]
             line = line[line[:line.find(')')].rfind(' ') + 1:line.find(')')]
-            sha = components[0]
             if sha not in commits:
                 commits[sha] = self.get_commit(sha)
-            yield LastModifier(line=int(line), commit=commits[sha])
+            commit = commits[sha]
+            if commit not in lastmodifiers:
+                lastmodifiers[commit] = list()
+            lastmodifiers[commit].append(int(line))
+
+        for commit, lines in lastmodifiers.items():
+            yield LastModifier(lines=_collapse(lines), commit=commit)
+
         _handle_exit(ethread)
 
     def get_linechanges(self, sha, path):

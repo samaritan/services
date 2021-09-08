@@ -51,7 +51,7 @@ class CommitSchema(Schema):
 
 
 class LastModifierSchema(Schema):
-    line = fields.Integer()
+    lines = fields.List(fields.Tuple((fields.Integer(), fields.Integer())))
     commit = fields.Nested(CommitSchema)
 
     @post_load
