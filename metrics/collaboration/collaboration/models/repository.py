@@ -1,6 +1,6 @@
 import dataclasses
 
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 
 @dataclasses.dataclass(frozen=True)
@@ -47,9 +47,9 @@ class Commit:
 
 @dataclasses.dataclass(frozen=True)
 class LastModifier:
-    __slots__ = ['line', 'commit']
+    __slots__ = ['commit', 'lines']
 
-    line: int
+    lines: List[Tuple[int, int]]
     commit: Commit
 
 

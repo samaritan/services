@@ -51,7 +51,7 @@ class CommitSchema(Schema):
 
 
 class LastModifierSchema(Schema):
-    line = fields.Integer()
+    lines = fields.List(fields.Tuple((fields.Integer(), fields.Integer())))
     commit = fields.Nested(CommitSchema)
 
     @post_load
@@ -62,7 +62,10 @@ class LastModifierSchema(Schema):
 class LineChangesSchema(Schema):
     linechanges = fields.Dict(
         fields.String(),
-        fields.Dict(fields.String(), fields.List(fields.Integer()))
+        fields.Dict(
+            fields.String(),
+            fields.List(fields.Tuple((fields.Integer(), fields.Integer())))
+        )
     )
 
     @post_load
