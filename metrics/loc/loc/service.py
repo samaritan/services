@@ -2,13 +2,18 @@ import enum
 import logging
 import re
 
+from kombu.messaging import Exchange, Queue
 from nameko.dependency_providers import Config
+from nameko.messaging import consume, Publisher
 from nameko.rpc import rpc, RpcProxy
 
 from .models import Loc
 from .schemas import ChangeSchema, CommentSchema, FunctionSchema, LocSchema
 
+METRIC = 'loc'
+exchange = Exchange(name='async.metrics')
 logger = logging.getLogger(__name__)
+queue = Queue(name=f'async-{METRIC}', routing_key=METRIC, exchange=exchange)
 NEWLINE_RE = re.compile(r'\r\n?|\n')
 
 
@@ -76,9 +81,10 @@ def _get_fileloc(lines, flags):
 
 
 class LocService:
-    name = 'loc'
+    name = METRIC
 
     config = Config()
+    publish = Publisher(exchange=exchange)
     parser_rpc = RpcProxy('parser')
     repository_rpc = RpcProxy('repository')
 
@@ -105,6 +111,15 @@ class LocService:
                 functions = self._get_functions(path, content)
                 return _get_functionsloc(functions, flags)
         return None
+
+    @consume(queue=queue)
+    def handle_collect(self, payload):
+        project = payload.get('project')
+        sha = payload.get('sha')
+        path = payload.get('path')
+        options = payload.get('options', dict())
+        payload['measure'] = self.collect(project, sha, path, **options)
+        self.publish(payload, routing_key='measure')
 
     def _get_comments(self, path, content):
         comments = self.parser_rpc.get_comments(path, content)

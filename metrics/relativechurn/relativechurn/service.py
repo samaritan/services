@@ -1,18 +1,24 @@
 import logging
 
+from kombu.messaging import Exchange, Queue
 from nameko.dependency_providers import Config
+from nameko.messaging import consume, Publisher
 from nameko.rpc import rpc, RpcProxy
 
 from .models import ChangeType, RelativeChurn
 from .schemas import ChangeSchema, ChurnSchema, RelativeChurnSchema
 
+METRIC = 'relativechurn'
+exchange = Exchange(name='async.metrics')
 logger = logging.getLogger(__name__)
+queue = Queue(name=f'async-{METRIC}', routing_key=METRIC, exchange=exchange)
 
 
 class RelativeChurnService:
-    name = 'relativechurn'
+    name = METRIC
 
     config = Config()
+    publish = Publisher(exchange=exchange)
     churn_rpc = RpcProxy('churn')
     repository_rpc = RpcProxy('repository')
 
@@ -27,6 +33,15 @@ class RelativeChurnService:
             relativechurn = self._get_relativechurn(project, churn, change)
             return RelativeChurnSchema().dump(relativechurn)
         return None
+
+    @consume(queue=queue)
+    def handle_collect(self, payload):
+        project = payload.get('project')
+        sha = payload.get('sha')
+        path = payload.get('path')
+        options = payload.get('options', dict())
+        payload['measure'] = self.collect(project, sha, path, **options)
+        self.publish(payload, routing_key='measure')
 
     def _get_change(self, project, sha, path):
         change = self.repository_rpc.get_change(project, sha, path)

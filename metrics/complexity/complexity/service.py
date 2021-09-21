@@ -1,13 +1,18 @@
 import logging
 
 from lizard import get_extensions, FileAnalyzer
+from kombu.messaging import Exchange, Queue
 from nameko.dependency_providers import Config
+from nameko.messaging import consume, Publisher
 from nameko.rpc import rpc, RpcProxy
 
 from .schemas import ChangeSchema
 
-logger = logging.getLogger(__name__)
+METRIC = 'complexity'
 analyzer = FileAnalyzer(get_extensions([]))  # pylint: disable=invalid-name
+exchange = Exchange(name='async.metrics')
+logger = logging.getLogger(__name__)
+queue = Queue(name=f'async-{METRIC}', routing_key=METRIC, exchange=exchange)
 
 
 def _get_complexities(project, change, repository_rpc):
@@ -35,9 +40,10 @@ def _warn(path, function, complexities):
 
 
 class ComplexityService:
-    name = 'complexity'
+    name = METRIC
 
     config = Config()
+    publish = Publisher(exchange=exchange)
     repository_rpc = RpcProxy('repository')
 
     @rpc
@@ -49,3 +55,12 @@ class ComplexityService:
 
         complexities = _get_complexities(project, change, self.repository_rpc)
         return complexities if complexities else None
+
+    @consume(queue=queue)
+    def handle_collect(self, payload):
+        project = payload.get('project')
+        sha = payload.get('sha')
+        path = payload.get('path')
+        options = payload.get('options', dict())
+        payload['measure'] = self.collect(project, sha, path, **options)
+        self.publish(payload, routing_key='measure')

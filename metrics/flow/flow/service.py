@@ -1,14 +1,19 @@
 import logging
 import operator
 
+from kombu.messaging import Exchange, Queue
 from nameko.dependency_providers import Config
+from nameko.messaging import consume, Publisher
 from nameko.rpc import rpc, RpcProxy
 
 from .models import Flow
 from .schemas import FlowSchema, MetricsSchema
 
-logger = logging.getLogger(__name__)
+METRIC = 'flow'
 METRICS = ['CountInput', 'CountOutput', 'CountPath']
+exchange = Exchange(name='async.metrics')
+logger = logging.getLogger(__name__)
+queue = Queue(name=f'async-{METRIC}', routing_key=METRIC, exchange=exchange)
 
 def _transform(metrics):
     flows = list()
@@ -23,10 +28,11 @@ def _transform(metrics):
     return flows
 
 
-class ComplexityService:
-    name = 'flow'
+class FlowService:
+    name = METRIC
 
     config = Config()
+    publish = Publisher(exchange=exchange)
     understand_rpc = RpcProxy('understand')
 
     @rpc
@@ -35,3 +41,10 @@ class ComplexityService:
         metrics = self.understand_rpc.get_metrics(project, METRICS)
         metrics = MetricsSchema(many=True).load(metrics)
         return FlowSchema(many=True).dump(_transform(metrics))
+
+    @consume(queue=queue)
+    def handle_collect(self, payload):
+        project = payload.get('project')
+        options = payload.get('options', dict())
+        payload['measure'] = self.collect(project, **options)
+        self.publish(payload, routing_key='measure')
